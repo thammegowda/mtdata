@@ -16,6 +16,7 @@ class Entry:
     filename: Optional[str] = None  # optional local file name; tries to auto-decide iff missing
     ext: Optional[str] = None  # extension name; tries to auto-decide iff missing
     in_paths: Optional[List[str]] = None  # if URL is a tar or zip, specify inside paths
+    in_ext: Optional[str] = None  # extension of in_paths inside archive
     cite: Optional[str] = None
 
     def __post_init__(self):
@@ -47,16 +48,26 @@ class Entry:
 entries: List[Entry] = []
 
 
-def get_entries(langs=None, names=None):
+def get_entries(langs=None, names=None, not_names=None):
+    """
+    :param langs: language pairs  to select eg ('en', 'de')
+    :param names:  names to select
+    :param not_names:  names to exclude
+    :return: list of dataset entries that match the criteria
+    """
     select = entries
-
     if names:
         if not isinstance(names, set):
             names = set(names)
         select = [e for e in select if e.name in names]
     if langs:
         assert len(langs) == 2
-        select = [e for e in select if sorted(langs) == sorted(e.langs)]
+        langs = sorted(langs)
+        select = [e for e in select if langs == sorted(e.langs)]
+    if not_names:
+        if not isinstance(not_names, set):
+            not_names = set(not_names)
+        select = [e for e in select if e.name not in not_names]
     return select
 
 
@@ -252,7 +263,8 @@ for pair in ["as en", "bn en", "gu en", "hi en", "kn en", "ml en", "mni en", "mr
 
 # Pashto - English  pseudo parallel dataset for alignment
 entries.append(Entry(langs=('en', 'ps'), name='wmt20_enps_aligntask',
-      url='http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-ps.xz', cite=wmt20_cite))
+      url='http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-ps.xz',
+                     cite=wmt20_cite, ext='tsv.xz'))
 
 # Pashto - English  mostly parallel dataset
 for name in ["GNOME.en-ps", "KDE4.en-ps", "Tatoeba.en-ps", "Ubuntu.en-ps", "bible.en-ps.clean", "ted-wmt20.en-ps", "wikimedia.en-ps"]:
@@ -260,5 +272,6 @@ for name in ["GNOME.en-ps", "KDE4.en-ps", "Tatoeba.en-ps", "Ubuntu.en-ps", "bibl
     en = f'ps-parallel/{name}.en'
     url = 'http://data.statmt.org/wmt20/translation-task/ps-km/ps-parallel.tgz'
     name = name.replace('.en-ps', '').replace('.', '_').replace('-', '_').lower()
-    entries.append(Entry(langs=('ps', 'en'), name=name, url=url, cite=wmt20_cite, in_paths=[ps, en],
-                         ext='txt'))
+    entry = Entry(langs=('ps', 'en'), name=name, url=url, cite=wmt20_cite, in_paths=[ps, en],
+                         filename='wmt20-psen-parallel.tgz', in_ext='txt')
+    entries.append(entry)

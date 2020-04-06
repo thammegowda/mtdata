@@ -9,14 +9,16 @@ from mtdata import log
 from mtdata.data import Dataset, get_entries
 
 
-def listing(langs, names, full=False, cache_dir=None):
-    entries = get_entries(langs, names)
+def listing(langs, names, not_names=None, full=False, cache_dir=None):
+    entries = get_entries(langs, names, not_names)
     log.info(f"Found {len(entries)}")
     for i, ent in enumerate(entries):
         print(ent.format(delim='\t'))
         if full:
             print(ent.cite or "CITATION_NOT_LISTED", end='\n\n')
     print(f"Total {len(entries)} entries")
+
+
 class MyFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
     def _split_lines(self, text, width: int):
@@ -42,12 +44,14 @@ def parse_args():
     list_p = sub_ps.add_parser('list')
     list_p.add_argument('-l', '--langs', type=LangPair, help='Language pairs; e.g.: de-en')
     list_p.add_argument('-n', '--names', nargs='*', help='Name of dataset set; eg europarl_v9.')
+    list_p.add_argument('-nn', '--not-names', nargs='*', help='Exclude these names')
     list_p.add_argument('-f', '--full', action='store_true', help='Show Full Citation')
 
     get_p = sub_ps.add_parser('get')
     get_p.add_argument('-l', '--langs', type=LangPair, help='Language pairs; e.g.: de-en',
                           required=True)
     get_p.add_argument('-n', '--names', nargs='*', help='Name of dataset set; eg europarl_v9.')
+    get_p.add_argument('-nn', '--not-names', nargs='*', help='Exclude these names.')
     get_p.add_argument('-o', '--out', type=Path, required=True, help='Output directory name')
 
     args = p.parse_args()
@@ -60,9 +64,10 @@ def parse_args():
 def main():
     args = parse_args()
     if args.task == 'list':
-        listing(args.langs, args.names, full=args.full, cache_dir=args.cache)
+        listing(args.langs, args.names, not_names=args.not_names, full=args.full,
+                cache_dir=args.cache)
     elif args.task == 'get':
-        dataset = Dataset.prepare(args.langs, args.names, out_dir=args.out,
+        dataset = Dataset.prepare(args.langs, args.names, not_names=args.not_names, out_dir=args.out,
                                   cache_dir=args.cache)
         log.info(f'Dataset is ready at {dataset.dir}')
 

@@ -12,10 +12,7 @@ import gzip
 from datetime import datetime
 from itertools import zip_longest
 
-CONTAINERS = ['tar', 'zip', 'tgz', 'txz']
 COMPRESS_EXT = ['gz', 'bz2', 'xz']
-PLAIN = ['txt', 'tsv',  'raw']
-
 
 def detect_extension(name: Union[str, Path]):
     """
@@ -23,6 +20,7 @@ def detect_extension(name: Union[str, Path]):
     :param filename: name or full path of file
     :return: extension of file
     """
+
     filename = name if isinstance(name, str) else name.name
     parts = filename.split('.')
     ext = parts[-1]

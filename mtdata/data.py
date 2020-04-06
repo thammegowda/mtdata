@@ -20,9 +20,9 @@ class Dataset:
         self.parts_dir.mkdir(parents=True, exist_ok=True)
 
     @classmethod
-    def prepare(cls, langs, names, out_dir, cache_dir):
+    def prepare(cls, langs, names, out_dir, cache_dir, not_names=None):
         log.info(f"Locating datasets for langs={langs} names={names}")
-        entries = get_entries(langs=langs, names=names)
+        entries = get_entries(langs=langs, names=names, not_names=not_names)
         log.info(f"Found {len(entries)}")
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir)
         total = 0
@@ -31,13 +31,14 @@ class Dataset:
             n_good, n_bad = dataset.add_part(ent)
             total += n_good
             skips += n_bad
-            log.info(f"Found {n_good:} lines in {n_bad:}; So far, total={total:,} skips={skips:,}")
+            log.info(f"{ent.name} : found {n_good:} lines and {n_bad:} errors;"
+                     f" total={total:,} skips={skips:,}")
         return dataset
 
     def add_part(self, entry: Entry):
         path = self.cache.get_entry(entry)
         swap = entry.is_swap(self.langs)
-        parser = Parser(path, langs=self.langs)
+        parser = Parser(path, langs=self.langs, ext=entry.in_ext or None)
         l1 = (self.parts_dir / entry.name).with_suffix(f'.{self.langs[0]}')
         l2 = (self.parts_dir / entry.name).with_suffix(f'.{self.langs[1]}')
         mode = dict(mode='w', encoding='utf-8', errors='ignore')

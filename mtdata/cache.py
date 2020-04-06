@@ -50,9 +50,7 @@ class Cache:
 
     def get_local_in_paths(self, entry: Entry, fix_missing=True):
         x_dir = self.get_extracted_path(entry, fix_missing=fix_missing)
-        print(x_dir, entry.in_paths)
         return [x_dir / p for p in entry.in_paths]
-
 
     def download(self, entry: Entry, save_at: Path):
         save_at.parent.mkdir(parents=True, exist_ok=True)
@@ -65,7 +63,7 @@ class Cache:
     def extract(self, archive_file: Path, ext: str, x_dir: Path):
         assert archive_file.exists(), f'{archive_file} not found'
         x_dir.mkdir(parents=True, exist_ok=True)
-        if ext in {'tar', 'tgz', 'tar.gz', 'tar.bz2', 'tbz2'}:
+        if ext in {'tar', 'tgz', 'tar.gz', 'tar.bz2', 'tbz2', 'tar.xz', 'txz'}:
             log.info(f"Going to extract tar {archive_file} --> {x_dir}")
             import tarfile
             with tarfile.open(archive_file) as tar:
