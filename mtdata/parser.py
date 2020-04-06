@@ -41,7 +41,7 @@ class Parser:
             self.paths = [self.paths]
         assert  1 <= len(self.paths) <= 2
         for p in self.paths:
-            p.exists(), f'{p} not exists'
+            assert p.exists(), f'{p} not exists'
 
         if not self.ext:
             exts = [detect_extension(p.name) for p in self.paths]
@@ -97,6 +97,9 @@ class IO:
     def __enter__(self):
         if self.path.name.endswith(".gz"):   # gzip mode
             self.fd = gzip.open(self.path, self.mode, encoding=self.encoding, errors=self.errors)
+        elif self.path.name.endswith(".xz"):
+            import lzma
+            self.fd = lzma.open(self.path, self.mode, encoding=self.encoding, errors=self.errors)
         else:
             if 'b' in self.mode:  # binary mode doesnt take encoding or errors
                 self.fd = self.path.open(self.mode)
@@ -107,6 +110,7 @@ class IO:
 
     def __exit__(self, _type, value, traceback):
         self.fd.close()
+        self.fd = None
 
     @classmethod
     def reader(cls, path, text=True):
