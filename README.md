@@ -11,13 +11,14 @@ With this you DON'T have to :
 - Know if parallel data is in one .tsv file or two sgm files 
 - (And more over the time. Create an issue discuss more of such "you dont have to" topics)
 
-because, [MTData](https://github.com/thammegowda/mtdata) does all the above under the hood.
+because, [MTData](https://github.com/thammegowda/mtdata) does all the above for you! 
 
 ## Installation
 ```bash
-# coming soon to pypi
-# pip install mtdata 
+# from pypi
+pip install mtdata 
 
+# from the source on github 
 git clone https://github.com/thammegowda/mtdata 
 cd mtdata
 pip install .  # add "--editable" flag for development mode 
@@ -70,10 +71,28 @@ optional arguments:
 Here is an example showing collection and preparation of DE-EN datasets. 
 ```bash
 mtdata get  -l de-en -n europarl_v9 news_commentary_v14 newstest201{4,5,6,7,8,9}_deen -o de-en
+# It created a dir named `de-en`. And here are the contents
+ 1838557 42471404 de-en/parts/europarl_v9.de
+ 1838557 45547035 de-en/parts/europarl_v9.en
+  338157 7399080 de-en/parts/news_commentary_v14.de
+  338157 7212171 de-en/parts/news_commentary_v14.en
+    3003   54865 de-en/parts/newstest2014_deen.de
+    3003   59326 de-en/parts/newstest2014_deen.en
+    2169   38160 de-en/parts/newstest2015_deen.de
+    2169   40771 de-en/parts/newstest2015_deen.en
+    2999   53944 de-en/parts/newstest2016_deen.de
+    2999   56789 de-en/parts/newstest2016_deen.en
+    3004   52833 de-en/parts/newstest2017_deen.de
+    3004   56435 de-en/parts/newstest2017_deen.en
+    2998   54933 de-en/parts/newstest2018_deen.de
+    2998   58628 de-en/parts/newstest2018_deen.en
+    2000   31097 de-en/parts/newstest2019_deen.de
+    2000   34386 de-en/parts/newstest2019_deen.en
 ```
 
-## How to extend:
-Please help grow the datasets by adding missing+new datasets to `index.py` module.
+
+## How to extend or contribute:
+Please help grow the datasets by adding missing+new datasets to [`index.py`](mtdata/index.py) module.
 Here is an example listing europarl-v9 corpus.
 ```python
 from mtdata.index import entries, Entry
@@ -99,6 +118,9 @@ for set_name, pairs in wmt_sets.items():
 # filename='wmt20dev.tgz' -- is manually set, because url has dev.gz that can be confusing
 # in_paths=[src, ref]  -- listing two sgm files inside the tarball
 ```
+For adding a custom parser, or file handler look into [`parser.read_segs()`](mtdata/parser.py) 
+and [`cache`](mtdata/cache.py) for dealing with a new archive/file type that is not already supported.
+ 
 
 ## Developers:
 - [Thamme Gowda](https://twitter.com/thammegowda) 
