@@ -23,13 +23,13 @@ Limitations (as of now):
 
 ## Installation
 ```bash
-# from pypi
-pip install mtdata 
-
 # from the source on github 
 git clone https://github.com/thammegowda/mtdata 
 cd mtdata
-pip install .  # add "--editable" flag for development mode 
+pip install .  # add "--editable" flag for development mode
+
+# from pypi ; dont do this yet, since the code is evolving faster than releases
+pip install mtdata  
 ```
 
 ## CLI Usage
