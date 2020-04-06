@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Author: Thamme Gowda [tg (at) isi (dot) edu] 
+# Author: Thamme Gowda [tg (at) isi (dot) edu]
 # Created: 4/5/20
 
 from pathlib import Path
@@ -8,6 +8,7 @@ from mtdata import log
 from mtdata.cache import Cache
 from mtdata.index import Entry, get_entries
 from mtdata.parser import Parser
+
 
 class Dataset:
 
@@ -30,7 +31,7 @@ class Dataset:
             n_good, n_bad = dataset.add_part(ent)
             total += n_good
             skips += n_bad
-            log.info(f"Found {n_good} lines in {n_bad}; So far, total={total} skips={skips}")
+            log.info(f"Found {n_good:} lines in {n_bad:}; So far, total={total:,} skips={skips:,}")
         return dataset
 
     def add_part(self, entry: Entry):
@@ -43,10 +44,11 @@ class Dataset:
         with l1.open(**mode) as f1, l2.open(**mode) as f2:
             count, skips = 0, 0
             for rec in parser.read_segs():
+                rec = rec[:2] # get the first two recs
                 if len(rec) != 2:
                     skips += 1
                     continue
-                sent1, sent2 =[s.strip() for s in  rec]
+                sent1, sent2 = [s.strip() for s in rec]
                 if not sent1 or not sent2:
                     if len(rec) != 2:
                         skips += 1
@@ -56,6 +58,7 @@ class Dataset:
                 f1.write(f'{sent1}\n')
                 f2.write(f'{sent2}\n')
                 count += 1
+            msg = f'Looks like an error. {count} segs are valid {skips} are invalid: {entry}'
+            assert count > skips and count > 0, msg
+
         return count, skips
-
-

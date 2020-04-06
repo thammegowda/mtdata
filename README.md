@@ -1,17 +1,25 @@
 # MTData
-MTData tool is written to reduce the burden of preparing the datasets for machine translation.
+MTData tool is written to simplify and automate the dataset collection and preparation for machine translation.
 It provides commandline and python APIs that can be either used as a standalone tool, 
 or call it from shell scripts or embed it in python application for preparing MT experiments.
 
-With this you DON'T have to :
-- Know where the URLs are for data sets: WMT tests and devs for \[2014, 2015, ... 2020], Paracrawl, 
-  Europarl, News Commentary, WikiTitles ...
-- Know how to extract files : .tar, .tar.gz, .tgz, .zip, .gz, ...
-- Know how to parse .tmx, .sgm, .tsv
-- Know if parallel data is in one .tsv file or two sgm files 
-- (And more over the time. Create an issue discuss more of such "you dont have to" topics)
+This tool knows:
+- From where to download data sets: WMT tests and devs for \[2014, 2015, ... 2020], Paracrawl, 
+  Europarl, News Commentary, WikiTitles ... 
+- How to extract files : .tar, .tar.gz, .tgz, .zip, ...
+- How to parse .tmx, .sgm and such XMLs, or .tsv ... Checks if they have same number of segments.
+- Whether parallel data is in one .tsv file or two sgm files.
+- Whether data is compressed in gz, xz or none at all.
+- Whether the source-target is in the same order or is it swapped as target-source order.
+- (And more of such tiny details over the time.)
 
-because, [MTData](https://github.com/thammegowda/mtdata) does all the above for you! 
+[MTData](https://github.com/thammegowda/mtdata) is here to:
+- Automate the MT training data creation by taking out human intervention. Inspired by [SacreBLEU](https://github.com/mjpost/sacreBLEU) that takes out human intervention in evaluation stage.
+- A reusable tool instead of dozens of use-once shell scripts spread across multiple repos. 
+
+Limitations (as of now):
+- Only publicly available datasets that do not need login are supported. No LDC yet.
+- No tokenizers are integrated. (It should be fairly easy to get those integrated) 
 
 ## Installation
 ```bash
@@ -30,7 +38,7 @@ pip install .  # add "--editable" flag for development mode
 ### `mtdata list`
 ```bash
 mtdata list -h
-usage: mtdata list [-h] [-l LANGS] [-n [NAMES [NAMES ...]]]
+usage: mtdata list [-h] [-l LANGS] [-n [NAMES [NAMES ...]]] [-f]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -38,6 +46,7 @@ optional arguments:
                         Language pairs; e.g.: de-en
   -n [NAMES [NAMES ...]], --names [NAMES [NAMES ...]]
                         Name of dataset set; eg europarl_v9.
+  -f, --full            Show Full Citation
 ``` 
 
 ```bash
@@ -53,6 +62,9 @@ mtdata list -n europarl_v9 news_commentary_v14
 
 # list by both language pair and dataset name
 mtdata list -l de-en -n europarl_v9 news_commentary_v14 newstest201{4,5,6,7,8,9}_deen
+
+# get citation of a dataset (if available in index.py)
+mtdata list -l de-en -n newstest2019_deen --full
 ```
 
 ## `mtdata get`
@@ -118,6 +130,12 @@ for set_name, pairs in wmt_sets.items():
 # filename='wmt20dev.tgz' -- is manually set, because url has dev.gz that can be confusing
 # in_paths=[src, ref]  -- listing two sgm files inside the tarball
 ```
+If citation is available for a dataset, please include
+```python
+cite = r"""bib tex here""
+Entry(... cite=cite)
+```
+
 For adding a custom parser, or file handler look into [`parser.read_segs()`](mtdata/parser.py) 
 and [`cache`](mtdata/cache.py) for dealing with a new archive/file type that is not already supported.
  

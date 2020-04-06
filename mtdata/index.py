@@ -36,7 +36,7 @@ class Entry:
         return tuple(reversed(langs)) == tuple(self.langs)
 
     def __str__(self):
-        self.format(delim=' ')
+        return self.format(delim=' ')
 
     def format(self, delim: str = ' '):
         msg = f'{self.name}{delim}{"-".join(self.langs)}{delim}{self.url}{delim}' \
