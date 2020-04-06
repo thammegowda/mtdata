@@ -207,4 +207,46 @@ for set_name, pairs in wmt_sets.items():
         ref = f'dev/{set_name}-{l1}{l2}-ref.{l2}.sgm'
         name = f'{set_name}_{l1}{l2}'
         entries.append(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
-                             url='http://data.statmt.org/wmt20/translation-task/dev.tgz'))
+                             url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
+                             cite=cite))
+
+# ==== TED Talks 2.0 ar-en
+entries.append(Entry(('en', 'ar'), 'tedtalks_v2_clean', ext='tsv.xz',
+                     url='http://data.statmt.org/ted-talks/en-ar.v2.aligned.clean.xz'))
+
+# ==== Europarl v10
+EP_v10 = "http://www.statmt.org/europarl/v10/training/europarl-v10.%s-%s.tsv.gz"
+cite = None  # TODO: update
+for pair in ['cs en', 'cs pl', 'de en', 'de fr', 'es pt', 'fi en', 'fr en', 'lt en', 'pl en']:
+    l1, l2 = pair.split()
+    entries.append(Entry(langs=(l1, l2), name='europarl_v10', url=EP_v10 % (l1, l2), cite=cite))
+
+# ====  WikiMatrix
+WIKI_MATRIX_v1 = 'http://data.statmt.org/wmt20/translation-task/WikiMatrix/WikiMatrix.v1.%s-%s.langid.tsv.gz'
+cite = None
+for pair in ["cs en", "de en", "de fr", "en ja", "en pl", "en ru", "en ta", "en te", "en zh",
+             "hi ta"]:
+    l1, l2 = pair.split()
+    entries.append(
+        Entry(langs=(l1, l2), name='wiki_matrix_v1', url=WIKI_MATRIX_v1 % (l1, l2), cite=cite))
+
+# ==== PMIndia V1
+PMINDIA_v1 = "http://data.statmt.org/pmindia/v1/parallel/pmindia.v1.%s-%s.tsv"
+cite = r"""@ARTICLE{2020arXiv200109907H,
+       author = {{Haddow}, Barry and {Kirefu}, Faheem},
+        title = "{PMIndia -- A Collection of Parallel Corpora of Languages of India}",
+      journal = {arXiv e-prints},
+     keywords = {Computer Science - Computation and Language},
+         year = "2020",
+        month = "Jan",
+          eid = {arXiv:2001.09907},
+        pages = {arXiv:2001.09907},
+archivePrefix = {arXiv},
+       eprint = {2001.09907}
+}"""
+for pair in ["as en", "bn en", "gu en", "hi en", "kn en", "ml en", "mni en", "mr en", "or en",
+             "pa en", "ta en", "te en", "ur en"]:
+    l1, l2 = pair.split()
+    # Note: listed as xx-en in URL but actually en-xx in the tsv; and its not compressed!
+    entries.append(Entry(langs=(l2, l1), name='pmindia_v1', url=PMINDIA_v1 % (l1, l2), cite=cite))
+
