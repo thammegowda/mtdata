@@ -216,19 +216,18 @@ entries.append(Entry(('en', 'ar'), 'tedtalks_v2_clean', ext='tsv.xz',
 
 # ==== Europarl v10
 EP_v10 = "http://www.statmt.org/europarl/v10/training/europarl-v10.%s-%s.tsv.gz"
-cite = None  # TODO: update
+wmt20_cite = None  # TODO: update
 for pair in ['cs en', 'cs pl', 'de en', 'de fr', 'es pt', 'fi en', 'fr en', 'lt en', 'pl en']:
     l1, l2 = pair.split()
-    entries.append(Entry(langs=(l1, l2), name='europarl_v10', url=EP_v10 % (l1, l2), cite=cite))
+    entries.append(Entry(langs=(l1, l2), name='europarl_v10', url=EP_v10 % (l1, l2), cite=wmt20_cite))
 
 # ====  WikiMatrix
 WIKI_MATRIX_v1 = 'http://data.statmt.org/wmt20/translation-task/WikiMatrix/WikiMatrix.v1.%s-%s.langid.tsv.gz'
-cite = None
 for pair in ["cs en", "de en", "de fr", "en ja", "en pl", "en ru", "en ta", "en te", "en zh",
              "hi ta"]:
     l1, l2 = pair.split()
     entries.append(
-        Entry(langs=(l1, l2), name='wiki_matrix_v1', url=WIKI_MATRIX_v1 % (l1, l2), cite=cite))
+        Entry(langs=(l1, l2), name='wiki_matrix_v1', url=WIKI_MATRIX_v1 % (l1, l2), cite=wmt20_cite))
 
 # ==== PMIndia V1
 PMINDIA_v1 = "http://data.statmt.org/pmindia/v1/parallel/pmindia.v1.%s-%s.tsv"
@@ -250,3 +249,16 @@ for pair in ["as en", "bn en", "gu en", "hi en", "kn en", "ml en", "mni en", "mr
     # Note: listed as xx-en in URL but actually en-xx in the tsv; and its not compressed!
     entries.append(Entry(langs=(l2, l1), name='pmindia_v1', url=PMINDIA_v1 % (l1, l2), cite=cite))
 
+
+# Pashto - English  pseudo parallel dataset for alignment
+entries.append(Entry(langs=('en', 'ps'), name='wmt20_enps_aligntask',
+      url='http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-ps.xz', cite=wmt20_cite))
+
+# Pashto - English  mostly parallel dataset
+for name in ["GNOME.en-ps", "KDE4.en-ps", "Tatoeba.en-ps", "Ubuntu.en-ps", "bible.en-ps.clean", "ted-wmt20.en-ps", "wikimedia.en-ps"]:
+    ps = f'ps-parallel/{name}.ps'
+    en = f'ps-parallel/{name}.en'
+    url = 'http://data.statmt.org/wmt20/translation-task/ps-km/ps-parallel.tgz'
+    name = name.replace('.en-ps', '').replace('.', '_').replace('-', '_').lower()
+    entries.append(Entry(langs=('ps', 'en'), name=name, url=url, cite=wmt20_cite, in_paths=[ps, en],
+                         ext='txt'))
