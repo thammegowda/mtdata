@@ -1,0 +1,6 @@
+.scrapy
+*.jl
+*.jsonl
+*.json
+*.csv
+*.xml
