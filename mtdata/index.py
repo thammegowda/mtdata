@@ -71,6 +71,32 @@ def get_entries(langs=None, names=None, not_names=None):
     return select
 
 
+WMT13_CCRAWL = "http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz"
+WMT14_CITE = """@proceedings{ws-2014-statistical,
+    title = "Proceedings of the Ninth Workshop on Statistical Machine Translation",
+    editor = "Bojar, Ond{\v{r}}ej  and
+      Buck, Christian  and
+      Federmann, Christian  and
+      Haddow, Barry  and
+      Koehn, Philipp  and
+      Monz, Christof  and
+      Post, Matt  and
+      Specia, Lucia",
+    month = jun,
+    year = "2014",
+    address = "Baltimore, Maryland, USA",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/W14-3300",
+    doi = "10.3115/v1/W14-33",
+}"""
+for l1 in ['de', 'cs', 'fr', 'ru', 'es']:
+    l2 = 'en'
+    f1 = f'commoncrawl.{l1}-en.{l1}'
+    f2 = f'commoncrawl.{l1}-en.en'
+    entries.append(Entry(langs=(l1, l2), name=f'wmt13_commoncrawl', url=WMT13_CCRAWL,
+                         filename='wmt13_parallel_commoncrawl',
+                         in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
+
 # === Europarl V9 corpus
 EUROPARL_v9 = 'http://www.statmt.org/europarl/v9/training/europarl-v9.%s-%s.tsv.gz'
 cite = r"""@inproceedings{koehn2005europarl,
@@ -106,6 +132,19 @@ for pair in ['en cs', 'en de', 'en fi', 'en lt']:
     l1, l2 = pair.split()
     entries.append(
         Entry(langs=(l1, l2), name='paracrawl_v3', url=PARACRAWL_v3 % (l1, l2), cite=cite))
+
+# === Paracrawl V6
+PARACRAWL_v6 = 'https://s3.amazonaws.com/web-language-models/paracrawl/release6/%s-%s.txt.gz'
+for l2 in ['is', 'bg', 'hr', 'cs', 'da', 'nl', 'et', 'fi', 'fr', 'de', 'el', 'hu', 'ga', 'it', 'lv',
+           'lt', 'mt', 'pl', 'pt', 'ro', 'sk', 'sl', 'es', 'sv']:
+    l1 = 'en'
+    entries.append(Entry(langs=(l1, l2), name='paracrawl_v6', url=PARACRAWL_v6 % (l1, l2),
+                         cite=cite, ext='tsv.gz'))
+# these are bonus
+PARACRAWL_v6_B = 'https://s3.amazonaws.com/web-language-models/paracrawl/release6/%s-%s.bicleaner07.txt.gz'
+for l1, l2 in [('nl', 'fr'), ('pl', 'de')]:
+    entries.append(Entry(langs=(l1, l2), name='paracrawl_v6', url=PARACRAWL_v6_B % (l1, l2),
+                         cite=cite, ext='tsv.gz'))
 
 # === News Commentary v14
 NEWSCOM_v14 = "http://data.statmt.org/news-commentary/v14/training/news-commentary-v14.%s-%s.tsv.gz"
@@ -230,7 +269,8 @@ EP_v10 = "http://www.statmt.org/europarl/v10/training/europarl-v10.%s-%s.tsv.gz"
 wmt20_cite = None  # TODO: update
 for pair in ['cs en', 'cs pl', 'de en', 'de fr', 'es pt', 'fi en', 'fr en', 'lt en', 'pl en']:
     l1, l2 = pair.split()
-    entries.append(Entry(langs=(l1, l2), name='europarl_v10', url=EP_v10 % (l1, l2), cite=wmt20_cite))
+    entries.append(
+        Entry(langs=(l1, l2), name='europarl_v10', url=EP_v10 % (l1, l2), cite=wmt20_cite))
 
 # ====  WikiMatrix
 WIKI_MATRIX_v1 = 'http://data.statmt.org/wmt20/translation-task/WikiMatrix/WikiMatrix.v1.%s-%s.langid.tsv.gz'
@@ -238,7 +278,8 @@ for pair in ["cs en", "de en", "de fr", "en ja", "en pl", "en ru", "en ta", "en 
              "hi ta"]:
     l1, l2 = pair.split()
     entries.append(
-        Entry(langs=(l1, l2), name='wiki_matrix_v1', url=WIKI_MATRIX_v1 % (l1, l2), cite=wmt20_cite))
+        Entry(langs=(l1, l2), name='wiki_matrix_v1', url=WIKI_MATRIX_v1 % (l1, l2),
+              cite=wmt20_cite))
 
 # ==== PMIndia V1
 PMINDIA_v1 = "http://data.statmt.org/pmindia/v1/parallel/pmindia.v1.%s-%s.tsv"
@@ -260,18 +301,18 @@ for pair in ["as en", "bn en", "gu en", "hi en", "kn en", "ml en", "mni en", "mr
     # Note: listed as xx-en in URL but actually en-xx in the tsv; and its not compressed!
     entries.append(Entry(langs=(l2, l1), name='pmindia_v1', url=PMINDIA_v1 % (l1, l2), cite=cite))
 
-
 # Pashto - English  pseudo parallel dataset for alignment
 entries.append(Entry(langs=('en', 'ps'), name='wmt20_enps_aligntask',
-      url='http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-ps.xz',
+                     url='http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-ps.xz',
                      cite=wmt20_cite, ext='tsv.xz'))
 
 # Pashto - English  mostly parallel dataset
-for name in ["GNOME.en-ps", "KDE4.en-ps", "Tatoeba.en-ps", "Ubuntu.en-ps", "bible.en-ps.clean", "ted-wmt20.en-ps", "wikimedia.en-ps"]:
+for name in ["GNOME.en-ps", "KDE4.en-ps", "Tatoeba.en-ps", "Ubuntu.en-ps", "bible.en-ps.clean",
+             "ted-wmt20.en-ps", "wikimedia.en-ps"]:
     ps = f'ps-parallel/{name}.ps'
     en = f'ps-parallel/{name}.en'
     url = 'http://data.statmt.org/wmt20/translation-task/ps-km/ps-parallel.tgz'
     name = name.replace('.en-ps', '').replace('.', '_').replace('-', '_').lower()
     entry = Entry(langs=('ps', 'en'), name=name, url=url, cite=wmt20_cite, in_paths=[ps, en],
-                         filename='wmt20-psen-parallel.tgz', in_ext='txt')
+                  filename='wmt20-psen-parallel.tgz', in_ext='txt')
     entries.append(entry)
