@@ -1,7 +1,7 @@
 # MTData
 MTData tool is written to simplify and automate the dataset collection and preparation for machine translation.
 It provides commandline and python APIs that can be either used as a standalone tool, 
-or call it from shell scripts or embed it in python application for preparing MT experiments.
+or called it from shell scripts or embedded into python apps for preparing MT experiments.
 
 This tool knows:
 - From where to download data sets: WMT tests and devs for \[2014, 2015, ... 2020], Paracrawl, 
