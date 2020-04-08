@@ -21,7 +21,7 @@ Scrapy 2.0+, python 3.7+
 
 Minimal JSON example
 ```json
-{"url": "http://opus.nlpl.eu/download.php?f=EUconst/v1/moses%s-%s.txt.zip",
+{"url": "http://opus.nlpl.eu/download.php?f=EUconst/v1/moses/%s-%s.txt.zip",
 "name": "EUconst_v1", 
 "langs": [["cs", "da"], ["cs", "de"], ["da", "de"], ...]
 }
