@@ -11,13 +11,15 @@ from mtdata import log
 from mtdata.parser import IO
 import time
 from html import unescape
+import datetime
 
+DEF_PROGRESS = 10  # seconds
 
-def parse_tmx(data, n_langs=2, log_every=30):
+def parse_tmx(data, n_langs=2, log_every=DEF_PROGRESS):
     context = ET.iterparse(data, events=['end'])
     tus = (el for event, el in context if el.tag == 'tu')
     count, skips = 0, 0
-    t = time.time()
+    st = t = time.time()
     for tu in tus:
         langs, segs = [], []
         for tuv in tu.findall('tuv'):
@@ -34,7 +36,8 @@ def parse_tmx(data, n_langs=2, log_every=30):
             skips += 1
             log.warning(f"Skipped: langs {langs} segs {len(segs)} ; Parsed count {count}")
         if log_every and (time.time() - t) > log_every:
-            log.info(f"Skipped ={skips}; Parsed: {count}")
+            elapsed = datetime.timedelta(seconds=round(time.time() - st))
+            log.info(f"{elapsed} :: Parsed: {count:,} Skipped:{skips:,}")
             t = time.time()
         tu.clear()
     log.info(f"Skipped ={skips}; parsed: {count}")
