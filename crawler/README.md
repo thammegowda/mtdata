@@ -4,7 +4,7 @@ This crawler craws the metadata of machine translation datasets.
 
 As of now these MT data indexes are supported 
 - [Opus - the Open Parallel Corpus](http://opus.nlpl.eu/)
-
+- [TILDE MODEL corpus for European langs](https://tilde-model.s3-eu-west-1.amazonaws.com/Tilde_MODEL_Corpus.html) 
 ## Requirements
 Scrapy 2.0+, python 3.7+
 
@@ -19,6 +19,11 @@ Scrapy 2.0+, python 3.7+
     # One entry per item.
     scrapy crawl opus -o opus-flat.jl  -a flat=True
 
+### Tilde Model crawl
+
+     scrapy crawl tilde -o tilde-min.jl
+
+--- 
 Minimal JSON example
 ```json
 {"url": "http://opus.nlpl.eu/download.php?f=EUconst/v1/moses/%s-%s.txt.zip",
