@@ -50,7 +50,16 @@ class Cache:
 
     def get_local_in_paths(self, entry: Entry, fix_missing=True):
         x_dir = self.get_extracted_path(entry, fix_missing=fix_missing)
-        return [x_dir / p for p in entry.in_paths]
+        local_x_path = []
+        for p in entry.in_paths:
+            if '*' in p: # glob
+                paths = list(x_dir.glob(p))
+                if not paths:
+                    raise Exception(f"{entry} with in path {p} did not find a match")
+                local_x_path.extend(paths)
+            else:
+                local_x_path.append(x_dir / p)
+        return local_x_path
 
     def download(self, entry: Entry, save_at: Path):
         save_at.parent.mkdir(parents=True, exist_ok=True)
