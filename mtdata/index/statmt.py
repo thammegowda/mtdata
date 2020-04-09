@@ -28,7 +28,7 @@ def load(entries):
         f1 = f'commoncrawl.{l1}-en.{l1}'
         f2 = f'commoncrawl.{l1}-en.en'
         entries.append(Entry(langs=(l1, l2), name=f'wmt13_commoncrawl', url=WMT13_CCRAWL,
-                             filename='wmt13_parallel_commoncrawl',
+                             filename='wmt13_parallel_commoncrawl.tgz',
                              in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
 
     # === Europarl V9 corpus
