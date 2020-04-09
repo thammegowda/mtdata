@@ -104,7 +104,7 @@ mtdata get  -l de-en -n europarl_v9 news_commentary_v14 newstest201{4,5,6,7,8,9}
 
 
 ## How to extend or contribute:
-Please help grow the datasets by adding missing+new datasets to [`index.py`](mtdata/index.py) module.
+Please help grow the datasets by adding missing+new datasets to [`index`](mtdata/index/__init__.py) module.
 Here is an example listing europarl-v9 corpus.
 ```python
 from mtdata.index import entries, Entry
@@ -130,6 +130,9 @@ for set_name, pairs in wmt_sets.items():
 # filename='wmt20dev.tgz' -- is manually set, because url has dev.gz that can be confusing
 # in_paths=[src, ref]  -- listing two sgm files inside the tarball
 ```
+Refer to [paracrawl](mtdata/index/paracrawl.py), [tilde](mtdata/index/tilde.py), or
+ [statmt](mtdata/index/statmt.py) for examples.
+ 
 If citation is available for a dataset, please include
 ```python
 cite = r"""bib tex here""
