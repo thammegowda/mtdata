@@ -112,6 +112,11 @@ for pair in ['de en', 'cs en', 'cs pl', 'es pt', 'fi en', 'lt en']:
     l1, l2 = pair.split()
     entries.append(Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2), cite=cite))
 
+EUROPARL_v10 = 'http://www.statmt.org/europarl/v9/training/europarl-v10.%s-%s.tsv.gz'
+for pair in ['cs en', 'cs pl', 'de en', 'de fr', 'es pt', 'fi en', 'lt en', 'pl en']:
+    l1, l2 = pair.split()
+    entries.append(Entry(langs=(l1, l2), name='europarl_v10', url=EUROPARL_v10 % (l1, l2), cite=cite))
+
 # === Para crawl corpus
 PARACRAWL_v3 = 'https://s3.amazonaws.com/web-language-models/paracrawl/release3/%s-%s.bicleaner07.tmx.gz'
 cite = r"""@inproceedings{espla-etal-2019-paracrawl,
