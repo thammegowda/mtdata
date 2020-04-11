@@ -26,7 +26,7 @@ Limitations (as of now):
 # from the source code on github 
 git clone https://github.com/thammegowda/mtdata 
 cd mtdata
-pip install . --editable
+pip install --editable .
 
 # from pypi ; do not do this yet, since the code is evolving faster than releases
 pip install mtdata  
