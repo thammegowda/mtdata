@@ -129,7 +129,10 @@ $ mtdata get --langs de-en --train europarl_v10 wmt13_commoncrawl news_commentar
     mtdata version: 0.1.1     
 ```
 To reproduce this dataset again in future or by others, do :
-  `mtdat get -l de-en -tr europarl_v10 wmt13_commoncrawl news_commentary_v14 -ts newstest2014_deen newstest2015_deen newstest2016_deen newstest2017_deen newstest2018_deen newstest2019_deen -o <out-dir>`
+```bash
+mtdata get -l de-en -tr europarl_v10 wmt13_commoncrawl news_commentary_v14 -ts newstest2014_deen \
+ newstest2015_deen newstest2016_deen newstest2017_deen newstest2018_deen newstest2019_deen -o <out-dir>
+```
 
 See what the above command has accomplished:
 ```bash 
