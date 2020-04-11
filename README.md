@@ -98,8 +98,7 @@ optional arguments:
 ```
 
 # Example  
-Lets see whatdatasets are available for de-en
-
+See what datasets are available for `de-en`
 ```bash
 $ mtdata list -l de-en  # see available datasets
     europarl_v9	de-en	http://www.statmt.org/europarl/v9/training/europarl-v9.de-en.tsv.gz
@@ -111,7 +110,7 @@ $ mtdata list -l de-en  # see available datasets
     newstest2015_deen	de-en	http://data.statmt.org/wmt20/translation-task/dev.tgz	dev/newstest2015-deen-src.de.sgm,dev/newstest2015-deen-ref.en.sgm
     ...[truncated]
 ```
-Get these datasets and store under dir de-en
+Get these datasets and store under dir `de-en`
 ```bash
 $ mtdata get --langs de-en --train europarl_v10 wmt13_commoncrawl news_commentary_v14 --test newstest201{4,5,6,7,8,9}_deen --out de-en
     # ...[truncated]   
@@ -129,9 +128,10 @@ $ mtdata get --langs de-en --train europarl_v10 wmt13_commoncrawl news_commentar
     mtdat get -l de-en -tr europarl_v10 wmt13_commoncrawl news_commentary_v14 -ts newstest2014_deen newstest2015_deen newstest2016_deen newstest2017_deen newstest2018_deen newstest2019_deen -o <out-dir>
     mtdata version: 0.1.1     
 ```
+To reproduce this dataset again in future or by others, do :
+  `mtdat get -l de-en -tr europarl_v10 wmt13_commoncrawl news_commentary_v14 -ts newstest2014_deen newstest2015_deen newstest2016_deen newstest2017_deen newstest2018_deen newstest2019_deen -o <out-dir>`
 
-Lets see what it did
-
+See what the above command has accomplished:
 ```bash 
 $ find  de-en -type f | sort  | xargs wc -l
     3003 de-en/tests/newstest2014_deen.de
@@ -152,8 +152,8 @@ $ find  de-en -type f | sort  | xargs wc -l
   338285 de-en/train-parts/news_commentary_v14.en
  2399123 de-en/train-parts/wmt13_commoncrawl.de
  2399123 de-en/train-parts/wmt13_commoncrawl.en
- 9131858 de-en/train.de
- 9131858 de-en/train.en
+ 4565929 de-en/train.de
+ 4565929 de-en/train.en
 ```
 
 # How to extend, modify, or contribute:

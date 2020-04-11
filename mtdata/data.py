@@ -93,7 +93,7 @@ class Dataset:
             for seg1, seg2 in zip_longest(r1, r2):
                 if seg1 is None or seg2 is None:
                     raise Exception(f'{file1} {file2} have unequal num of lines. Thats an error')
-                yield seg1, seg2
+                yield seg1.strip(), seg2.strip()
 
     def add_test_entries(self, entries):
         self.add_parts(self.tests_dir, entries)
