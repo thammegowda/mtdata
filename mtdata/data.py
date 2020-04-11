@@ -7,7 +7,11 @@ from pathlib import Path
 from mtdata import log
 from mtdata.cache import Cache
 from mtdata.index import Entry, get_entries
-from mtdata.parser import Parser
+from mtdata.parser import Parser, IO
+from typing import Optional, List
+from itertools import zip_longest
+import collections as coll
+import json
 
 
 class Dataset:
@@ -15,37 +19,101 @@ class Dataset:
     def __init__(self, dir: Path, langs, cache_dir: Path):
         self.dir = dir
         self.langs = langs
+        assert len(langs) == 2, 'Only parallel datasets are supported for now and expect two langs'
         self.cache = Cache(cache_dir)
-        self.parts_dir = dir / 'parts'
-        self.parts_dir.mkdir(parents=True, exist_ok=True)
+
+        self.train_parts_dir = dir / 'train-parts'  # will be merged later
+        self.tests_dir = dir / 'tests'  # wont be merged
+        self.train_parts_dir.mkdir(parents=True, exist_ok=True)
+        self.tests_dir.mkdir(parents=True, exist_ok=True)
 
     @classmethod
-    def prepare(cls, langs, names, out_dir, cache_dir, not_names=None):
-        log.info(f"Locating datasets for langs={langs} names={names}")
-        entries = get_entries(langs=langs, names=names, not_names=not_names)
-        log.info(f"Found {len(entries)}")
+    def resolve_entries(cls, langs, names):
+        inp_names = set(names)
+
+        assert len(inp_names) == len(names), f'{names} are not unique.'
+        entries = get_entries(langs=langs, names=inp_names)
+        out_names = set(e.name for e in entries)
+        if inp_names & out_names != inp_names | out_names:
+            missed = inp_names - out_names
+            assert missed
+            raise Exception(f'Could not find: {missed} for languages: {langs}')
+        return entries
+
+    @classmethod
+    def prepare(cls, langs, train_names: Optional[List[str]], test_names: Optional[List[str]],
+                out_dir: Path, cache_dir: Path):
+        assert langs, 'langs required'
+        assert train_names or test_names, 'Either train_names or test_names should be given'
+        # First, resolve and check if they exist before going to process them.
+        # Fail early for typos in name
+        train_entries, test_entries = None, None
+        if test_names:
+            test_entries = cls.resolve_entries(langs, test_names)
+        if train_names:
+            train_entries = cls.resolve_entries(langs, train_names)
+
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir)
-        total = 0
-        skips = 0
-        for ent in entries:
-            n_good, n_bad = dataset.add_part(ent)
-            total += n_good
-            skips += n_bad
-            log.info(f"{ent.name} : found {n_good:} lines and {n_bad:} errors;"
-                     f" total={total:,} skips={skips:,}")
+        if test_entries: # tests are smaller so quicker; no merging needed
+            dataset.add_test_entries(test_entries)
+
+        if train_entries: # this might take some time
+            dataset.add_train_entries(train_entries)
         return dataset
 
-    def add_part(self, entry: Entry):
+    def add_train_entries(self, entries):
+        self.add_parts(self.train_parts_dir, entries)
+        l1, l2 = self.langs
+        # merge
+        l1_files = [self.train_parts_dir / f'{e.name}.{l1}' for e in entries]
+        l2_files = [self.train_parts_dir / f'{e.name}.{l2}' for e in entries]
+        log.info(f"Going to merge {len(l1_files)} files as one train file")
+        counts = coll.defaultdict(int)
+        of1 = self.dir / f'train.{l1}'
+        of2 = self.dir / f'train.{l2}'
+        of3 = self.dir / f'train.meta.gz'
+        with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
+            for if1, if2 in zip(l1_files, l2_files):
+                name = if1.name.rstrip(f'.{l1}')
+                for seg1, seg2 in self.read_parallel(if1, if2):
+                    w1.write(seg1 + '\n')
+                    w2.write(seg2 + '\n')
+                    w3.write(name + '\n')
+                    counts[name] += 1
+        total = sum(counts.values())
+        counts = {'total': total, 'parts': counts}
+        counts_msg = json.dumps(counts, indent=2)
+        log.info('Train stats:\n' + counts_msg)
+        IO.write_lines(self.dir /'train.stats.json', counts_msg)
+        return counts
+
+    @classmethod
+    def read_parallel(cls, file1: Path, file2: Path):
+        with IO.reader(file1) as r1, IO.reader(file2) as r2:
+            for seg1, seg2 in zip_longest(r1, r2):
+                if seg1 is None or seg2 is None:
+                    raise Exception(f'{file1} {file2} have unequal num of lines. Thats an error')
+                yield seg1, seg2
+
+    def add_test_entries(self, entries):
+        self.add_parts(self.tests_dir, entries)
+
+    def add_parts(self, dir_path, entries):
+        for ent in entries:
+            n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent)
+            log.info(f"{ent.name} : found {n_good:} segments and {n_bad:} errors")
+
+    def add_part(self, dir_path: Path, entry: Entry):
         path = self.cache.get_entry(entry)
         swap = entry.is_swap(self.langs)
         parser = Parser(path, langs=self.langs, ext=entry.in_ext or None)
-        l1 = (self.parts_dir / entry.name).with_suffix(f'.{self.langs[0]}')
-        l2 = (self.parts_dir / entry.name).with_suffix(f'.{self.langs[1]}')
+        l1 = (dir_path / entry.name).with_suffix(f'.{self.langs[0]}')
+        l2 = (dir_path / entry.name).with_suffix(f'.{self.langs[1]}')
         mode = dict(mode='w', encoding='utf-8', errors='ignore')
         with l1.open(**mode) as f1, l2.open(**mode) as f2:
             count, skips = 0, 0
             for rec in parser.read_segs():
-                rec = rec[:2] # get the first two recs
+                rec = rec[:2]  # get the first two recs
                 if len(rec) != 2:
                     skips += 1
                     continue
