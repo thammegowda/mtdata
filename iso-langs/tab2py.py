@@ -45,8 +45,8 @@ def myprint(data):
     return res
 
 if __name__ == '__main__':
-    codes = Path('iso-639-3/iso-639-3.tsv')
-    names = Path('iso-639-3/iso-639-3-names.tsv')
+    codes = Path('iso-639-3.tsv')
+    names = Path('iso-639-3-names.tsv')
     res = parse(codes, names)
     res = myprint(res).rstrip('\n')
 
