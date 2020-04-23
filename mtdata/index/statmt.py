@@ -150,7 +150,6 @@ def load(entries):
         'newsdev2020': [('iu', 'en'), ('en', 'ta'), ('ta', 'en'), ('pl', 'en'), ('en', 'iu'),
                         ('en', 'ja'), ('ja', 'en'), ('en', 'pl')]
     }
-
     for set_name, pairs in wmt_sets.items():
         for l1, l2 in pairs:
             src = f'dev/{set_name}-{l1}{l2}-src.{l1}.sgm'
@@ -159,6 +158,14 @@ def load(entries):
             entries.append(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
                                  url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
                                  cite=cite))
+    for l1, l2 in [('ps', 'en'), ('km', 'en')]:
+        for set_name in ['wikipedia.dev', 'wikipedia.devtest']:
+            src = f'dev/{set_name}.{l1}-{l2}.{l1}'
+            ref = f'dev/{set_name}.{l1}-{l2}.{l2}'
+            name = f'{set_name.replace(".", "_")}_{l1}{l2}'
+            entries.append(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
+                                 url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
+                                 in_ext='txt', cite=cite))
 
     # ==== TED Talks 2.0 ar-en
     entries.append(Entry(('en', 'ar'), 'tedtalks_v2_clean', ext='tsv.xz',
