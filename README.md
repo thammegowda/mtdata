@@ -124,14 +124,12 @@ $ mtdata get --langs de-en --train europarl_v10 wmt13_commoncrawl news_commentar
       }
     }
     INFO:root:Dataset is ready at de-en
-    INFO:root:mtdata args for reproducing this dataset:
-    mtdat get -l de-en -tr europarl_v10 wmt13_commoncrawl news_commentary_v14 -ts newstest2014_deen newstest2015_deen newstest2016_deen newstest2017_deen newstest2018_deen newstest2019_deen -o <out-dir>
-    mtdata version: 0.1.1     
 ```
-To reproduce this dataset again in future or by others, do :
+To reproduce this dataset again in the future or by others, please refer to `<out-dir>>/mtdata.signature.txt`:
 ```bash
-mtdata get -l de-en -tr europarl_v10 wmt13_commoncrawl news_commentary_v14 -ts newstest2014_deen \
- newstest2015_deen newstest2016_deen newstest2017_deen newstest2018_deen newstest2019_deen -o <out-dir>
+$ cat de-en/mtdata.signature.txt
+mtdat get -l de-en -tr europarl_v10 wmt13_commoncrawl news_commentary_v14 -ts newstest2014_deen newstest2015_deen newstest2016_deen newstest2017_deen newstest2018_deen newstest2019_deen -o <out-dir>
+mtdata version 0.1.1
 ```
 
 See what the above command has accomplished:

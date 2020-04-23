@@ -7,6 +7,7 @@ from pathlib import Path
 import mtdata
 from mtdata import log
 from mtdata.data import Dataset, get_entries
+from mtdata.parser import IO
 
 
 def listing(langs, names, not_names=None, full=False, cache_dir=None):
@@ -84,9 +85,11 @@ def main():
         cli_sig = f'-l {"-".join(args.langs)}'
         cli_sig += f' -tr {" ".join(args.train_names)}' if args.train_names else ''
         cli_sig += f' -ts {" ".join(args.test_names)}' if args.test_names else ''
+        sig =  f'mtdat get {cli_sig} -o <out-dir>\nmtdata version {mtdata.__version__}'
         log.info(f'Dataset is ready at {dataset.dir}')
-        log.info(f'mtdata args for reproducing this dataset:\nmtdat get {cli_sig} -o <out-dir>\n'
-                 f'mtdata version: {mtdata.__version__}')
+        log.info(f'mtdata args for reproducing this dataset:\n {sig}')
+        with IO.writer(args.out / 'mtdata.signature.txt', append=True) as w:
+            w.write(sig)
 
 if __name__ == '__main__':
     main()
