@@ -86,10 +86,10 @@ def load(entries):
 
     # === Digital Corpus of European Parliament
     entries.append(Entry(langs=('lv', 'en'), name='wmt17_dcep_v1',
-                         in_paths=['dcep.en-lv/dcep.lv', f'dcep.en-lv/dcep.en'], cite=cite,
+                         in_paths=['*/*.lv', f'*/*.en'], cite=cite,
                          url='http://data.statmt.org/wmt17/translation-task/dcep.lv-en.v1.tgz'))
     entries.append(Entry(langs=('lv', 'en'), name='wmt17_books_v1',
-                         in_paths=['farewell/farewell.lv', f'farewell/farewell.en'], cite=cite,
+                         in_paths=['*/*.lv', f'*/*.en'], cite=cite,
                          url='http://data.statmt.org/wmt17/translation-task/books.lv-en.v1.tgz'))
 
     # === News Commentary v14
