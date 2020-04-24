@@ -72,6 +72,7 @@ def get_entries(langs=None, names=None, not_names=None):
         select = [e for e in select if e.name not in not_names]
     return select
 
+
 def load_all():
     from mtdata.index import statmt, paracrawl, tilde, literature
     statmt.load(INDEX)
