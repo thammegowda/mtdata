@@ -4,6 +4,7 @@
 # Created: 4/8/20
 from mtdata.entry import Entry
 
+
 def load(entries):
     WMT13_CCRAWL = "http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz"
     WMT14_CITE = """@proceedings{ws-2014-statistical,
@@ -44,7 +45,8 @@ def load(entries):
     }"""
     for pair in ['de en', 'cs en', 'cs pl', 'es pt', 'fi en', 'lt en']:
         l1, l2 = pair.split()
-        entries.append(Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2), cite=cite))
+        entries.append(
+            Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2), cite=cite))
 
     # === Europarl V7 corpus
     EUROPARL_v7 = 'http://www.statmt.org/europarl/v7/%s-%s.tgz'
@@ -83,13 +85,12 @@ def load(entries):
                              url=EUROPARL_v7 % (l1, l2), cite=cite))
 
     # === Digital Corpus of European Parliament
-    DCEP = 'http://data.statmt.org/wmt17/translation-task/dcep.%s-%s.v1.tgz'
-    for pair in ['lv en']:
-        l1, l2 = pair.split()
-        src = f'dcep.{l1}'
-        ref = f'dcep.{l2}'
-        entries.append(Entry(langs=(l1, l2), name='wmt17_dcep', in_paths=[src, ref],
-                             url=DCEP % (l1, l2), cite=cite))
+    entries.append(Entry(langs=('lv', 'en'), name='wmt17_dcep_v1',
+                         in_paths=['dcep.en-lv/dcep.lv', f'dcep.en-lv/dcep.en'], cite=cite,
+                         url='http://data.statmt.org/wmt17/translation-task/dcep.lv-en.v1.tgz'))
+    entries.append(Entry(langs=('lv', 'en'), name='wmt17_books_v1',
+                         in_paths=['farewell/farewell.lv', f'farewell/farewell.en'], cite=cite,
+                         url='http://data.statmt.org/wmt17/translation-task/books.lv-en.v1.tgz'))
 
     # === News Commentary v14
     NEWSCOM_v14 = "http://data.statmt.org/news-commentary/v14/training/news-commentary-v14.%s-%s.tsv.gz"
@@ -251,7 +252,8 @@ def load(entries):
                  "pa en", "ta en", "te en", "ur en"]:
         l1, l2 = pair.split()
         # Note: listed as xx-en in URL but actually en-xx in the tsv; and its not compressed!
-        entries.append(Entry(langs=(l2, l1), name='pmindia_v1', url=PMINDIA_v1 % (l1, l2), cite=cite))
+        entries.append(
+            Entry(langs=(l2, l1), name='pmindia_v1', url=PMINDIA_v1 % (l1, l2), cite=cite))
 
     # Pashto - English  pseudo parallel dataset for alignment
     entries.append(Entry(langs=('en', 'ps'), name='wmt20_enps_aligntask',
