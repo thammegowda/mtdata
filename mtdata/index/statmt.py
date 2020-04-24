@@ -5,6 +5,7 @@
 from mtdata.index import Entry, Index
 import itertools
 
+
 def load(index: Index):
     WMT13_CCRAWL = "http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz"
     WMT14_CITE = """@proceedings{ws-2014-statistical,
@@ -65,7 +66,52 @@ def load(index: Index):
     }"""
     for pair in ['de en', 'cs en', 'cs pl', 'es pt', 'fi en', 'lt en']:
         l1, l2 = pair.split()
-        index.add_entry(Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2), cite=cite))
+        index.add_entry(
+            Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2), cite=cite))
+
+    # === Europarl V7 corpus
+    EUROPARL_v7 = 'http://www.statmt.org/europarl/v7/%s-%s.tgz'
+    cite = r"""@inproceedings{bojar-etal-2017-findings,
+      title = "Findings of the 2017 Conference on Machine Translation ({WMT}17)",
+      author = "Bojar, Ond{\v{r}}ej  and
+        Chatterjee, Rajen  and
+        Federmann, Christian  and
+        Graham, Yvette  and
+        Haddow, Barry  and
+        Huang, Shujian  and
+        Huck, Matthias  and
+        Koehn, Philipp  and
+        Liu, Qun  and
+        Logacheva, Varvara  and
+        Monz, Christof  and
+        Negri, Matteo  and
+        Post, Matt  and
+        Rubino, Raphael  and
+        Specia, Lucia  and
+        Turchi, Marco",
+      booktitle = "Proceedings of the Second Conference on Machine Translation",
+      month = sep,
+      year = "2017",
+      address = "Copenhagen, Denmark",
+      publisher = "Association for Computational Linguistics",
+      url = "https://www.aclweb.org/anthology/W17-4717",
+      doi = "10.18653/v1/W17-4717",
+      pages = "169--214",
+    }"""
+    for pair in ['lv en']:
+        l1, l2 = pair.split()
+        src = f'europarl-v7.{l1}-{l2}.{l1}'
+        ref = f'europarl-v7.{l1}-{l2}.{l2}'
+        index.add_entry(Entry(langs=(l1, l2), name='europarl_v7', in_paths=[src, ref],
+                              url=EUROPARL_v7 % (l1, l2), cite=cite))
+
+    # === Digital Corpus of European Parliament
+    index.add_entry(Entry(langs=('lv', 'en'), name='wmt17_dcep_v1',
+                          in_paths=['*/*.lv', f'*/*.en'], cite=cite,
+                          url='http://data.statmt.org/wmt17/translation-task/dcep.lv-en.v1.tgz'))
+    index.add_entry(Entry(langs=('lv', 'en'), name='wmt17_books_v1',
+                          in_paths=['*/*.lv', f'*/*.en'], cite=cite,
+                          url='http://data.statmt.org/wmt17/translation-task/books.lv-en.v1.tgz'))
 
     # === News Commentary v14
     NEWSCOM_v14 = "http://data.statmt.org/news-commentary/v14/training/news-commentary-v14.%s-%s.tsv.gz"
@@ -99,8 +145,9 @@ def load(index: Index):
                  'id zh', 'it kk', 'it nl', 'it pt', 'it ru', 'it zh', 'ja ru', 'ja zh', 'kk nl',
                  'kk pt', 'kk ru', 'kk zh', 'nl pt', 'nl ru', 'nl zh', 'pt ru', 'pt zh', 'ru zh']:
         l1, l2 = pair.split()
-        index.add_entry(Entry(langs=(l1, l2), name='news_commentary_v14', url=NEWSCOM_v14 % (l1, l2),
-                              cite=cite))
+        index.add_entry(
+            Entry(langs=(l1, l2), name='news_commentary_v14', url=NEWSCOM_v14 % (l1, l2),
+                  cite=cite))
 
     # ===== Wiki Titles V1
     WIKI_TITLES_v1 = 'http://data.statmt.org/wikititles/v1/wikititles-v1.%s-%s.tsv.gz'
@@ -244,7 +291,8 @@ def load(index: Index):
                  "pa en", "ta en", "te en", "ur en"]:
         l1, l2 = pair.split()
         # Note: listed as xx-en in URL but actually en-xx in the tsv; and its not compressed!
-        index.add_entry(Entry(langs=(l2, l1), name='pmindia_v1', url=PMINDIA_v1 % (l1, l2), cite=cite))
+        index.add_entry(
+            Entry(langs=(l2, l1), name='pmindia_v1', url=PMINDIA_v1 % (l1, l2), cite=cite))
 
     # Pashto - English  pseudo parallel dataset for alignment
     index.add_entry(Entry(langs=('en', 'ps'), name='wmt20_enps_aligntask',
