@@ -2,9 +2,10 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
-from mtdata.entry import Entry
+from mtdata.index import Entry, Index
+import itertools
 
-def load(entries):
+def load(index: Index):
     WMT13_CCRAWL = "http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz"
     WMT14_CITE = """@proceedings{ws-2014-statistical,
         title = "Proceedings of the Ninth Workshop on Statistical Machine Translation",
@@ -27,9 +28,29 @@ def load(entries):
         l2 = 'en'
         f1 = f'commoncrawl.{l1}-en.{l1}'
         f2 = f'commoncrawl.{l1}-en.en'
-        entries.append(Entry(langs=(l1, l2), name=f'wmt13_commoncrawl', url=WMT13_CCRAWL,
-                             filename='wmt13_parallel_commoncrawl.tgz',
-                             in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
+        index.add_entry(Entry(langs=(l1, l2), name=f'wmt13_commoncrawl', url=WMT13_CCRAWL,
+                              filename='wmt13_parallel_commoncrawl.tgz',
+                              in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
+
+    # === WMT 13 release of europarl_v7 ===
+    for l1 in ['cs', 'de', 'fr', 'es']:
+        l2 = 'en'
+        f1 = f'training/europarl-v7.{l1}-{l2}.{l1}'
+        f2 = f'training/europarl-v7.{l1}-{l2}.{l2}'
+        index.add_entry(Entry(langs=(l1, l2), name=f'wmt13_europarl_v7',
+                              url="http://www.statmt.org/wmt13/training-parallel-europarl-v7.tgz",
+                              filename="wmt13_europarl_v7.tgz",
+                              in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
+
+    # ==== WMT 18  news commentary v13 ===
+    for l1 in ['cs', 'de', 'ru', 'zh']:
+        l2 = 'en'
+        f1 = f'training-parallel-nc-v13/news-commentary-v13.{l1}-{l2}.{l1}'
+        f2 = f'training-parallel-nc-v13/news-commentary-v13.{l1}-{l2}.{l2}'
+        index.add_entry(Entry(langs=(l1, l2), name=f'wmt18_news_commentary_v13',
+                              url="http://data.statmt.org/wmt18/translation-task/training-parallel-nc-v13.tgz",
+                              filename="wmt18_news_commentary_v13.tgz",
+                              in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
 
     # === Europarl V9 corpus
     EUROPARL_v9 = 'http://www.statmt.org/europarl/v9/training/europarl-v9.%s-%s.tsv.gz'
@@ -44,7 +65,7 @@ def load(entries):
     }"""
     for pair in ['de en', 'cs en', 'cs pl', 'es pt', 'fi en', 'lt en']:
         l1, l2 = pair.split()
-        entries.append(Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2), cite=cite))
+        index.add_entry(Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2), cite=cite))
 
     # === News Commentary v14
     NEWSCOM_v14 = "http://data.statmt.org/news-commentary/v14/training/news-commentary-v14.%s-%s.tsv.gz"
@@ -66,7 +87,7 @@ def load(entries):
         doi = "10.18653/v1/W18-6401",
         pages = "272--303"
     }"""
-    for pair in ['en kk', 'ar cs', 'ar de', 'ar en', 'ar es', 'ar fr', 'ar hi', 'ar id', 'ar it',
+    for pair in ['ar cs', 'ar de', 'ar en', 'ar es', 'ar fr', 'ar hi', 'ar id', 'ar it',
                  'ar ja', 'ar kk', 'ar nl', 'ar pt', 'ar ru', 'ar zh', 'cs de', 'cs en', 'cs es',
                  'cs fr', 'cs hi', 'cs id', 'cs it', 'cs ja', 'cs kk', 'cs nl', 'cs pt', 'cs ru',
                  'cs zh', 'de en', 'de es', 'de fr', 'de hi', 'de id', 'de it', 'de ja', 'de kk',
@@ -78,8 +99,8 @@ def load(entries):
                  'id zh', 'it kk', 'it nl', 'it pt', 'it ru', 'it zh', 'ja ru', 'ja zh', 'kk nl',
                  'kk pt', 'kk ru', 'kk zh', 'nl pt', 'nl ru', 'nl zh', 'pt ru', 'pt zh', 'ru zh']:
         l1, l2 = pair.split()
-        entries.append(Entry(langs=(l1, l2), name='news_commentary_v14', url=NEWSCOM_v14 % (l1, l2),
-                             cite=cite))
+        index.add_entry(Entry(langs=(l1, l2), name='news_commentary_v14', url=NEWSCOM_v14 % (l1, l2),
+                              cite=cite))
 
     # ===== Wiki Titles V1
     WIKI_TITLES_v1 = 'http://data.statmt.org/wikititles/v1/wikititles-v1.%s-%s.tsv.gz'
@@ -112,16 +133,16 @@ def load(entries):
     for pair in ['cs en', 'cs pl', 'de en', 'es pt', 'fi en', 'gu en', 'hi ne', 'kk en', 'lt en',
                  'ru en', 'zh en']:
         l1, l2 = pair.split()
-        entries.append(Entry(langs=(l1, l2), name='wiki_titles_v1', url=WIKI_TITLES_v1 % (l1, l2),
-                             cite=cite))
+        index.add_entry(Entry(langs=(l1, l2), name='wiki_titles_v1', url=WIKI_TITLES_v1 % (l1, l2),
+                              cite=cite))
 
     # ===== Wiki Titles V2
     WIKI_TITLES_v2 = 'http://data.statmt.org/wikititles/v2/wikititles-v2.%s-%s.tsv.gz'
     for pair in ['ca es', 'cs en', 'de en', 'de fr', 'es pt', 'iu en', 'ja en', 'pl en', 'ps en',
                  'ru en', 'ta en', 'zh en']:
         l1, l2 = pair.split()
-        entries.append(Entry(langs=(l1, l2), name='wiki_titles_v2', url=WIKI_TITLES_v2 % (l1, l2),
-                             cite=cite))
+        index.add_entry(Entry(langs=(l1, l2), name='wiki_titles_v2', url=WIKI_TITLES_v2 % (l1, l2),
+                              cite=cite))
 
     # ==== WMT  Dev and Tests
     wmt_sets = {
@@ -155,28 +176,45 @@ def load(entries):
             src = f'dev/{set_name}-{l1}{l2}-src.{l1}.sgm'
             ref = f'dev/{set_name}-{l1}{l2}-ref.{l2}.sgm'
             name = f'{set_name}_{l1}{l2}'
-            entries.append(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
-                                 url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
-                                 cite=cite))
+            index.add_entry(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
+                                  url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
+                                  cite=cite))
+    # Multi parallel
+    wmt_sets = {
+        '2009': ['en', 'cs', 'de', 'es', 'fr'],
+        '2010': ['en', 'cs', 'de', 'es', 'fr'],
+        '2011': ['en', 'cs', 'de', 'es', 'fr'],
+        '2012': ['en', 'cs', 'de', 'es', 'fr', 'ru'],
+        '2013': ['en', 'cs', 'de', 'es', 'fr', 'ru'],
+    }
+    for year, langs in wmt_sets.items():
+        for l1, l2 in itertools.combinations(langs, 2):
+            name = f'newstest{year}'
+            f1 = f'dev/{name}.{l1}'
+            f2 = f'dev/{name}.{l2}'
+            index.add_entry(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[f1, f2],
+                                  url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
+                                  cite=cite))
+
     for l1, l2 in [('ps', 'en'), ('km', 'en')]:
         for set_name in ['wikipedia.dev', 'wikipedia.devtest']:
             src = f'dev/{set_name}.{l1}-{l2}.{l1}'
             ref = f'dev/{set_name}.{l1}-{l2}.{l2}'
             name = f'{set_name.replace(".", "_")}_{l1}{l2}'
-            entries.append(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
-                                 url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
-                                 in_ext='txt', cite=cite))
+            index.add_entry(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
+                                  url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
+                                  in_ext='txt', cite=cite))
 
     # ==== TED Talks 2.0 ar-en
-    entries.append(Entry(('en', 'ar'), 'tedtalks_v2_clean', ext='tsv.xz',
-                         url='http://data.statmt.org/ted-talks/en-ar.v2.aligned.clean.xz'))
+    index.add_entry(Entry(('en', 'ar'), 'tedtalks_v2_clean', ext='tsv.xz',
+                          url='http://data.statmt.org/ted-talks/en-ar.v2.aligned.clean.xz'))
 
     # ==== Europarl v10
     EP_v10 = "http://www.statmt.org/europarl/v10/training/europarl-v10.%s-%s.tsv.gz"
     wmt20_cite = None  # TODO: update
     for pair in ['cs en', 'cs pl', 'de en', 'de fr', 'es pt', 'fi en', 'fr en', 'lt en', 'pl en']:
         l1, l2 = pair.split()
-        entries.append(
+        index.add_entry(
             Entry(langs=(l1, l2), name='europarl_v10', url=EP_v10 % (l1, l2), cite=wmt20_cite))
 
     # ====  WikiMatrix
@@ -184,7 +222,7 @@ def load(entries):
     for pair in ["cs en", "de en", "de fr", "en ja", "en pl", "en ru", "en ta", "en te", "en zh",
                  "hi ta"]:
         l1, l2 = pair.split()
-        entries.append(
+        index.add_entry(
             Entry(langs=(l1, l2), name='wiki_matrix_v1', url=WIKI_MATRIX_v1 % (l1, l2),
                   cite=wmt20_cite))
 
@@ -206,12 +244,12 @@ def load(entries):
                  "pa en", "ta en", "te en", "ur en"]:
         l1, l2 = pair.split()
         # Note: listed as xx-en in URL but actually en-xx in the tsv; and its not compressed!
-        entries.append(Entry(langs=(l2, l1), name='pmindia_v1', url=PMINDIA_v1 % (l1, l2), cite=cite))
+        index.add_entry(Entry(langs=(l2, l1), name='pmindia_v1', url=PMINDIA_v1 % (l1, l2), cite=cite))
 
     # Pashto - English  pseudo parallel dataset for alignment
-    entries.append(Entry(langs=('en', 'ps'), name='wmt20_enps_aligntask',
-                         url='http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-ps.xz',
-                         cite=wmt20_cite, ext='tsv.xz'))
+    index.add_entry(Entry(langs=('en', 'ps'), name='wmt20_enps_aligntask',
+                          url='http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-ps.xz',
+                          cite=wmt20_cite, ext='tsv.xz'))
 
     # Pashto - English  mostly parallel dataset
     for name in ["GNOME.en-ps", "KDE4.en-ps", "Tatoeba.en-ps", "Ubuntu.en-ps", "bible.en-ps.clean",
@@ -222,4 +260,4 @@ def load(entries):
         name = name.replace('.en-ps', '').replace('.', '_').replace('-', '_').lower()
         entry = Entry(langs=('ps', 'en'), name=name, url=url, cite=wmt20_cite, in_paths=[ps, en],
                       filename='wmt20-psen-parallel.tgz', in_ext='txt')
-        entries.append(entry)
+        index.add_entry(entry)

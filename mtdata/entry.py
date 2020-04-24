@@ -3,7 +3,7 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
 
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Mapping
 from dataclasses import dataclass
 from mtdata.parser import detect_extension
 
@@ -43,3 +43,26 @@ class Entry:
         msg = f'{self.name}{delim}{"-".join(self.langs)}{delim}{self.url}{delim}' \
               f'{",".join(self.in_paths or [])}'
         return msg
+
+
+@dataclass
+class Experiment:
+
+    name: str            # lang1->lang2
+    train: List[Entry]   # training should be merged from all these
+    tests: List[Entry]   # multiple tests; one of them can be validation set
+
+    def __post_init__(self):
+        for t in self.tests:
+            assert t
+        for t in self.train:
+            assert t
+
+@dataclass
+class Paper:  # or Article
+
+    name: str   # author1-etal-year
+    title: str   # title
+    url: str    # Paper url to be sure
+    cite: str    # bibtex would be nice to display
+    experiments: List[Experiment]
