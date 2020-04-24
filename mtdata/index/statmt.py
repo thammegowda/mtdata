@@ -46,6 +46,51 @@ def load(entries):
         l1, l2 = pair.split()
         entries.append(Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2), cite=cite))
 
+    # === Europarl V7 corpus
+    EUROPARL_v7 = 'http://www.statmt.org/europarl/v7/%s-%s.tgz'
+    cite = r"""@inproceedings{bojar-etal-2017-findings,
+      title = "Findings of the 2017 Conference on Machine Translation ({WMT}17)",
+      author = "Bojar, Ond{\v{r}}ej  and
+        Chatterjee, Rajen  and
+        Federmann, Christian  and
+        Graham, Yvette  and
+        Haddow, Barry  and
+        Huang, Shujian  and
+        Huck, Matthias  and
+        Koehn, Philipp  and
+        Liu, Qun  and
+        Logacheva, Varvara  and
+        Monz, Christof  and
+        Negri, Matteo  and
+        Post, Matt  and
+        Rubino, Raphael  and
+        Specia, Lucia  and
+        Turchi, Marco",
+      booktitle = "Proceedings of the Second Conference on Machine Translation",
+      month = sep,
+      year = "2017",
+      address = "Copenhagen, Denmark",
+      publisher = "Association for Computational Linguistics",
+      url = "https://www.aclweb.org/anthology/W17-4717",
+      doi = "10.18653/v1/W17-4717",
+      pages = "169--214",
+    }"""
+    for pair in ['lv en']:
+        l1, l2 = pair.split()
+        src = f'europarl-v7.{l1}-{l2}.{l1}'
+        ref = f'europarl-v7.{l1}-{l2}.{l2}'
+        entries.append(Entry(langs=(l1, l2), name='europarl_v7', in_paths=[src, ref],
+                             url=EUROPARL_v7 % (l1, l2), cite=cite))
+
+    # === Digital Corpus of European Parliament
+    DCEP = 'http://data.statmt.org/wmt17/translation-task/dcep.%s-%s.v1.tgz'
+    for pair in ['lv en']:
+        l1, l2 = pair.split()
+        src = f'dcep.{l1}'
+        ref = f'dcep.{l2}'
+        entries.append(Entry(langs=(l1, l2), name='dcep', in_paths=[src, ref],
+                             url=DCEP % (l1, l2), cite=cite))
+
     # === News Commentary v14
     NEWSCOM_v14 = "http://data.statmt.org/news-commentary/v14/training/news-commentary-v14.%s-%s.tsv.gz"
     cite = r"""@inproceedings{bojar-etal-2018-findings,
