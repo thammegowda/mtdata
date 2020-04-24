@@ -88,7 +88,7 @@ def load(entries):
         l1, l2 = pair.split()
         src = f'dcep.{l1}'
         ref = f'dcep.{l2}'
-        entries.append(Entry(langs=(l1, l2), name='dcep', in_paths=[src, ref],
+        entries.append(Entry(langs=(l1, l2), name='wmt17_dcep', in_paths=[src, ref],
                              url=DCEP % (l1, l2), cite=cite))
 
     # === News Commentary v14
