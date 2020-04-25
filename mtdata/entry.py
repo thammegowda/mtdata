@@ -65,7 +65,7 @@ class Experiment:
         tests = [INDEX.get_entry(name, langs) for name in tests]
         return cls(langs, train=train, tests=tests)
 
-@dataclass
+@dataclass(eq=False)  #  see for hash related issues: https://stackoverflow.com/a/52390734/1506477
 class Paper:  # or Article
 
     name: str   # author1-etal-year
