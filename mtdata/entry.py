@@ -3,10 +3,9 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
 
-from typing import Tuple, List, Optional
-from dataclasses import dataclass
+from typing import Tuple, List, Optional, Mapping, Set
+from dataclasses import dataclass, field
 from mtdata.parser import detect_extension
-
 
 @dataclass
 class Entry:
@@ -43,3 +42,41 @@ class Entry:
         msg = f'{self.name}{delim}{"-".join(self.langs)}{delim}{self.url}{delim}' \
               f'{",".join(self.in_paths or [])}'
         return msg
+
+
+@dataclass
+class Experiment:
+
+    langs: Tuple[str, str]  # (lang1 , lang2)  lang1 -> lang2
+    train: List[Entry]      # training should be merged from all these
+    tests: List[Entry]      # multiple tests; one of them can be validation set
+    papers: Set['Paper'] = field(default_factory=set)
+
+    def __post_init__(self):
+        for t in self.tests:
+            assert t
+        for t in self.train:
+            assert t
+
+    @classmethod
+    def make(cls, langs: Tuple[str, str], train: List[str], tests: List[str]):
+        from mtdata.index import INDEX
+        train = [INDEX.get_entry(name, langs) for name in train]
+        tests = [INDEX.get_entry(name, langs) for name in tests]
+        return cls(langs, train=train, tests=tests)
+
+@dataclass
+class Paper:  # or Article
+
+    name: str   # author1-etal-year
+    title: str   # title
+    url: str    # Paper url to be sure
+    cite: str    # bibtex would be nice to display
+    experiments: List[Experiment]
+
+    langs: Set[Tuple[str, str]] = None
+
+    def __post_init__(self):
+        self.langs = self.langs or set(exp.langs for exp in self.experiments)
+        for exp in self.experiments:
+            exp.papers.add(self)

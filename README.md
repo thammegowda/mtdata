@@ -161,15 +161,15 @@ $ find  de-en -type f | sort  | xargs wc -l
 Please help grow the datasets by adding missing+new datasets to [`index`](mtdata/index/__init__.py) module.
 Here is an example listing europarl-v9 corpus.
 ```python
-from mtdata.index import entries, Entry
+from mtdata.index import INDEX as index, Entry
 EUROPARL_v9 = 'http://www.statmt.org/europarl/v9/training/europarl-v9.%s-%s.tsv.gz'
 for pair in ['de en', 'cs en', 'cs pl', 'es pt', 'fi en', 'lt en']:
     l1, l2 = pair.split()
-    entries.append(Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2)))
+    index.add_entry(Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2)))
 ```
 If a datset is inside an archive such as `zip` or `tar`
 ```python
-from mtdata.index import entries, Entry
+from mtdata.index import INDEX as index, Entry
 wmt_sets = {
     'newstest2014': [('de', 'en'), ('cs', 'en'), ('fr', 'en'), ('ru', 'en'), ('hi', 'en')],
     'newsdev2015': [('fi', 'en'), ('en', 'fi')]
@@ -179,10 +179,11 @@ for set_name, pairs in wmt_sets.items():
         src = f'dev/{set_name}-{l1}{l2}-src.{l1}.sgm'
         ref = f'dev/{set_name}-{l1}{l2}-ref.{l2}.sgm'
         name = f'{set_name}_{l1}{l2}'
-        entries.append(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
+        index.add_entry(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
                              url='http://data.statmt.org/wmt20/translation-task/dev.tgz'))
 # filename='wmt20dev.tgz' -- is manually set, because url has dev.gz that can be confusing
 # in_paths=[src, ref]  -- listing two sgm files inside the tarball
+# in_ext='sgm' will be auto detected fropm path. set in_ext='txt' to explicitly set format as plain text 
 ```
 Refer to [paracrawl](mtdata/index/paracrawl.py), [tilde](mtdata/index/tilde.py), or
  [statmt](mtdata/index/statmt.py) for examples.
