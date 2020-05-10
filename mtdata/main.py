@@ -74,7 +74,7 @@ def parse_args():
 
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
     list_p.add_argument('-l', '--langs', metavar='L1-L2', type=LangPair,
-                        help='Language pairs; e.g.: de-en')
+                        help='Language pairs; e.g.: deu-eng')
     list_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
                         help='Name of dataset set; eg europarl_v9.')
     list_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
@@ -84,7 +84,7 @@ def parse_args():
 
     get_p = sub_ps.add_parser('get', formatter_class=MyFormatter)
     get_p.add_argument('-l', '--langs', metavar='L1-L2', type=LangPair,
-                       help='Language pairs; e.g.: de-en',
+                       help='Language pairs; e.g.: deu-eng',
                        required=True)
     get_p.add_argument('-tr', '--train', metavar='NAME', dest='train_names', nargs='*',
                        help='''R|Names of datasets separated by space, to be used for *training*.

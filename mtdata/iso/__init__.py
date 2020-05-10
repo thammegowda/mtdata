@@ -27,6 +27,6 @@ def iso3_code(lang: str, fail_error=False, default=None) -> str:
         return name_to_code(lang)
     if fail_error:
         raise Exception(f"Unable to find ISO 639-3 code for '{lang}'. "
-                        f"Run\npython -m mtdata.iso.iso639_3 -l | grep -i <name>\n"
-                        f"to know the code ")
+                        f"Please run\npython -m mtdata.iso | grep -i <name>\n"
+                        f"to know the 3 letter ISO code for the language.")
     return default
