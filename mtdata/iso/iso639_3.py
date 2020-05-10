@@ -1,9 +1,10 @@
-
+#!/usr/bin/env python
 # ISO 639-3 codes  retrieved from https://iso639-3.sil.org/code_tables/download_tables
 #
 # Prepared as python module by Thamme Gowda for mtdata https://github.com/thammegowda/mtdata
+# Using English name only; sorry, French!
 
-data='''aaa	Ghotuo	
+data = '''aaa	Ghotuo	
 aab	Alumu-Tesu	
 aac	Ari	
 aad	Amal	
@@ -7871,9 +7872,83 @@ zyp	Zyphe Chin
 zza	Zaza	Dimili,Kirdki,Kirmanjki (macrolanguage),Dimli (macrolanguage),Zazaki
 zzj	Zuojiang Zhuang	'''
 
-codes = dict() 
+CODES = dict()  # code_to_name
+NAMES = dict()  # name_to_code
+
 for line in data.splitlines():
     code, ref_name, aliases = line.split('\t')
-    aliases = set(aliases.split('.')) if aliases else set()
-    codes[code] = (ref_name, aliases)
+    ref_name = ref_name.replace("(macrolanguage)", "").strip()
+    ref_name = ref_name.replace("(individual language)", "(individual)").strip()
+    ref_name = ref_name.title()
+    CODES[code] = ref_name
+    assert ref_name not in NAMES
+    NAMES[ref_name] = code
+    if aliases:
+        for alias in set(aliases.split(',')):
+            assert alias not in NAMES
+            NAMES[alias] = code
 
+
+def iso639_3_to_name(code: str, default=None) -> str:
+    """
+    lookup name of language given ISO 639-3 code
+    :param code: ISO 639-3 code
+    :param default: return value when code doesnt exist
+    :return: reference name of language
+    """
+    assert len(code) == 3
+    return CODES.get(code.lower(), default)
+
+
+def name_to_iso639_3(name: str, default=None) -> str:
+    """
+    lookup  ISO 639-3 code given reference or alias name of language
+    :param name: name of language
+    :param default: return value when the name is invalid
+    :return: ISO 639-3 code
+    """
+    return NAMES.get(name.title(), default)
+
+
+# simple aliases
+code_to_name = iso639_3_to_name
+name_to_code = name_to_iso639_3
+
+
+def __test():
+    for code in ['ENG', 'Zho', 'Rus', 'Kan', '123']:
+        print(code, code_to_name(code), name_to_code(code_to_name(code, 'xxx')))
+    for name in ['english', 'CHINESE', 'Kannada', 'doesntexist']:
+        print(name, name_to_code(name), code_to_name(name_to_code(name, 'xxx')))
+
+
+if __name__ == '__main__':
+    import argparse
+    import sys
+    import logging as log
+
+    log.basicConfig(level=log.INFO)
+
+    p = argparse.ArgumentParser(description="ISO 639-3 lookup tool")
+    p.add_argument('-n', '--name', help='Name of a language whose code needs to be looked up')
+    p.add_argument('-c', '--code', help='Code of a language whose name needs to be looked up')
+    p.add_argument('-l', '--list', action='store_true', help='List all codes and names')
+    args = p.parse_args()
+    if args.list:
+        print(data)
+    else:
+        if not args.name and not args.code:
+            log.error(f"--name or --code argument is needed")
+        if args.code:
+            if code_to_name(args.code):
+                print(f'{args.code.lower()}\t{code_to_name(args.code)}')
+            else:
+                log.error(f"{args.code} is not a valid ISO 639-3 code")
+                sys.exit(2)
+        if args.name:
+            if name_to_code(args.name):
+                name = code_to_name(name_to_code(args.name)) # normalize
+                print(f'{name_to_code(args.name)}\t{name}')
+            else:
+                log.error(f"{args.name} is not valid name")
+                sys.exit(2)

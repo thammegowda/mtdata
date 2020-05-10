@@ -2,15 +2,19 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
-from typing import List
-from mtdata.entry import Entry, Paper, Experiment
-import collections as coll
+from mtdata import log
+from mtdata.entry import Entry, Paper
+
 
 class Index:
 
     def __init__(self):
-        self.entries = {}   # uniq
-        self.papers = {}   # uniq
+        self.entries = {}  # uniq
+        self.papers = {}  # uniq
+
+    @property
+    def n_entries(self) -> int:
+        return len(self.entries)
 
     def add_entry(self, entry: Entry):
         assert isinstance(entry, Entry)
@@ -48,7 +52,9 @@ class Index:
     def get_paper(self, name):
         return self.papers[name]
 
+
 INDEX: Index = Index()
+
 
 def get_entries(langs=None, names=None, not_names=None):
     """
@@ -75,10 +81,22 @@ def get_entries(langs=None, names=None, not_names=None):
 
 def load_all():
     from mtdata.index import statmt, paracrawl, tilde, literature
+    counts = [('init', 0)]
     statmt.load(INDEX)
+    counts.append(('statmt', INDEX.n_entries - counts[-1][-1]))
     paracrawl.load(INDEX)
+    counts.append(('paracrawl', INDEX.n_entries - counts[-1][-1]))
     tilde.load(INDEX)
+    counts.append(('tilde', INDEX.n_entries - counts[-1][-1]))
+
+    from mtdata.index.opus import opus_index
+    opus_index.load_all(INDEX)
+    counts.append(('opus', INDEX.n_entries - counts[-1][-1]))
+    del counts[0]
+    counts = {n: c for n, c in counts}
+    log.info(f"Loaded entries: {counts}")
     literature.load(INDEX)
+
 
 # eager load, as of now TODO: lazy load
 load_all()

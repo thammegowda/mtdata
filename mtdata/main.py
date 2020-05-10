@@ -8,6 +8,7 @@ import mtdata
 from mtdata import log
 from mtdata.data import Dataset, get_entries
 from mtdata.parser import IO
+from mtdata.iso import iso3_code
 
 
 def list_data(langs, names, not_names=None, full=False, cache_dir=None):
@@ -51,7 +52,11 @@ def LangPair(string):
     if len(parts) != 2:
         msg = f'expected value of form "xx-yy" eg "de-en"; given {string}'
         raise argparse.ArgumentTypeError(msg)
-    return tuple(parts)
+    iso_codes = [iso3_code(part, fail_error=True) for part in parts]
+    if iso_codes != parts:
+        log.warning(f"Suggestion: Use ISO 639_3 codes {'-'.join(iso_codes)} instead of {string}."
+                    f" Let's make a little space for all 7000+ languages of our planet 😢.")
+    return tuple(iso_codes)
 
 
 def parse_args():
