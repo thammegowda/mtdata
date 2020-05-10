@@ -8,6 +8,7 @@ import mtdata
 from mtdata import log
 from mtdata.data import Dataset, get_entries
 from mtdata.parser import IO
+from mtdata.iso import iso3_code
 
 
 def list_data(langs, names, not_names=None, full=False, cache_dir=None):
@@ -51,7 +52,11 @@ def LangPair(string):
     if len(parts) != 2:
         msg = f'expected value of form "xx-yy" eg "de-en"; given {string}'
         raise argparse.ArgumentTypeError(msg)
-    return tuple(parts)
+    iso_codes = [iso3_code(part, fail_error=True) for part in parts]
+    if iso_codes != parts:
+        log.warning(f"Suggestion: Use ISO 639_3 codes {'-'.join(iso_codes)} instead of {string}."
+                    f" Let's make a little space for all 7000+ languages of our planet 😢.")
+    return tuple(iso_codes)
 
 
 def parse_args():
@@ -69,7 +74,7 @@ def parse_args():
 
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
     list_p.add_argument('-l', '--langs', metavar='L1-L2', type=LangPair,
-                        help='Language pairs; e.g.: de-en')
+                        help='Language pairs; e.g.: deu-eng')
     list_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
                         help='Name of dataset set; eg europarl_v9.')
     list_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
@@ -79,7 +84,7 @@ def parse_args():
 
     get_p = sub_ps.add_parser('get', formatter_class=MyFormatter)
     get_p.add_argument('-l', '--langs', metavar='L1-L2', type=LangPair,
-                       help='Language pairs; e.g.: de-en',
+                       help='Language pairs; e.g.: deu-eng',
                        required=True)
     get_p.add_argument('-tr', '--train', metavar='NAME', dest='train_names', nargs='*',
                        help='''R|Names of datasets separated by space, to be used for *training*.

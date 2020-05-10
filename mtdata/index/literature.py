@@ -4,7 +4,7 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/23/20
 
-from mtdata.entry import Experiment, Paper, Entry
+from mtdata.entry import Experiment, Paper
 from mtdata.index import Index
 
 
@@ -22,7 +22,7 @@ def load(index: Index):
                 }""",
         experiments=[
             Experiment.make(
-                langs=('en', 'de'),
+                langs=('eng', 'deu'),
                 train=['wmt13_europarl_v7', 'wmt13_commoncrawl', 'wmt18_news_commentary_v13'],
                 tests=['newstest2013', 'newstest2014_deen'])
         ]

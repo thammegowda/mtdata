@@ -3,9 +3,10 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
 
-from typing import Tuple, List, Optional, Mapping, Set
+from typing import Tuple, List, Optional, Set
 from dataclasses import dataclass, field
 from mtdata.parser import detect_extension
+from mtdata.iso import iso3_code
 
 @dataclass
 class Entry:
@@ -19,10 +20,13 @@ class Entry:
     cite: Optional[str] = None
 
     def __post_init__(self):
+        self.langs = tuple(iso3_code(l, fail_error=True) for l in self.langs)
+
         assert len(self.langs) == 2
         assert isinstance(self.langs, tuple)
+
         for ch in '.-/* ':
-            assert ch not in self.name, f"Character '{ch}' not supported in dataset name"
+            assert ch not in self.name, f"Character '{ch}' not supported in name {self.name}"
 
         orig_name = self.url.split('/')[-1]
         self.ext = self.ext or detect_extension(self.filename or orig_name)
@@ -53,6 +57,7 @@ class Experiment:
     papers: Set['Paper'] = field(default_factory=set)
 
     def __post_init__(self):
+        self.langs = tuple(iso3_code(l, fail_error=True) for l in self.langs)
         for t in self.tests:
             assert t
         for t in self.train:
