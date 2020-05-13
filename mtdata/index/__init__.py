@@ -83,15 +83,18 @@ def load_all():
     from mtdata.index import statmt, paracrawl, tilde, literature
     counts = [('init', 0)]
     statmt.load(INDEX)
-    counts.append(('statmt', INDEX.n_entries - counts[-1][-1]))
+    counts.append(('Statmt.org', INDEX.n_entries - counts[-1][-1]))
     paracrawl.load(INDEX)
-    counts.append(('paracrawl', INDEX.n_entries - counts[-1][-1]))
+    counts.append(('Paracrawl', INDEX.n_entries - counts[-1][-1]))
     tilde.load(INDEX)
-    counts.append(('tilde', INDEX.n_entries - counts[-1][-1]))
+    counts.append(('Tilde', INDEX.n_entries - counts[-1][-1]))
 
     from mtdata.index.opus import opus_index
     opus_index.load_all(INDEX)
-    counts.append(('opus', INDEX.n_entries - counts[-1][-1]))
+    counts.append(('Opus', INDEX.n_entries - counts[-1][-1]))
+    from mtdata.index import globalvoices
+    globalvoices.load_all(INDEX)
+    counts.append(('GlobalVoices', INDEX.n_entries - counts[-1][-1]))
     del counts[0]
     counts = {n: c for n, c in counts}
     log.info(f"Loaded entries: {counts}")
