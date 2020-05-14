@@ -8,7 +8,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 import argparse
 from mtdata import log
-from mtdata.parser import IO
+from mtdata.utils import IO
 import time
 from html import unescape
 import datetime

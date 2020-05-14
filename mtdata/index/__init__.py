@@ -89,12 +89,16 @@ def load_all():
     tilde.load(INDEX)
     counts.append(('Tilde', INDEX.n_entries - counts[-1][-1]))
 
-    from mtdata.index.opus import opus_index
+    from mtdata.index.opus import opus_index, jw300
     opus_index.load_all(INDEX)
     counts.append(('Opus', INDEX.n_entries - counts[-1][-1]))
+    jw300.load_all(INDEX)
+    counts.append(('OPUS_JW300', INDEX.n_entries - counts[-1][-1]))
+
     from mtdata.index import globalvoices
     globalvoices.load_all(INDEX)
     counts.append(('GlobalVoices', INDEX.n_entries - counts[-1][-1]))
+
     del counts[0]
     counts = {n: c for n, c in counts}
     log.info(f"Loaded entries: {counts}")

@@ -7,7 +7,8 @@ from pathlib import Path
 from mtdata import log
 from mtdata.cache import Cache
 from mtdata.index import Entry, get_entries
-from mtdata.parser import Parser, IO
+from mtdata.parser import Parser
+from mtdata.utils import IO
 from typing import Optional, List
 from itertools import zip_longest
 import collections as coll
@@ -30,7 +31,6 @@ class Dataset:
     @classmethod
     def resolve_entries(cls, langs, names):
         inp_names = set(names)
-
         assert len(inp_names) == len(names), f'{names} are not unique.'
         entries = get_entries(langs=langs, names=inp_names)
         out_names = set(e.name for e in entries)
@@ -42,7 +42,7 @@ class Dataset:
 
     @classmethod
     def prepare(cls, langs, train_names: Optional[List[str]], test_names: Optional[List[str]],
-                out_dir: Path, cache_dir: Path):
+                out_dir: Path, cache_dir: Path, merge_train=False):
         assert langs, 'langs required'
         assert train_names or test_names, 'Either train_names or test_names should be given'
         # First, resolve and check if they exist before going to process them.
@@ -58,15 +58,20 @@ class Dataset:
             dataset.add_test_entries(test_entries)
 
         if train_entries: # this might take some time
-            dataset.add_train_entries(train_entries)
+            dataset.add_train_entries(train_entries, merge_train=merge_train)
         return dataset
 
-    def add_train_entries(self, entries):
+    def add_train_entries(self, entries, merge_train=False):
         self.add_parts(self.train_parts_dir, entries)
-        l1, l2 = self.langs
+        if not merge_train:
+            return
         # merge
-        l1_files = [self.train_parts_dir / f'{e.name}.{l1}' for e in entries]
-        l2_files = [self.train_parts_dir / f'{e.name}.{l2}' for e in entries]
+        l1, l2 = self.langs
+        l1_files = list(self.train_parts_dir.glob(f"*.{l1}"))
+        assert l1_files and len(l1_files) >= len(entries)
+
+        l2_files = [l1_f.with_suffix(f".{l2}") for l1_f in l1_files]
+        assert all(l2_f.exists() for l2_f in l2_files)
         log.info(f"Going to merge {len(l1_files)} files as one train file")
         counts = coll.defaultdict(int)
         of1 = self.dir / f'train.{l1}'
@@ -107,8 +112,9 @@ class Dataset:
         path = self.cache.get_entry(entry)
         swap = entry.is_swap(self.langs)
         parser = Parser(path, langs=self.langs, ext=entry.in_ext or None)
-        l1 = (dir_path / entry.name).with_suffix(f'.{self.langs[0]}')
-        l2 = (dir_path / entry.name).with_suffix(f'.{self.langs[1]}')
+        langs = '_'.join(self.langs)
+        l1 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[0]}')
+        l2 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[1]}')
         mode = dict(mode='w', encoding='utf-8', errors='ignore')
         with l1.open(**mode) as f1, l2.open(**mode) as f2:
             count, skips = 0, 0

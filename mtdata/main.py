@@ -7,7 +7,7 @@ from pathlib import Path
 import mtdata
 from mtdata import log
 from mtdata.data import Dataset, get_entries
-from mtdata.parser import IO
+from mtdata.utils import IO
 from mtdata.iso import iso3_code
 
 
@@ -25,7 +25,7 @@ def get_data(args):
     assert args.train_names or args.test_names, 'Required --train or --test or both'
     dataset = Dataset.prepare(args.langs, train_names=args.train_names,
                               test_names=args.test_names, out_dir=args.out,
-                              cache_dir=args.cache)
+                              cache_dir=args.cache, merge_train=args.merge)
     cli_sig = f'-l {"-".join(args.langs)}'
     cli_sig += f' -tr {" ".join(args.train_names)}' if args.train_names else ''
     cli_sig += f' -ts {" ".join(args.test_names)}' if args.test_names else ''
@@ -58,6 +58,11 @@ def LangPair(string):
                     f" Let's make a little space for all 7000+ languages of our planet 😢.")
     return tuple(iso_codes)
 
+def add_boolean_arg(parser: argparse.ArgumentParser, name, default=False, help=''):
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(f'--{name}', action='store_true', dest=name, default=default, help=help)
+    group.add_argument(f'--no-{name}', action='store_false', dest=name, default=not default,
+                       help='Do not ' + help)
 
 def parse_args():
     p = argparse.ArgumentParser(formatter_class=MyFormatter)
@@ -95,6 +100,8 @@ def parse_args():
   e.g. "-tt newstest2018_deen newstest2019_deen".
 You may also use shell expansion if your shell supports it.
   e.g. "-tt newstest201{8,9}_deen." ''')
+    add_boolean_arg(get_p, 'merge', default=False, help='Merge train into single file')
+
     get_p.add_argument('-o', '--out', type=Path, required=True, help='Output directory name')
 
     # list-exp

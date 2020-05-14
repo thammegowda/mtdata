@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from mtdata.parser import detect_extension
 from mtdata.iso import iso3_code
 
+
 @dataclass
 class Entry:
     langs: Tuple[str, str]
@@ -32,7 +33,7 @@ class Entry:
         self.ext = self.ext or detect_extension(self.filename or orig_name)
         langs = '_'.join(self.langs)
         self.filename = self.filename or f'{self.name}-{langs}.{self.ext}'
-        self.is_archive = self.ext in ['zip', 'tar', 'tar.gz', 'tgz']
+        self.is_archive = self.ext in ('zip', 'tar', 'tar.gz', 'tgz')
         if self.is_archive:
             assert self.in_paths and len(self.in_paths) > 0, 'Archive entries must have in_paths'
 
@@ -48,12 +49,15 @@ class Entry:
         return msg
 
 
+class JW300Entry(Entry):
+    url: Tuple[str, str, str]  # (align.xml, src.xml, tgt.xml)
+
+
 @dataclass
 class Experiment:
-
     langs: Tuple[str, str]  # (lang1 , lang2)  lang1 -> lang2
-    train: List[Entry]      # training should be merged from all these
-    tests: List[Entry]      # multiple tests; one of them can be validation set
+    train: List[Entry]  # training should be merged from all these
+    tests: List[Entry]  # multiple tests; one of them can be validation set
     papers: Set['Paper'] = field(default_factory=set)
 
     def __post_init__(self):
@@ -70,13 +74,14 @@ class Experiment:
         tests = [INDEX.get_entry(name, langs) for name in tests]
         return cls(langs, train=train, tests=tests)
 
-@dataclass(eq=False)  #  see for hash related issues: https://stackoverflow.com/a/52390734/1506477
+
+@dataclass(eq=False)  # see for hash related issues: https://stackoverflow.com/a/52390734/1506477
 class Paper:  # or Article
 
-    name: str   # author1-etal-year
-    title: str   # title
-    url: str    # Paper url to be sure
-    cite: str    # bibtex would be nice to display
+    name: str  # author1-etal-year
+    title: str  # title
+    url: str  # Paper url to be sure
+    cite: str  # bibtex would be nice to display
     experiments: List[Experiment]
 
     langs: Set[Tuple[str, str]] = None
