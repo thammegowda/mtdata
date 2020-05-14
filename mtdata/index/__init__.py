@@ -52,6 +52,9 @@ class Index:
     def get_paper(self, name):
         return self.papers[name]
 
+    def __len__(self):
+        return len(self.entries)
+
 
 INDEX: Index = Index()
 
@@ -83,21 +86,27 @@ def load_all():
     from mtdata.index import statmt, paracrawl, tilde, literature
     counts = [('init', 0)]
     statmt.load(INDEX)
-    counts.append(('Statmt.org', INDEX.n_entries - counts[-1][-1]))
+    counts.append(('Statmt.org', len(INDEX) - counts[-1][-1]))
     paracrawl.load(INDEX)
-    counts.append(('Paracrawl', INDEX.n_entries - counts[-1][-1]))
+    counts.append(('Paracrawl', len(INDEX) - counts[-1][-1]))
     tilde.load(INDEX)
-    counts.append(('Tilde', INDEX.n_entries - counts[-1][-1]))
+    counts.append(('Tilde', len(INDEX) - counts[-1][-1]))
 
-    from mtdata.index.opus import opus_index, jw300
-    opus_index.load_all(INDEX)
-    counts.append(('Opus', INDEX.n_entries - counts[-1][-1]))
-    jw300.load_all(INDEX)
-    counts.append(('OPUS_JW300', INDEX.n_entries - counts[-1][-1]))
+    from mtdata.index import joshua_indian
+    joshua_indian.load_all(INDEX)
+    counts.append(('JoshuaIndianCorpus', len(INDEX) - counts[-1][-1]))
 
     from mtdata.index import globalvoices
     globalvoices.load_all(INDEX)
-    counts.append(('GlobalVoices', INDEX.n_entries - counts[-1][-1]))
+    counts.append(('GlobalVoices', len(INDEX) - counts[-1][-1]))
+
+    from mtdata.index.opus import opus_index, jw300
+    opus_index.load_all(INDEX)
+    counts.append(('OPUS', len(INDEX) - counts[-1][-1]))
+    jw300.load_all(INDEX)
+    counts.append(('OPUS_JW300', len(INDEX) - counts[-1][-1]))
+
+
 
     del counts[0]
     counts = {n: c for n, c in counts}

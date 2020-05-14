@@ -45,8 +45,9 @@ Here I (/TG) have picked some commonly used datasets that I use for my work, you
 | Paracrawl | 30 |
 | Tilde | 865 |
 | OPUS<sup>$1</sup> | 53,351 |
-| JW300<sup>$2</sup> | 45,528 |
-| GlobalVoices | 1,677 |
+| JW300<sup>$2</sup> | 46,340 |
+| GlobalVoices 2018Q4| 1,677 |
+| Joshua Indian Corpus | 60 |
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
