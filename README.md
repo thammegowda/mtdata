@@ -44,11 +44,12 @@ Here I (/TG) have picked some commonly used datasets that I use for my work, you
 | Statmt | 346 |
 | Paracrawl | 30 |
 | Tilde | 865 |
-| OPUS<sup>$1,$2</sup> | 53,351 |
+| OPUS<sup>$1</sup> | 53,351 |
+| JW300<sup>$2</sup> | 45,528 |
 | GlobalVoices | 1,677 |
 
-- <sup>$1</sup> - Currently excluded JW300 from Opus due to parsing issues. JW300 source alone contains 46,000+ bitexts.
-- <sup>$2</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus. 
+- <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
+- <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
 
 # CLI Usage
 - After pip installation, the CLI can be called using `mtdata` command  or `python -m mtdata`
