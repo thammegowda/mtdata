@@ -27,7 +27,7 @@ def load_all(index: Index):
             f1 = f'*/{l1}-{l2}/{split}.{l1}-{l2}.{l1}'
             f2 = f'*/{l1}-{l2}/{split}.{l1}-{l2}.{l2}'
             if split not in ('training', 'dict'):
-                f1 += '.0'
+                f2 += '.0'
             ent = Entry(langs=(l1, l2), url=url, name=f'JoshuaIndianCorpus_{split}',
                   filename='joshua-indian-parallel-corpora.tar.gz',
                   in_paths=[f1, f2], in_ext='txt', cite=cite)
