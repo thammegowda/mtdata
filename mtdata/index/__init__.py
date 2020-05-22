@@ -100,6 +100,10 @@ def load_all():
     globalvoices.load_all(INDEX)
     counts.append(('GlobalVoices', len(INDEX) - counts[-1][-1]))
 
+    from mtdata.index import unitednations
+    unitednations.load_all(INDEX)
+    counts.append(('UnitedNations', len(INDEX) - counts[-1][-1]))
+
     from mtdata.index.opus import opus_index, jw300
     opus_index.load_all(INDEX)
     counts.append(('OPUS', len(INDEX) - counts[-1][-1]))
