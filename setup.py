@@ -6,7 +6,7 @@
 import mtdata
 from pathlib import Path
 
-from setuptools import setup
+from setuptools import setup, find_packages, find_namespace_packages
 
 long_description = Path('README.md').read_text(encoding='utf-8', errors='ignore')
 
@@ -36,7 +36,7 @@ setup(
     platforms=['any'],
     author='Thamme Gowda',
     author_email='tgowdan@gmail.com',
-    packages=['mtdata'],
+    packages=find_namespace_packages(exclude=['crawler']),
     keywords=['machine translation', 'datasets', 'NLP', 'natural language processing,'
                                                         'computational linguistics'],
     entry_points={
