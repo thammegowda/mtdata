@@ -83,37 +83,28 @@ def get_entries(langs=None, names=None, not_names=None):
 
 
 def load_all():
-    from mtdata.index import statmt, paracrawl, tilde, literature
-    counts = [('init', 0)]
-    statmt.load(INDEX)
-    counts.append(('Statmt.org', len(INDEX) - counts[-1][-1]))
-    paracrawl.load(INDEX)
-    counts.append(('Paracrawl', len(INDEX) - counts[-1][-1]))
-    tilde.load(INDEX)
-    counts.append(('Tilde', len(INDEX) - counts[-1][-1]))
-
-    from mtdata.index import joshua_indian
-    joshua_indian.load_all(INDEX)
-    counts.append(('JoshuaIndianCorpus', len(INDEX) - counts[-1][-1]))
-
-    from mtdata.index import globalvoices
-    globalvoices.load_all(INDEX)
-    counts.append(('GlobalVoices', len(INDEX) - counts[-1][-1]))
-
-    from mtdata.index import unitednations
-    unitednations.load_all(INDEX)
-    counts.append(('UnitedNations', len(INDEX) - counts[-1][-1]))
-
+    from mtdata.index import (statmt, paracrawl, tilde, literature, joshua_indian, globalvoices,
+                              unitednations, other)
     from mtdata.index.opus import opus_index, jw300
-    opus_index.load_all(INDEX)
-    counts.append(('OPUS', len(INDEX) - counts[-1][-1]))
-    jw300.load_all(INDEX)
-    counts.append(('OPUS_JW300', len(INDEX) - counts[-1][-1]))
 
+    counts = {}
+    for name,  loader in [
+        ('Statmt.org',  statmt.load),
+        ('Paracrawl', paracrawl.load),
+        ('Tilde', tilde.load),
+        ('JoshuaIndianCoprus', joshua_indian.load_all),
+        ('GlobalVoices', globalvoices.load_all),
+        ('UnitedNations', unitednations.load_all),
+        ('OPUS', opus_index.load_all),
+        ('OPUS_JW300', jw300.load_all),
+        ('Other', other.load_all),
+    ]:
+        n = len(INDEX)
+        loader(INDEX)
+        counts[name] = len(INDEX) - n
+    counts['Total'] = len(INDEX)
 
-
-    del counts[0]
-    counts = {n: c for n, c in counts}
+    counts = '  '.join([f'{n}:{c:,}' for n, c in counts.items()])
     log.info(f"Loaded entries: {counts}")
     literature.load(INDEX)
 

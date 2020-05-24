@@ -40,15 +40,18 @@ The list is incomplete and meant to see as start.
 Here I (/TG) have picked some commonly used datasets that I use for my work, you are welcome to add more. 
  
 | Source | # of datasets |
-|---|---|
+|---: | ---:|
 | Statmt | 346 |
 | Paracrawl | 30 |
-| Tilde | 865 |
+| Tilde | 519 |
 | OPUS<sup>$1</sup> | 53,351 |
-| JW300<sup>$2</sup> | 46,340 |
-| GlobalVoices 2018Q4| 1,677 |
-| Joshua Indian Corpus | 60 |
-| UnitedNations<sup>$3</sup> | 90 | 
+| JW300<sup>$2</sup> | 44,663 |
+| GlobalVoices 2018Q4| 812 |
+| Joshua Indian Corpus | 30 |
+| UnitedNations<sup>$3</sup> | 30 | 
+| Other | 3 |
+| ----|----|
+| Total | 99,754|
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
