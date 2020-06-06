@@ -45,3 +45,21 @@ def load_all(index: Index):
                         name=f'IITB{version}_{split}', in_ext='txt',
                         in_paths=[f1, f2], cite=cite)
             index.add_entry(ent)
+
+
+    # == Japanese ==
+    cite="""@misc{neubig11kftt,
+    author = {Graham Neubig},
+    title = {The {Kyoto} Free Translation Task},
+    howpublished = {http://www.phontron.com/kftt},
+    year = {2011}
+    }"""
+    url = "http://www.phontron.com/kftt/download/kftt-data-1.0.tar.gz"
+    l1, l2 = 'en', 'ja'
+    for split in ['train', 'test', 'dev', 'tune']:
+        f1 = f'kftt-data-1.0/data/orig/kyoto-{split}.{l1}'
+        f2 = f'kftt-data-1.0/data/orig/kyoto-{split}.{l2}'
+        ent = Entry(langs=(l1, l2), url=url, filename="kftt-data-1.0.tar.gz",
+                    name=f'kftt_v1_{split}', in_ext='txt',
+                    in_paths=[f1, f2], cite=cite)
+        index.add_entry(ent)
