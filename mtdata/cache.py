@@ -7,11 +7,12 @@ from pathlib import Path
 from mtdata.index import Entry
 from mtdata import log
 import wget
-
+import portalocker
 from hashlib import md5
 from urllib.parse import urlparse
 from .parser import detect_extension
 
+MAX_TIMEOUT = 12 * 60 * 60  # 12 hours
 
 @dataclass
 class Cache:
@@ -39,9 +40,7 @@ class Cache:
         mdf5_sum = md5(url.encode('utf-8')).hexdigest()
         local = self.root / hostname / mdf5_sum[:4] / mdf5_sum[4:] / filename
         if fix_missing:
-            if not local.exists() or not self.get_flag_file(local).exists():
-                self.download(url, local)
-                self.get_flag_file(local).touch()
+            self.download(url, local)
         return local
 
     def get_local_in_paths(self, entry: Entry, fix_missing=True):
@@ -85,28 +84,51 @@ class Cache:
         return local_xdir
 
     def download(self, url: str, save_at: Path):
+        valid_flag = self.get_flag_file(save_at)
+        lock_file = valid_flag.with_suffix("._lock")
+        if valid_flag.exists() and save_at.exists():
+            return save_at
         save_at.parent.mkdir(parents=True, exist_ok=True)
-        log.info(f"GET: {url} --> {save_at}")
-        out_file = wget.download(url, out=str(save_at))
-        log.info(" Done.")
-        assert Path(out_file).resolve() == save_at.resolve()  # saved where we asked it to save
-        return save_at
+
+        log.info(f"Acquiring lock on {lock_file}\nif this gets stuck, delete the lock and restart")
+        with portalocker.Lock(lock_file, 'w', timeout=MAX_TIMEOUT) as fh:
+            # check if downloaded by  other parallel process
+            if valid_flag.exists() and save_at.exists():
+                return save_at
+            log.info(f"Got the lock. Downloading {url} --> {save_at}")
+            out_file = wget.download(url, out=str(save_at))
+            log.info(" Done.")
+            assert Path(out_file).resolve() == save_at.resolve()  # saved where we asked it to save
+
+            valid_flag.touch()
+            return save_at
 
     def extract(self, archive_file: Path, ext: str, x_dir: Path):
         assert archive_file.exists(), f'{archive_file} not found'
+        valid_file = self.get_flag_file(x_dir)
+        lock_file = valid_file.with_suffix('._lock')
+        if x_dir.exists() and valid_file.exists():
+            return  # already extracted
+
         x_dir.mkdir(parents=True, exist_ok=True)
-        if ext in {'tar', 'tgz', 'tar.gz', 'tar.bz2', 'tbz2', 'tar.xz', 'txz'}:
-            log.info(f"Going to extract tar {archive_file} --> {x_dir}")
-            import tarfile
-            with tarfile.open(archive_file) as tar:
-                tar.extractall(path=x_dir)
-        elif ext == 'zip':
-            log.info(f"Going to extract zip {archive_file} --> {x_dir}")
-            from zipfile import ZipFile
-            with ZipFile(archive_file) as zip:
-                zip.extractall(path=x_dir)
-        else:
-            raise Exception(f'"{ext}" type extraction not supported')
+        log.info(f"Acquiring lock on {lock_file}\nif this gets stuck, delete the lock and restart")
+        with portalocker.Lock(lock_file, 'w', timeout=MAX_TIMEOUT) as fh:
+            if valid_file.exists() and x_dir.exists():
+                return
+            if ext in {'tar', 'tgz', 'tar.gz', 'tar.bz2', 'tbz2', 'tar.xz', 'txz'}:
+                log.info(f"Going to extract tar {archive_file} --> {x_dir}")
+                import tarfile
+                with tarfile.open(archive_file) as tar:
+                    tar.extractall(path=x_dir)
+            elif ext == 'zip':
+                log.info(f"Going to extract zip {archive_file} --> {x_dir}")
+                from zipfile import ZipFile
+                with ZipFile(archive_file) as zip:
+                    zip.extractall(path=x_dir)
+            else:
+                raise Exception(f'"{ext}" type extraction not supported')
+
+            valid_file.touch()
 
 
 def right_replace(string, old, new):

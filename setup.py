@@ -42,5 +42,5 @@ setup(
     entry_points={
         'console_scripts': ['mtdata=mtdata.main:main'],
     },
-    install_requires=['wget']
+    install_requires=['wget', 'portalocker']
 )
