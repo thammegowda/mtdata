@@ -29,7 +29,7 @@ git clone https://github.com/thammegowda/mtdata
 cd mtdata
 pip install --editable .
 
-# from pypi ; do not do this yet, since the code is evolving faster than releases
+# from pypi 
 pip install mtdata  
 ```
 
