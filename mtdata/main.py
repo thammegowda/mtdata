@@ -5,7 +5,7 @@
 import argparse
 from pathlib import Path
 import mtdata
-from mtdata import log
+from mtdata import log, __version__
 from mtdata.data import Dataset, get_entries
 from mtdata.utils import IO
 from mtdata.iso import iso3_code
@@ -68,6 +68,7 @@ def parse_args():
     p = argparse.ArgumentParser(formatter_class=MyFormatter)
     p.add_argument('-c', '--cache', type=Path, help='Cache dir', default=mtdata.cache_dir)
     p.add_argument('-vv', '--verbose', action='store_true', help='verbose mode')
+    p.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
 
     sub_ps = p.add_subparsers(required=True, dest='task',
                               help='''R|
