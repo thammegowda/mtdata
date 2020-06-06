@@ -98,12 +98,12 @@ def load(index: Index):
       doi = "10.18653/v1/W17-4717",
       pages = "169--214",
     }"""
-    for pair in ['lv en']:
-        l1, l2 = pair.split()
+    for l1 in 'bg cs da de el es et fi fr hu it lt lv nl pl pt ro sk sl sv'.split():
+        l2 = 'en'
         src = f'europarl-v7.{l1}-{l2}.{l1}'
         ref = f'europarl-v7.{l1}-{l2}.{l2}'
         index.add_entry(Entry(langs=(l1, l2), name='europarl_v7', in_paths=[src, ref],
-                              url=EUROPARL_v7 % (l1, l2), cite=cite))
+                              url=EUROPARL_v7 % (l1, l2), in_ext='txt', cite=cite))
 
     # === Digital Corpus of European Parliament
     index.add_entry(Entry(langs=('lv', 'en'), name='wmt17_dcep_v1',
@@ -240,8 +240,8 @@ def load(index: Index):
             f1 = f'dev/{name}.{l1}'
             f2 = f'dev/{name}.{l2}'
             index.add_entry(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[f1, f2],
-                                  url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
-                                  cite=cite))
+                                  in_ext='txt', cite=cite,
+                                  url='http://data.statmt.org/wmt20/translation-task/dev.tgz'))
 
     for l1, l2 in [('ps', 'en'), ('km', 'en')]:
         for set_name in ['wikipedia.dev', 'wikipedia.devtest']:
