@@ -32,7 +32,7 @@ class Entry:
         orig_name = self.url.split('/')[-1]
         self.ext = self.ext or detect_extension(self.filename or orig_name)
         langs = '_'.join(self.langs)
-        self.filename = self.filename or f'{self.name}-{langs}.{self.ext}'
+        self.filename = self.filename or f'{self.name}.{self.ext}'
         self.is_archive = self.ext in ('zip', 'tar', 'tar.gz', 'tgz')
         if self.is_archive:
             assert self.in_paths and len(self.in_paths) > 0, 'Archive entries must have in_paths'
