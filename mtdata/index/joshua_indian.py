@@ -24,6 +24,8 @@ def load_all(index: Index):
     langs = ['ml', 'hi', 'ur', 'bn', 'te', 'ta']
     for l1 in langs:
         for split in ['training', 'dev', 'test', 'devtest', 'dict']:
+            if l1 == 'hi' and split == 'dict':
+                continue   # hindi dont have dict
             f1 = f'*/{l1}-{l2}/{split}.{l1}-{l2}.{l1}'
             f2 = f'*/{l1}-{l2}/{split}.{l1}-{l2}.{l2}'
             if split not in ('training', 'dict'):

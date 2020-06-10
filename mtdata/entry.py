@@ -19,6 +19,7 @@ class Entry:
     in_paths: Optional[List[str]] = None  # if URL is a tar or zip, specify inside paths
     in_ext: Optional[str] = None  # extension of in_paths inside archive
     cite: Optional[str] = None
+    cols: Optional[Tuple[int, int]] = None
 
     def __post_init__(self):
         self.langs = tuple(iso3_code(l, fail_error=True) for l in self.langs)
@@ -27,7 +28,7 @@ class Entry:
         assert isinstance(self.langs, tuple)
 
         for ch in '.-/* ':
-            assert ch not in self.name, f"Character '{ch}' not supported in name {self.name}"
+            assert ch not in self.name, f"Character '{ch}' is not permitted in name {self.name}"
 
         orig_name = self.url.split('/')[-1]
         self.ext = self.ext or detect_extension(self.filename or orig_name)

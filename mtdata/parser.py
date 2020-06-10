@@ -61,7 +61,10 @@ class Parser:
         else:
             for p in self.paths:
                 if 'tsv' in self.ext:
-                    readers.append(self.read_tsv(p))
+                    cols = (0, 1) #extract first two columns
+                    if self.ent and self.ent.cols:
+                        cols = self.ent.cols
+                    readers.append(self.read_tsv(p, cols=cols))
                 elif 'raw' in self.ext or 'txt' in self.ext:
                     readers.append(self.read_plain(p))
                 elif 'tmx' in self.ext:
@@ -88,7 +91,18 @@ class Parser:
             for line in stream:
                 yield line.strip()
 
-    def read_tsv(self, path, delim='\t'):
+    def read_tsv(self, path, delim='\t', cols=None):
+        """
+        Read data from TSV file
+        :param path: path to TSV file
+        :param delim: delimiter default is \\t
+        :param cols: if certain columns are to be extracted;
+            default is None, which returns all columns
+        :return:
+        """
         with IO.reader(path) as stream:
             for line in stream:
-                yield [x.strip() for x in line.split(delim)]
+                row = [x.strip() for x in line.rstrip('\n').split(delim)]
+                if cols:
+                    row = [row[idx] for idx in cols]
+                yield row

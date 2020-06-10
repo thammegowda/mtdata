@@ -264,15 +264,6 @@ def load(index: Index):
         index.add_entry(
             Entry(langs=(l1, l2), name='europarl_v10', url=EP_v10 % (l1, l2), cite=wmt20_cite))
 
-    # ====  WikiMatrix
-    WIKI_MATRIX_v1 = 'http://data.statmt.org/wmt20/translation-task/WikiMatrix/WikiMatrix.v1.%s-%s.langid.tsv.gz'
-    for pair in ["cs en", "de en", "de fr", "en ja", "en pl", "en ru", "en ta", "en te", "en zh",
-                 "hi ta"]:
-        l1, l2 = pair.split()
-        index.add_entry(
-            Entry(langs=(l1, l2), name='wiki_matrix_v1', url=WIKI_MATRIX_v1 % (l1, l2),
-                  cite=wmt20_cite))
-
     # ==== PMIndia V1
     PMINDIA_v1 = "http://data.statmt.org/pmindia/v1/parallel/pmindia.v1.%s-%s.tsv"
     cite = r"""@ARTICLE{2020arXiv200109907H,

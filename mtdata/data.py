@@ -111,7 +111,7 @@ class Dataset:
     def add_part(self, dir_path: Path, entry: Entry):
         path = self.cache.get_entry(entry)
         swap = entry.is_swap(self.langs)
-        parser = Parser(path, langs=self.langs, ext=entry.in_ext or None)
+        parser = Parser(path, langs=self.langs, ext=entry.in_ext or None, ent=entry)
         langs = '_'.join(self.langs)
         l1 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[0]}')
         l2 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[1]}')
