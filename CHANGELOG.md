@@ -1,5 +1,12 @@
 # Change Log
 
+# v0.2.5 - 20200610
+- Add all pairs of Wikimatrix  -- 1,617 of them
+- Add support for specifying `cols` of `.tsv` file
+- Add all Europarlv7 sets
+- Remove hin-eng `dict` from JoshuaIndianParallelCorpus
+- Remove Wikimatrix1 from statmt -- they are moved to separate file 
+
 # v0.2.4 - 20200605
 - File locking using portalocker to deal with race conditions 
  when multiple `mtdata get` are invoked in parallel
