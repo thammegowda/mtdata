@@ -12,6 +12,7 @@ This tool knows:
 - Whether data is compressed in gz, xz or none at all.
 - Whether the source-target is in the same order or is it swapped as target-source order.
 - How to map code to ISO language codes! Using ISO 639_3 that has space for 7000+ languages of our planet.
+- Download only once and keep the files in local cache.
 - (And more of such tiny details over the time.)
 
 [MTData](https://github.com/thammegowda/mtdata) is here to:
@@ -37,7 +38,7 @@ pip install mtdata
 
 These are the summary of datasets from various sources (Updated: May 10 2020). 
 The list is incomplete and meant to see as start. 
-Here I (/TG) have picked some commonly used datasets that I use for my work, you are welcome to add more. 
+Here I (/TG) have picked some commonly used datasets that I use for my work - you are welcome to add more! 
  
 | Source | # of datasets |
 |---: | ---:|

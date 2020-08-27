@@ -1,5 +1,12 @@
 # Change Log
 
+# v0.2.6 - 20200827
+- Add all pairs of neulab_tedtalksv1 - train,test,dev  -- 4,455 of them
+- Add support for cleaning noise. Entry.is_noise(seg1, seg2)
+- some basic noise is removed by default from training 
+- add `__slots__` to Entry class (takes less memory and faster attrib lookup)
+
+
 # v0.2.5 - 20200610
 - Add all pairs of Wikimatrix  -- 1,617 of them
 - Add support for specifying `cols` of `.tsv` file
