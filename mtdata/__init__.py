@@ -3,7 +3,7 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/4/20
 
-__version__ = '0.2.4'
+__version__ = '0.2.6'
 __description__ = 'mtdata is a tool to download datasets for machine translation'
 __author__ = 'Thamme Gowda'
 

@@ -9,31 +9,38 @@ from mtdata.parser import detect_extension
 from mtdata.iso import iso3_code
 
 
-@dataclass
 class Entry:
-    langs: Tuple[str, str]
-    name: str
-    url: str
-    filename: Optional[str] = None  # optional local file name; tries to auto-decide iff missing
-    ext: Optional[str] = None  # extension name; tries to auto-decide iff missing
-    in_paths: Optional[List[str]] = None  # if URL is a tar or zip, specify inside paths
-    in_ext: Optional[str] = None  # extension of in_paths inside archive
-    cite: Optional[str] = None
-    cols: Optional[Tuple[int, int]] = None
+    __slots__ = ('langs', 'name', 'url', 'filename', 'ext', 'in_paths', 'in_ext', 'cite', 'cols',
+                 'is_archive')
 
-    def __post_init__(self):
-        self.langs = tuple(iso3_code(l, fail_error=True) for l in self.langs)
+    def __init__(self, langs: Tuple[str, str],
+        name: str,
+        url: str,
+        filename: Optional[str] = None ,
+        ext: Optional[str] = None,
+        in_paths: Optional[List[str]] = None,
+        in_ext: Optional[str] = None,
+        cite: Optional[str] = None,
+        cols: Optional[Tuple[int, int]] = None):
 
-        assert len(self.langs) == 2
-        assert isinstance(self.langs, tuple)
-
+        assert isinstance(langs, tuple)
+        assert len(langs) == 2
         for ch in '.-/* ':
-            assert ch not in self.name, f"Character '{ch}' is not permitted in name {self.name}"
+            assert ch not in name, f"Character '{ch}' is not permitted in name {name}"
 
+        self.langs = tuple(iso3_code(l, fail_error=True) for l in langs)
+        self.name = name
+        self.url = url
+        self.filename = filename
         orig_name = self.url.split('/')[-1]
-        self.ext = self.ext or detect_extension(self.filename or orig_name)
-        langs = '_'.join(self.langs)
+        self.ext = ext or detect_extension(filename or orig_name)
         self.filename = self.filename or f'{self.name}.{self.ext}'
+
+        self.in_paths = in_paths
+        self.in_ext = in_ext
+        self.cite = cite
+        self.cols = cols
+
         self.is_archive = self.ext in ('zip', 'tar', 'tar.gz', 'tgz')
         if self.is_archive:
             assert self.in_paths and len(self.in_paths) > 0, 'Archive entries must have in_paths'
@@ -48,6 +55,11 @@ class Entry:
         msg = f'{self.name}{delim}{"-".join(self.langs)}{delim}{self.url}{delim}' \
               f'{",".join(self.in_paths or [])}'
         return msg
+
+    def is_noisy(self, seg1, seg2) -> bool:
+        # None or Empty
+        noisy = seg1 is None or seg2 is None or not seg1.strip() or not seg2.strip()
+        return noisy
 
 
 class JW300Entry(Entry):

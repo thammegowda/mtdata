@@ -29,7 +29,7 @@ def get_data(args):
     cli_sig = f'-l {"-".join(args.langs)}'
     cli_sig += f' -tr {" ".join(args.train_names)}' if args.train_names else ''
     cli_sig += f' -ts {" ".join(args.test_names)}' if args.test_names else ''
-    sig = f'mtdat get {cli_sig} -o <out-dir>\nmtdata version {mtdata.__version__}'
+    sig = f'mtdata get {cli_sig} -o <out-dir>\nmtdata version {mtdata.__version__}\n'
     log.info(f'Dataset is ready at {dataset.dir}')
     log.info(f'mtdata args for reproducing this dataset:\n {sig}')
     with IO.writer(args.out / 'mtdata.signature.txt', append=True) as w:

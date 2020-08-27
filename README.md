@@ -12,6 +12,7 @@ This tool knows:
 - Whether data is compressed in gz, xz or none at all.
 - Whether the source-target is in the same order or is it swapped as target-source order.
 - How to map code to ISO language codes! Using ISO 639_3 that has space for 7000+ languages of our planet.
+- Download only once and keep the files in local cache.
 - (And more of such tiny details over the time.)
 
 [MTData](https://github.com/thammegowda/mtdata) is here to:
@@ -37,7 +38,7 @@ pip install mtdata
 
 These are the summary of datasets from various sources (Updated: May 10 2020). 
 The list is incomplete and meant to see as start. 
-Here I (/TG) have picked some commonly used datasets that I use for my work, you are welcome to add more. 
+Here I (/TG) have picked some commonly used datasets that I use for my work - you are welcome to add more! 
  
 | Source | # of datasets |
 |---: | ---:|
@@ -49,10 +50,11 @@ Here I (/TG) have picked some commonly used datasets that I use for my work, you
 | GlobalVoices 2018Q4| 812 |
 | Joshua Indian Corpus | 29 |
 | UnitedNations<sup>$3</sup> | 30 |
-| WikiMatrix | 1,617 | 
+| WikiMatrix | 1,617 |
+| Neulab_TEDTalksv1 | 4,455 |  
 | Other | 7 |
 | ----|----|
-| Total |101,383|
+| Total |105,838|
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
