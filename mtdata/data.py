@@ -9,7 +9,7 @@ from mtdata.cache import Cache
 from mtdata.index import Entry, get_entries
 from mtdata.parser import Parser
 from mtdata.utils import IO
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from itertools import zip_longest
 import collections as coll
 import json
@@ -17,7 +17,8 @@ import json
 
 class Dataset:
 
-    def __init__(self, dir: Path, langs, cache_dir: Path):
+    def __init__(self, dir: Path, langs, cache_dir: Path, drop_train_noise=True,
+                 drop_test_noise=False):
         self.dir = dir
         self.langs = langs
         assert len(langs) == 2, 'Only parallel datasets are supported for now and expect two langs'
@@ -27,6 +28,9 @@ class Dataset:
         self.tests_dir = dir / 'tests'  # wont be merged
         self.train_parts_dir.mkdir(parents=True, exist_ok=True)
         self.tests_dir.mkdir(parents=True, exist_ok=True)
+        self.drop_train_noise = drop_train_noise
+        self.drop_test_noise = drop_test_noise
+
 
     @classmethod
     def resolve_entries(cls, langs, names):
@@ -42,7 +46,9 @@ class Dataset:
 
     @classmethod
     def prepare(cls, langs, train_names: Optional[List[str]], test_names: Optional[List[str]],
-                out_dir: Path, cache_dir: Path, merge_train=False):
+                out_dir: Path, cache_dir: Path, merge_train=False,
+                drop_noise: Tuple[bool, bool]=(True, False)):
+        drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
         assert train_names or test_names, 'Either train_names or test_names should be given'
         # First, resolve and check if they exist before going to process them.
@@ -53,7 +59,8 @@ class Dataset:
         if train_names:
             train_entries = cls.resolve_entries(langs, train_names)
 
-        dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir)
+        dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir,
+                      drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise)
         if test_entries: # tests are smaller so quicker; no merging needed
             dataset.add_test_entries(test_entries)
 
@@ -62,7 +69,7 @@ class Dataset:
         return dataset
 
     def add_train_entries(self, entries, merge_train=False):
-        self.add_parts(self.train_parts_dir, entries)
+        self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise)
         if not merge_train:
             return
         # merge
@@ -101,14 +108,14 @@ class Dataset:
                 yield seg1.strip(), seg2.strip()
 
     def add_test_entries(self, entries):
-        self.add_parts(self.tests_dir, entries)
+        self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise)
 
-    def add_parts(self, dir_path, entries):
+    def add_parts(self, dir_path, entries, drop_noise=False):
         for ent in entries:
-            n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent)
+            n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise)
             log.info(f"{ent.name} : found {n_good:} segments and {n_bad:} errors")
 
-    def add_part(self, dir_path: Path, entry: Entry):
+    def add_part(self, dir_path: Path, entry: Entry, drop_noise=False):
         path = self.cache.get_entry(entry)
         swap = entry.is_swap(self.langs)
         parser = Parser(path, langs=self.langs, ext=entry.in_ext or None, ent=entry)
@@ -117,17 +124,20 @@ class Dataset:
         l2 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[1]}')
         mode = dict(mode='w', encoding='utf-8', errors='ignore')
         with l1.open(**mode) as f1, l2.open(**mode) as f2:
-            count, skips = 0, 0
+            count, skips, noise = 0, 0, 0
             for rec in parser.read_segs():
                 rec = rec[:2]  # get the first two recs
                 if len(rec) != 2:
                     skips += 1
                     continue
+                if drop_noise and entry.is_noisy(seg1=rec[0], seg2=rec[1]):
+                    skips += 1
+                    noise += 1
+                    continue
                 sent1, sent2 = [s.strip() for s in rec]
                 if not sent1 or not sent2:
-                    if len(rec) != 2:
-                        skips += 1
-                        continue
+                    skips += 1
+                    continue
                 if swap:
                     sent2, sent1 = sent1, sent2
                 f1.write(f'{sent1}\n')
@@ -135,5 +145,6 @@ class Dataset:
                 count += 1
             msg = f'Looks like an error. {count} segs are valid {skips} are invalid: {entry}'
             assert count > skips and count > 0, msg
-
+            if noise > 0:
+                log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100*noise/count:.4f}%")
         return count, skips
