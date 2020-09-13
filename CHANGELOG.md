@@ -1,5 +1,8 @@
 # Change Log
 
+# v0.2.7 20200912
+- Add OPUS 100 corpus
+
 # v0.2.6 - 20200827
 - Add all pairs of neulab_tedtalksv1 - train,test,dev  -- 4,455 of them
 - Add support for cleaning noise. Entry.is_noise(seg1, seg2)
