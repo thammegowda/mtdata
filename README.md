@@ -262,3 +262,11 @@ and [`cache`](mtdata/cache.py) for dealing with a new archive/file type that is 
 
 ## Developers:
 - [Thamme Gowda](https://twitter.com/thammegowda) 
+
+--- 
+# Disclaimer on Datasets
+
+This tools downloads and prepares public datasets. We do not host or distribute these datasets, vouch for their quality or fairness, or make any claims regarding license to use these datasets. It is your responsibility to determine whether you have permission to use the dataset under the dataset's license.
+We request all the users of this tool to cite the original creators of the datsets, which maybe obtained from  `mtdata list -n <NAME> -l <L1-L2> -full`.
+
+If you're a dataset owner and wish to update any part of it (description, citation, etc.), or do not want your dataset to be included in this library, please get in touch through a GitHub issue. Thanks for your contribution to the ML community!
