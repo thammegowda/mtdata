@@ -1,6 +1,10 @@
 # Change Log
 
-# v0.2.7 20200912
+# 0.2.7 WIP
+- Paracrawl v7 and v7.1  -- 29 new datasets
+ 
+
+# v0.2.7 - 20200912
 - Add OPUS 100 corpus
 
 # v0.2.6 - 20200827

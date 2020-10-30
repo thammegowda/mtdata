@@ -43,7 +43,7 @@ Here I (/TG) have picked some commonly used datasets that I use for my work - yo
 | Source | # of datasets |
 |---: | ---:|
 | Statmt | 355 |
-| Paracrawl | 30 |
+| Paracrawl | 59 |
 | Tilde | 519 |
 | OPUS<sup>$1</sup> | 53,351 |
 | OPUS100v1 | 302 |
@@ -55,7 +55,7 @@ Here I (/TG) have picked some commonly used datasets that I use for my work - yo
 | Neulab_TEDTalksv1 | 4,455 |  
 | Other | 7 |
 | ----|----|
-| Total |106,140|
+| Total |106,169|
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
