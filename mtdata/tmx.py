@@ -10,8 +10,10 @@ import argparse
 from mtdata import log
 from mtdata.utils import IO
 import time
+from mtdata.iso import iso3_code
 from html import unescape
 import datetime
+
 
 DEF_PROGRESS = 10  # seconds
 
@@ -52,13 +54,18 @@ def read_tmx(path: Union[Path], langs=None):
     with IO.reader(path) as data:
         recs = parse_tmx(data)
         for rec in recs:
-            if langs is None:
-                langs = [name for name, val in rec]
             (l1, t1), (l2, t2) = rec
+            l1 = iso3_code(l1, fail_error=True)
+            l2 = iso3_code(l2, fail_error=True)
+            if langs is None:
+                log.warning("langs not set; this could result in language mismatch")
+                langs = (l1, l2)
             if l1 == langs[0] and l2 == langs[1]:
                 yield t1, t2
-            else:
+            elif l2 == langs[0] and l1 == langs[1]:
                 yield t2, t1
+            else:
+                raise Exception(f"Language code mismatch;; ({l1, l2}) != {langs}")
 
 def main(inp, out):
     recs = read_tmx(inp)

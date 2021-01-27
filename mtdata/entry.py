@@ -46,6 +46,8 @@ class Entry:
             assert self.in_paths and len(self.in_paths) > 0, 'Archive entries must have in_paths'
 
     def is_swap(self, langs):
+        if self.in_ext == 'tmx':
+            return False
         return tuple(reversed(langs)) == tuple(self.langs)
 
     def __str__(self):

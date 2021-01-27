@@ -35,4 +35,4 @@ def load(index: Index):
             l1, l2 = pair.split('-')
             url = TILDE % (name, l1, l2)
             index.add_entry(Entry(langs=(l1, l2), name=name, url=url, cite=TILDE_CITE,
-                                    in_paths=["*.tmx"]))
+                                    in_paths=["*.tmx"], in_ext='tmx'))
