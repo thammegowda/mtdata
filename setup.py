@@ -6,7 +6,7 @@
 import mtdata
 from pathlib import Path
 
-from setuptools import setup, find_packages, find_namespace_packages
+from setuptools import setup, find_namespace_packages
 
 long_description = Path('README.md').read_text(encoding='utf-8', errors='ignore')
 

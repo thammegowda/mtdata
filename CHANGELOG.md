@@ -1,7 +1,10 @@
 # Change Log
 
-# 0.2.7 WIP
+# 0.2.8 - 20210126
 - Paracrawl v7 and v7.1  -- 29 new datasets
+- Fix swapping issue with TMX format (TILDE corpus); add a testcase for TMX entry 
+- Add mtdata-iso shell command
+- Add "mtdata report" sub command to summarize datasets by language and names
  
 
 # v0.2.7 - 20200912

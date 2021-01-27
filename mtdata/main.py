@@ -4,14 +4,13 @@
 # Created: 4/4/20
 import argparse
 from pathlib import Path
-import sys
 from collections import defaultdict
 import mtdata
 from mtdata import log, __version__
 from mtdata.data import Dataset, get_entries
 from mtdata.utils import IO
 from mtdata.iso import iso3_code
-from mtdata.report import PlainReporter
+
 
 
 def list_data(langs, names, not_names=None, full=False, cache_dir=None):
