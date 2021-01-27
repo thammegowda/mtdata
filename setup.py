@@ -40,7 +40,10 @@ setup(
     keywords=['machine translation', 'datasets', 'NLP', 'natural language processing,'
                                                         'computational linguistics'],
     entry_points={
-        'console_scripts': ['mtdata=mtdata.main:main'],
+        'console_scripts': [
+            'mtdata=mtdata.main:main',
+            'mtdata-iso=mtdata.iso.__main__:main',
+                            ],
     },
     install_requires=['wget', 'portalocker']
 )

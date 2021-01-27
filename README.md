@@ -141,7 +141,7 @@ $ mtdata list -l deu-eng  # see available datasets
 ```
 Get these datasets and store under dir `deu-eng`
 ```bash
-$ mtdata get --langs deu-eng --train europarl_v10 wmt13_commoncrawl news_commentary_v14 --test newstest201{4,5,6,7,8,9}_deen --out deu-eng
+$ mtdata get --langs deu-eng --merge --train europarl_v10 wmt13_commoncrawl news_commentary_v14 --test newstest201{4,5,6,7,8,9}_deen --out deu-eng
     # ...[truncated]   
     INFO:root:Train stats:
     {
@@ -188,7 +188,7 @@ $ find  deu-eng -type f | sort  | xargs wc -l
 
 # ISO 639 3 
 Internally all language codes are mapped to ISO-639 3 codes.
-The mapping can be inspected with `python -m mtdata.iso `
+The mapping can be inspected with `python -m mtdata.iso ` or `mtdata-iso`
 ```bash
 $ python -m mtdata.iso -h
 usage: python -m mtdata.iso [-h] [langs [langs ...]]
