@@ -4,11 +4,14 @@
 # Created: 4/4/20
 import argparse
 from pathlib import Path
+import sys
+from collections import defaultdict
 import mtdata
 from mtdata import log, __version__
 from mtdata.data import Dataset, get_entries
 from mtdata.utils import IO
 from mtdata.iso import iso3_code
+from mtdata.report import PlainReporter
 
 
 def list_data(langs, names, not_names=None, full=False, cache_dir=None):
@@ -35,6 +38,24 @@ def get_data(args):
     with IO.writer(args.out / 'mtdata.signature.txt', append=True) as w:
         w.write(sig)
 
+
+def generate_report(langs, names, not_names=None, format='plain'):
+    entries = get_entries(langs, names, not_names)
+    lang_stats = defaultdict(int)
+    name_stats = defaultdict(int)
+    for ent in entries:
+        lang_stats['_'.join(ent.langs)] += 1
+        name_stats[ent.name] += 1
+
+    print("Languages:")
+    for key, val in lang_stats.items():
+        print(f'{key}\t{val:,}')
+
+    print("\nNames:")
+    for key, val in name_stats.items():
+        print(f'{key}\t{val:,}')
+
+
 def list_experiments(args):
     raise Exception("Not implemented yet")
 
@@ -58,6 +79,8 @@ def LangPair(string):
                     f" Let's make a little space for all 7000+ languages of our planet 😢.")
     return tuple(iso_codes)
 
+
+
 def add_boolean_arg(parser: argparse.ArgumentParser, name, default=False, help=''):
     group = parser.add_mutually_exclusive_group()
     group.add_argument(f'--{name}', action='store_true', dest=name, default=default, help=help)
@@ -65,7 +88,7 @@ def add_boolean_arg(parser: argparse.ArgumentParser, name, default=False, help='
                        help='Do not ' + help)
 
 def parse_args():
-    p = argparse.ArgumentParser(formatter_class=MyFormatter)
+    p = argparse.ArgumentParser(formatter_class=MyFormatter, epilog=f'Loaded from {__file__} (v{__version__})')
     p.add_argument('-c', '--cache', type=Path, help='Cache dir', default=mtdata.cache_dir)
     p.add_argument('-vv', '--verbose', action='store_true', help='verbose mode')
     p.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
@@ -94,13 +117,13 @@ def parse_args():
                        required=True)
     get_p.add_argument('-tr', '--train', metavar='NAME', dest='train_names', nargs='*',
                        help='''R|Names of datasets separated by space, to be used for *training*.
-  e.g. -tr news_commentary_v14 europarl_v9 .
-  All these datasets gets concatenated into one big file.''')
+    e.g. -tr news_commentary_v14 europarl_v9 .
+    All these datasets gets concatenated into one big file.''')
     get_p.add_argument('-ts', '--test', metavar='NAME', dest='test_names', nargs='*',
                        help='''R|Names of datasets separated by space, to be used for *testing*. 
-  e.g. "-tt newstest2018_deen newstest2019_deen".
-You may also use shell expansion if your shell supports it.
-  e.g. "-tt newstest201{8,9}_deen." ''')
+    e.g. "-tt newstest2018_deen newstest2019_deen".
+    You may also use shell expansion if your shell supports it.
+    e.g. "-tt newstest201{8,9}_deen." ''')
     add_boolean_arg(get_p, 'merge', default=False, help='Merge train into single file')
 
     get_p.add_argument('-o', '--out', type=Path, required=True, help='Output directory name')
@@ -111,6 +134,14 @@ You may also use shell expansion if your shell supports it.
                             help='Language pairs; e.g.: en-de')
     list_exp_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
                             help='Name/identifier for paper eg vaswani-etal-2017')
+
+    report_p = sub_ps.add_parser('report', formatter_class=MyFormatter)
+    report_p.add_argument('-l', '--langs', metavar='L1-L2', type=LangPair,
+                        help='Language pairs; e.g.: deu-eng')
+    report_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
+                        help='Name of dataset set; eg europarl_v9.')
+    report_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
+
 
     args = p.parse_args()
     if args.verbose:
@@ -128,6 +159,8 @@ def main():
         get_data(args)
     elif args.task == 'list_exp':
         list_experiments(args)
+    elif args.task == 'report':
+        generate_report(args.langs, names=args.names, not_names=args.not_names)
     else:
         raise Exception(f'{args.task} not implemented')
 

@@ -4,6 +4,7 @@
 # Created: 4/8/20
 from mtdata import log
 from mtdata.entry import Entry, Paper
+from typing import List
 
 
 class Index:
@@ -59,7 +60,7 @@ class Index:
 INDEX: Index = Index()
 
 
-def get_entries(langs=None, names=None, not_names=None):
+def get_entries(langs=None, names=None, not_names=None) -> List[Entry]:
     """
     :param langs: language pairs  to select eg ('en', 'de')
     :param names:  names to select
