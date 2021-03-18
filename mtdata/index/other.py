@@ -63,3 +63,53 @@ def load_all(index: Index):
                     name=f'kftt_v1_{split}', in_ext='txt',
                     in_paths=[f1, f2], cite=cite)
         index.add_entry(ent)
+
+    url = "http://lotus.kuee.kyoto-u.ac.jp/WAT/my-en-data/wat2020.my-en.zip"
+    cite = """@article{ding2020a,
+        title={A {Burmese} ({Myanmar}) Treebank: Guildline and Analysis},
+        author={Ding, Chenchen and {Sann Su Su Yee} and {Win Pa Pa} and {Khin Mar Soe} and Utiyama, Masao and Sumita, Eiichiro},
+        journal={ACM Transactions on Asian and Low-Resource Language Information Processing (TALLIP)},
+        volume={19},
+        number={3},
+        pages={40},
+        year={2020},
+        publisher={ACM}
+        }
+    """
+    for split in ['dev', 'test', 'train']:
+        ent = Entry(langs=('my', 'en'), url=url, name=f'WAT2020_ALT_{split}', in_ext='txt',
+                    cite=cite, filename='wat2020.my-en.zip',
+              in_paths=[f'wat2020.my-en/alt/{split}.alt.my', f'wat2020.my-en/alt/{split}.alt.en'])
+        index.add_entry(ent)
+
+
+    l1, l2 = 'iu', 'en'
+    url="https://nrc-digital-repository.canada.ca/eng/view/dataset/?id=c7e34fa7-7629-43c2-bd6d-19b32bf64f60"
+    cite ="""@inproceedings{joanis-etal-2020-nunavut,
+    title = "The {N}unavut Hansard {I}nuktitut{--}{E}nglish Parallel Corpus 3.0 with Preliminary Machine Translation Results",
+    author = "Joanis, Eric  and
+      Knowles, Rebecca  and
+      Kuhn, Roland  and
+      Larkin, Samuel  and
+      Littell, Patrick  and
+      Lo, Chi-kiu  and
+      Stewart, Darlene  and
+      Micher, Jeffrey",
+    booktitle = "Proceedings of the 12th Language Resources and Evaluation Conference",
+    month = may,
+    year = "2020",
+    address = "Marseille, France",
+    publisher = "European Language Resources Association",
+    url = "https://www.aclweb.org/anthology/2020.lrec-1.312",
+    pages = "2562--2572",
+    language = "English",
+    ISBN = "979-10-95546-34-4",
+}"""
+    for split in ['dev', 'devtest', 'test', 'train']:
+        path_pref = f'Nunavut-Hansard-Inuktitut-English-Parallel-Corpus-3.0/split/{split}'
+        if split != 'train':
+            path_pref += '-dedup'
+        ent = Entry(langs=(l1, l2), url=url, name=f'NunavutHansard_v3_{split}', in_ext='txt',
+                    cite=cite, filename='NunavutHansard_iuen_v3.tgz',
+                    in_paths=[f'{path_pref}.{l1}', f'{path_pref}.{l2}'])
+        index.add_entry(ent)

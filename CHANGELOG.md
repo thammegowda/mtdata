@@ -1,5 +1,12 @@
 # Change Log
 
+
+# 0.2.9-dev - WIP
+
+- WMT20 Tests
+- Paracrawl_v5_1 for Pashto and Khmer -English
+- NunavutHansard_v3 for Inuktitut -English
+
 # 0.2.8 - 20210126
 - Paracrawl v7 and v7.1  -- 29 new datasets
 - Fix swapping issue with TMX format (TILDE corpus); add a testcase for TMX entry 

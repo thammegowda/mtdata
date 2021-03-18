@@ -226,6 +226,54 @@ def load(index: Index):
             index.add_entry(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
                                   cite=cite))
+
+    #### WMT 20 Tests
+    url = "http://data.statmt.org/wmt20/translation-task/test.tgz"
+    wmt20_cite = """@inproceedings{barrault-etal-2020-findings,
+    title = "Findings of the 2020 Conference on Machine Translation ({WMT}20)",
+    author = {Barrault, Lo{\"\i}c  and
+      Biesialska, Magdalena  and
+      Bojar, Ond{\v{r}}ej  and
+      Costa-juss{\`a}, Marta R.  and
+      Federmann, Christian  and
+      Graham, Yvette  and
+      Grundkiewicz, Roman  and
+      Haddow, Barry  and
+      Huck, Matthias  and
+      Joanis, Eric  and
+      Kocmi, Tom  and
+      Koehn, Philipp  and
+      Lo, Chi-kiu  and
+      Ljube{\v{s}}i{\'c}, Nikola  and
+      Monz, Christof  and
+      Morishita, Makoto  and
+      Nagata, Masaaki  and
+      Nakazawa, Toshiaki  and
+      Pal, Santanu  and
+      Post, Matt  and
+      Zampieri, Marcos},
+    booktitle = "Proceedings of the Fifth Conference on Machine Translation",
+    month = nov,
+    year = "2020",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/2020.wmt-1.1",
+    pages = "1--55",
+    }"""
+    for _pref, pairs in {
+        "": ["csen", "deen", "defr", "encs", "ende", "eniu", "enja", "enkm", "enpl", "enps",
+             "enru", "enta", "enzh", "frde", "iuen", "jaen", "kmen", "plen", "psen", "ruen",
+             "taen", "zhen"],
+        "B": ["deen", "ende", "enzh", "ruen", "zhen"]}.items():
+        for pair in pairs:
+            l1, l2 = pair[:2], pair[2:]
+            name = f'newstest{_pref}2020'
+            f1 = f'sgm/{name}-{pair}-src.{l1}.sgm'
+            f2 = f'sgm/{name}-{pair}-ref.{l2}.sgm'
+            name = f'{name}_{pair}'  # name cant have -, so have an _ instead
+            index.add_entry(Entry((l1, l2), name=name, filename='wmt20tests.tgz', in_paths=[f1, f2],
+                                  in_ext='sgm', cite=wmt20_cite, url=url))
+
     # Multi parallel
     wmt_sets = {
         '2009': ['en', 'cs', 'de', 'es', 'fr'],
@@ -258,7 +306,6 @@ def load(index: Index):
 
     # ==== Europarl v10
     EP_v10 = "http://www.statmt.org/europarl/v10/training/europarl-v10.%s-%s.tsv.gz"
-    wmt20_cite = None  # TODO: update
     for pair in ['cs en', 'cs pl', 'de en', 'de fr', 'es pt', 'fi en', 'fr en', 'lt en', 'pl en']:
         l1, l2 = pair.split()
         index.add_entry(
@@ -300,3 +347,11 @@ def load(index: Index):
         entry = Entry(langs=('ps', 'en'), name=name, url=url, cite=wmt20_cite, in_paths=[ps, en],
                       filename='wmt20-psen-parallel.tgz', in_ext='txt')
         index.add_entry(entry)
+
+    for l2 in ['ps', 'km']:
+        url = f"http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-{l2}.xz"
+        entry = Entry(langs=('en', l2), name='paracrawl_v5_1', url=url, cite=wmt20_cite, ext='tsv',
+                      cols=(0, 1))
+        index.add_entry(entry)
+
+
