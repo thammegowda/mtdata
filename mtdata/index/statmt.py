@@ -350,7 +350,7 @@ def load(index: Index):
 
     for l2 in ['ps', 'km']:
         url = f"http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-{l2}.xz"
-        entry = Entry(langs=('en', l2), name='paracrawl_v5_1', url=url, cite=wmt20_cite, ext='tsv',
+        entry = Entry(langs=('en', l2), name='paracrawl_v5_1', url=url, cite=wmt20_cite, ext='tsv.xz',
                       cols=(0, 1))
         index.add_entry(entry)
 
