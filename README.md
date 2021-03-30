@@ -190,24 +190,25 @@ $ find  deu-eng -type f | sort  | xargs wc -l
 Internally all language codes are mapped to ISO-639 3 codes.
 The mapping can be inspected with `python -m mtdata.iso ` or `mtdata-iso`
 ```bash
-$ python -m mtdata.iso -h
-usage: python -m mtdata.iso [-h] [langs [langs ...]]
+$  mtdata-iso -h
+usage: python -m mtdata.iso [-h] [-b] [langs [langs ...]]
 
 ISO 639-3 lookup tool
 
 positional arguments:
-  langs       Language code or name that needs to be looked up. When no
-              language code is given, all languages are listed.
+  langs        Language code or name that needs to be looked up. When no
+               language code is given, all languages are listed.
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help   show this help message and exit
+  -b, --brief  be brief; do crash on error inputs
 
 # list all 7000+ languages and their 3 letter codes
-$ python -m mtdata.iso 
+$ mtdata-iso    # python -m mtdata.iso 
 ...
 
 # lookup codes for some languages
-$ python -m mtdata.iso ka kn en de xx english german
+$ mtdata-iso ka kn en de xx english german
 Input   ISO639_3        Name
 ka      kat     Georgian
 kn      kan     Kannada
@@ -216,6 +217,18 @@ de      deu     German
 xx      -none-  -none-
 english eng     English
 german  deu     German
+
+# Print no header, and crash on error; 
+$ mtdata-iso xx -b
+Exception: Unable to find ISO 639-3 code for 'xx'. Please run
+python -m mtdata.iso | grep -i <name>
+to know the 3 letter ISO code for the language.
+```
+To use Python API
+```python
+from mtdata.iso import iso3_code
+print(iso3_code('en', fail_error=True))
+print(iso3_code('eNgLIsH', fail_error=True))  # case doesnt matter
 ```
 
 # How to extend, modify, or contribute:
