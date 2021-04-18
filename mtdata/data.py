@@ -144,7 +144,9 @@ class Dataset:
                 f2.write(f'{sent2}\n')
                 count += 1
             msg = f'Looks like an error. {count} segs are valid {skips} are invalid: {entry}'
-            assert count > skips and count > 0, msg
+            assert count > 0, msg
+            if skips > count:
+                log.warning(msg)
             if noise > 0:
                 log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100*noise/count:.4f}%")
         return count, skips
