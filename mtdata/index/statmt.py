@@ -353,5 +353,3 @@ def load(index: Index):
         entry = Entry(langs=('en', l2), name='paracrawl_v5_1', url=url, cite=wmt20_cite, ext='tsv.xz',
                       cols=(0, 1))
         index.add_entry(entry)
-
-

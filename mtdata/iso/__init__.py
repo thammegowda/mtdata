@@ -15,14 +15,17 @@ def iso3_code(lang: str, fail_error=False, default=None) -> str:
     """
     from mtdata.iso.iso639_3 import CODES as iso3_codes, name_to_code
     from mtdata.iso.iso639_2 import CODE2_TO_3, code2_to_code3_name
-
-    if lang.lower() in iso3_codes:
-        return lang.lower()
-    if lang.lower() in CODE2_TO_3:
-        _, name = code2_to_code3_name(lang.lower())
+    from mtdata.iso.iso639_1 import ISO693_1_to_3 as code1_to_3
+    lang = lang.lower()
+    if lang in iso3_codes:
+        return lang
+    if lang in CODE2_TO_3:
+        _, name = code2_to_code3_name(lang)
         iso3_code = name_to_code(name)
         if iso3_code:
             return iso3_code
+    if lang in code1_to_3:
+        return code1_to_3[lang]
     if name_to_code(lang, None):
         return name_to_code(lang)
     if fail_error:

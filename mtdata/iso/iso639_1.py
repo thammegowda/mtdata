@@ -190,4 +190,8 @@ yo,yor
 za,zha
 zu,zul"""
 
-ISO693_1_to_3 = {rec[0]: rec[1] for l in data.splitlines() for rec in [l.strip().split()]}
+ISO693_1_to_3 = {}
+for line in data.splitlines():
+    code1, code3 = rec = line.strip().split(',')
+    assert code1 not in ISO693_1_to_3
+    ISO693_1_to_3[code1] = code3
