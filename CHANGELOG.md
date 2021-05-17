@@ -7,6 +7,7 @@
   - Paracrawl_v5_1 for Pashto and Khmer -English
   - NunavutHansard_v3 for Inuktitut -English
   - paracrawl_v8 and paracrawl_bonus datasets ([#29][i29])
+  - ELRC-Share contributed by [@kpu](https://github.com/kpu) ([#32][p32])
 - New features
   - 'mtdata -b' for short outputs and crash on error input
 - Fixes and improvements:
@@ -14,11 +15,10 @@
   - Consistent docs for the default behavior of --merge ([#26][i26])
   - broken pipe error when `mtdata list | head` is now handled
 
-
 [i29]: https://github.com/thammegowda/mtdata/issues/29
 [i24]: https://github.com/thammegowda/mtdata/issues/24
 [i26]: https://github.com/thammegowda/mtdata/issues/26 
-
+[p32]: https://github.com/thammegowda/mtdata/pull/32
 # 0.2.8 - 20210126
 - Paracrawl v7 and v7.1  -- 29 new datasets
 - Fix swapping issue with TMX format (TILDE corpus); add a testcase for TMX entry 

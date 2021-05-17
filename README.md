@@ -52,10 +52,11 @@ Here I (/TG) have picked some commonly used datasets that I use for my work - yo
 | Joshua Indian Corpus | 29 |
 | UnitedNations<sup>$3</sup> | 30 |
 | WikiMatrix | 1,617 |
-| Neulab_TEDTalksv1 | 4,455 |  
+| Neulab_TEDTalksv1 | 4,455 |
+| ELRC-SHARE | 37 |
 | Other | 14 |
 | ----|----|
-| Total |108,222|
+| Total |108,296|
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
