@@ -350,6 +350,39 @@ def load(index: Index):
 
     for l2 in ['ps', 'km']:
         url = f"http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-{l2}.xz"
-        entry = Entry(langs=('en', l2), name='paracrawl_v5_1', url=url, cite=wmt20_cite, ext='tsv.xz',
-                      cols=(0, 1))
+        entry = Entry(langs=('en', l2), name='paracrawl_v5_1', url=url, cite=wmt20_cite,
+                      ext='tsv.xz', cols=(0, 1))
+        index.add_entry(entry)
+
+    ccalign_cite = """@InProceedings{chaudhary-EtAl:2019:WMT,
+  author    = {Chaudhary, Vishrav  and  Tang, Yuqing  and  GuzmÃƒÂ¡n, Francisco  and  Schwenk, Holger  and  Koehn, Philipp},
+  title     = {Low-Resource Corpus Filtering Using Multilingual Sentence Embeddings},
+  booktitle = {Proceedings of the Fourth Conference on Machine Translation (Volume 3: Shared Task Papers, Day 2)},
+  month     = {August},
+  year      = {2019},
+  address   = {Florence, Italy},
+  publisher = {Association for Computational Linguistics},
+  pages     = {263--268},
+  url       = {http://www.aclweb.org/anthology/W19-5435}
+}"""
+    CC_ALIGNED = 'http://www.statmt.org/cc-aligned/sentence-aligned/{src}-{tgt}.tsv.xz'
+    tgts='es_XX et_EE fa_IR ff_NG fi_FI fr_XX gu_IN ha_NG he_IL hi_IN hr_HR ht_HT hu_HU hy_AM id_ID ig_NG is_IS it_IT ja_XX jv_ID ka_GE kg_AO kk_KZ km_KH kn_IN ko_KR ku_TR ky_KG lg_UG ln_CD lo_LA lt_LT lv_LV mg_MG mi_NZ mk_MK ml_IN mn_MN mr_IN ms_MY mt_MT my_MM ne_NP nl_XX no_XX ns_ZA ny_MW om_KE or_IN pa_IN pl_PL ps_AF pt_XX qa_MM qd_MM ro_RO ru_RU si_LK sk_SK sl_SI sn_ZW so_SO sq_AL sr_RS ss_SZ st_ZA su_ID sv_SE sw_KE sz_PL ta_IN te_IN tg_TJ th_TH ti_ET tl_XX tn_BW tr_TR ts_ZA tz_MA uk_UA ur_PK ve_ZA vi_VN wo_SN xh_ZA yo_NG zh_CN zh_TW zu_ZA zz_TR'.split()
+    srcs = 'af_ZA ak_GH am_ET ar_AR as_IN ay_BO az_AZ az_IR be_BY bg_BG bm_ML bn_IN br_FR bs_BA ca_ES cb_IQ cs_CZ cx_PH cy_GB da_DK de_DE el_GR'.split()
+    pairs = [('en_XX', tgt) for tgt in tgts] + [(src, 'en_XX') for src in srcs]
+    dont_know = {'qa', 'qd'}
+     # Cant find them in ISO 639-1:  https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+     #                and lingo http://www.lingoes.net/en/translator/langcode.htm
+     #               and web-info https://wp-info.org/tools/languagecodes.php
+    unsupported = {'zh_TW', 'az_IR'}
+    # country locales are not supported; they create conflicts. keeping large ones instead
+    for src, tgt in pairs:
+        if src in unsupported or tgt in unsupported:
+            continue
+        l1, l2 = src.split('_')[0], tgt.split('_')[0]
+        if l1 in dont_know or l2 in dont_know:
+            # I dont know what language these are
+            continue
+        url = CC_ALIGNED.format(src=src, tgt=tgt)
+        entry = Entry(langs=(l1, l2), name='cc_aligned', url=url, cite=ccalign_cite,
+                      ext='tsv.xz', cols=(0, 1))
         index.add_entry(entry)

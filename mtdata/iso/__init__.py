@@ -16,6 +16,8 @@ def iso3_code(lang: str, fail_error=False, default=None) -> str:
     from mtdata.iso.iso639_3 import CODES as iso3_codes, name_to_code
     from mtdata.iso.iso639_2 import CODE2_TO_3, code2_to_code3_name
     from mtdata.iso.iso639_1 import ISO693_1_to_3 as code1_to_3
+    from mtdata.iso.custom import CUSTOM_TO_3 as custom_to_3
+
     lang = lang.lower()
     if lang in iso3_codes:
         return lang
@@ -28,6 +30,8 @@ def iso3_code(lang: str, fail_error=False, default=None) -> str:
         return code1_to_3[lang]
     if name_to_code(lang, None):
         return name_to_code(lang)
+    if lang in custom_to_3:  # at last
+        return custom_to_3[lang]
     if fail_error:
         raise Exception(f"Unable to find ISO 639-3 code for '{lang}'. "
                         f"Please run\npython -m mtdata.iso | grep -i <name>\n"
