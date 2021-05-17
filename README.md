@@ -1,11 +1,11 @@
 # MTData
-MTData tool automate the dataset collection and preparation for machine translation research.
+MTData tool automates the dataset collection and preparation for machine translation research.
 It provides CLI and python APIs, so it can be used as a standalone tool or embedded into
  python apps for preparing MT experiments.
 
 This tool knows:
 - From where to download data sets: WMT tests and devs for \[2014, 2015, ... 2020], Paracrawl, 
-  Europarl, News Commentary, WikiTitles, Tilde Model corpus ... 
+  Europarl, News Commentary, WikiTitles, Tilde Model corpus, OPUS ... 
 - How to extract files : .tar, .tar.gz, .tgz, .zip, ... 
 - How to parse .tmx, .sgm and such XMLs, or .tsv ... Checks if they have same number of segments.  
 - Whether parallel data is in one .tsv file or two sgm files.
@@ -43,7 +43,7 @@ Here I (/TG) have picked some commonly used datasets that I use for my work - yo
 | Source | # of datasets |
 |---: | ---:|
 | Statmt | 493 |
-| Paracrawl | 59 |
+| Paracrawl | 96 |
 | Tilde | 519 |
 | OPUS<sup>$1</sup> | 54,344 |
 | OPUS100v1 | 302 |
@@ -52,10 +52,11 @@ Here I (/TG) have picked some commonly used datasets that I use for my work - yo
 | Joshua Indian Corpus | 29 |
 | UnitedNations<sup>$3</sup> | 30 |
 | WikiMatrix | 1,617 |
-| Neulab_TEDTalksv1 | 4,455 |  
+| Neulab_TEDTalksv1 | 4,455 |
+| ELRC-SHARE | 37 |
 | Other | 14 |
 | ----|----|
-| Total |108,222|
+| Total |108,296|
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
@@ -112,18 +113,20 @@ usage: mtdata get [-h] -l L1-L2 [-tr [NAME [NAME ...]]]
 optional arguments:
   -h, --help            show this help message and exit
   -l L1-L2, --langs L1-L2
-                        Language pairs; e.g.: deu-eng (default: None)
+                        Language pairs; e.g.: deu-eng 
   -tr [NAME [NAME ...]], --train [NAME [NAME ...]]
                         Names of datasets separated by space, to be used for *training*.
                           e.g. -tr news_commentary_v14 europarl_v9 .
-                          All these datasets gets concatenated into one big file.
-                           (default: None)
+                          To concatenate all these into a single train file, set --merge flag.
   -tt [NAME [NAME ...]], --test [NAME [NAME ...]]
                         Names of datasets separated by space, to be used for *testing*.
                           e.g. "-tt newstest2018_deen newstest2019_deen".
                         You may also use shell expansion if your shell supports it.
-                          e.g. "-tt newstest201{8,9}_deen."  (default: None)
-  -o OUT, --out OUT     Output directory name (default: None)
+                          e.g. "-tt newstest201{8,9}_deen."
+  --merge               Merge train into a single file (default: False)
+  --no-merge            Do not Merge train into a single file (default: True)
+                          
+  -o OUT, --out OUT     Output directory name
 ```
 
 # Example  
@@ -263,7 +266,7 @@ for set_name, pairs in wmt_sets.items():
 Refer to [paracrawl](mtdata/index/paracrawl.py), [tilde](mtdata/index/tilde.py), or
  [statmt](mtdata/index/statmt.py) for examples.
  
-If citation is available for a dataset, please incl.deu
+If citation is available for a dataset, please include
 ```python
 cite = r"""bib tex here""
 Entry(... cite=cite)
@@ -273,8 +276,8 @@ For adding a custom parser, or file handler look into [`parser.read_segs()`](mtd
 and [`cache`](mtdata/cache.py) for dealing with a new archive/file type that is not already supported.
  
 
-## Developers:
-- [Thamme Gowda](https://twitter.com/thammegowda) 
+## Developers and Contributor:
+See - https://github.com/thammegowda/mtdata/graphs/contributors
 
 --- 
 # Disclaimer on Datasets

@@ -117,13 +117,13 @@ def parse_args():
     get_p.add_argument('-tr', '--train', metavar='NAME', dest='train_names', nargs='*',
                        help='''R|Names of datasets separated by space, to be used for *training*.
     e.g. -tr news_commentary_v14 europarl_v9 .
-    All these datasets gets concatenated into one big file.''')
+     To concatenate all these into a single train file, set --merge flag.''')
     get_p.add_argument('-ts', '--test', metavar='NAME', dest='test_names', nargs='*',
                        help='''R|Names of datasets separated by space, to be used for *testing*. 
     e.g. "-tt newstest2018_deen newstest2019_deen".
     You may also use shell expansion if your shell supports it.
     e.g. "-tt newstest201{8,9}_deen." ''')
-    add_boolean_arg(get_p, 'merge', default=False, help='Merge train into single file')
+    add_boolean_arg(get_p, 'merge', default=False, help='Merge train into a single file')
 
     get_p.add_argument('-o', '--out', type=Path, required=True, help='Output directory name')
 
@@ -140,7 +140,6 @@ def parse_args():
     report_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
                         help='Name of dataset set; eg europarl_v9.')
     report_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
-
 
     args = p.parse_args()
     if args.verbose:

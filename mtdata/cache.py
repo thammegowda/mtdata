@@ -90,7 +90,7 @@ class Cache:
             return save_at
         save_at.parent.mkdir(parents=True, exist_ok=True)
 
-        log.info(f"Acquiring lock on {lock_file}\nif this gets stuck, delete the lock and restart")
+        log.info(f"Acquiring lock on {lock_file}")
         with portalocker.Lock(lock_file, 'w', timeout=MAX_TIMEOUT) as fh:
             # check if downloaded by  other parallel process
             if valid_flag.exists() and save_at.exists():
@@ -111,7 +111,7 @@ class Cache:
             return  # already extracted
 
         x_dir.mkdir(parents=True, exist_ok=True)
-        log.info(f"Acquiring lock on {lock_file}\nif this gets stuck, delete the lock and restart")
+        log.info(f"Acquiring lock on {lock_file}")
         with portalocker.Lock(lock_file, 'w', timeout=MAX_TIMEOUT) as fh:
             if valid_file.exists() and x_dir.exists():
                 return
