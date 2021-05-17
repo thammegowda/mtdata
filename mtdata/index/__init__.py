@@ -85,7 +85,7 @@ def get_entries(langs=None, names=None, not_names=None) -> List[Entry]:
 
 def load_all():
     from mtdata.index import (statmt, paracrawl, tilde, literature, joshua_indian, globalvoices,
-                              unitednations, wikimatrix, other, neulab_tedtalks)
+                              unitednations, wikimatrix, other, neulab_tedtalks, elrc_share)
     from mtdata.index.opus import opus_index, jw300, opus100
 
     counts = {}
@@ -102,6 +102,7 @@ def load_all():
         ('WikiMatrix', wikimatrix.load_all),
         ('Other', other.load_all),
         ('Neulab_TEDTalksv1', neulab_tedtalks.load_all),
+        ('ELRC-SHARE', elrc_share.load_all),
     ]
     for name, loader in subsets:
         n = len(INDEX)
