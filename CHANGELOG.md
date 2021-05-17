@@ -1,6 +1,6 @@
 # Change Log
 
-# 0.2.9-dev - WIP
+# 0.2.9 - 20210517
 
 - New datasets 
   - WMT20 Tests
