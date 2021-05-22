@@ -15,8 +15,10 @@ Scrapy 2.0+, python 3.7+
 
     # One entry per coprus. url is %s-%s to replace it with langs list. 
     scrapy crawl opus -o opus-min.jl   # Always use JSON Lines
+    # this is what goes into mtdata index https://github.com/thammegowda/mtdata/blob/master/mtdata/index/opus/opus_index.py
+    cat opus-min | jq -r .mtdata | sort > opus.tsv  
     
-    # One entry per item.
+    # One entry per item.  (not needed for mtdata
     scrapy crawl opus -o opus-flat.jl  -a flat=True
 
 ### Tilde Model crawl
