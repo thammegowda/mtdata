@@ -113,3 +113,21 @@ def load_all(index: Index):
                     cite=cite, filename='NunavutHansard_iuen_v3.tgz',
                     in_paths=[f'{path_pref}.{l1}', f'{path_pref}.{l2}'])
         index.add_entry(ent)
+
+
+
+    # === ECDC ===
+    cite="""@article{Steinberger2014,
+    title={An overview of the European Union's highly multilingual parallel corpora},
+    journal={Language Resources and Evaluation},
+    author={Steinberger, Ralf and Ebrahim, Mohamed and Poulis, Alexandros and Carrasco-Benitez, Manuel and Schlüter, Patrick and Przybyszewski, Marek and Gilbro, Signe},
+    year={2014},
+    doi={10.1007/s10579-014-9277-0},
+    url={https://ec.europa.eu/jrc/sites/jrcsh/files/2014_08_LRE-Journal_JRC-Linguistic-Resources_Manuscript.pdf},
+    pages={679--707},
+}"""
+    langs = ["en", "bg", "cs", "da", "de", "el", "es", "et", "fi", "fr", "ga", "hu", "is", "it", "lt", "lv", "mt", "nl", "no", "pl", "pt", "ro", "sk", "sl", "sv"]
+    for i, l1 in enumerate(langs):
+        for l2 in langs[i+1:]:
+            ent = Entry(langs=(l1, l2), url="http://optima.jrc.it/Resources/ECDC-TM/ECDC-TM.zip", name="ECDC", in_ext='tmx', cite=cite, in_paths=["ECDC-TM/ECDC.tmx"])
+            index.add_entry(ent)
