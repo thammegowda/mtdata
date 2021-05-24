@@ -40,7 +40,7 @@ def parse_tmx(data, log_every=DEF_PROGRESS):
             t = time.time()
         tu.clear()
 
-def read_tmx(path: Union[Path], langs=None):
+def read_tmx(path: Union[Path, str], langs=None):
     """
     reads a TMX file as records
     :param path: path to .tmx file
@@ -71,8 +71,8 @@ def read_tmx(path: Union[Path], langs=None):
         log.warning(f"Skipped {fails} entries due to language mismatch in TMX {path}")
     log.info(f"Extracted {passes} pairs from TMX {path}")
 
-def main(inp, out):
-    recs = read_tmx(inp)
+def main(inp, out, langs):
+    recs = read_tmx(inp, langs=langs)
     with IO.writer(out) as out:
         count = 0
         for rec in recs:
@@ -81,6 +81,8 @@ def main(inp, out):
             count += 1
         log.warning(f"Wrote {count} lines to {out}")
 
+def split_tuple(text: str):
+    return tuple(text.split("-"))
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='A tool to convert TMX to TSV',
@@ -88,5 +90,8 @@ if __name__ == '__main__':
     p.add_argument('-i', '--inp', type=Path, required=True, help='Input file path')
     p.add_argument('-o', '--out', type=Path, default=Path('/dev/stdout'),
                    help='Output file path')
+    p.add_argument('-l', '--langs', type=split_tuple, default=None,
+                   help='Languages from TMX. example: eng-fra or en-fr')
+
     args = vars(p.parse_args())
     main(**args)
