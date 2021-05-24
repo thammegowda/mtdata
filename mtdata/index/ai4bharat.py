@@ -8,17 +8,7 @@ from mtdata.index import Index, Entry
 
 def load_all(index: Index):
 
-    cite="""@misc{ramesh2021samanantar,
-      title={Samanantar: The Largest Publicly Available Parallel Corpora Collection for 11 Indic Languages}, 
-      author={Gowtham Ramesh and Sumanth Doddapaneni and Aravinth Bheemaraj and Mayank Jobanputra 
-       and Raghavan AK and Ajitesh Sharma and Sujit Sahoo and Harshita Diddee and Mahalakshmi J
-       and Divyanshu Kakwani and Navneet Kumar and Aswin Pradeep and Kumar Deepak
-       and Vivek Raghavan and Anoop Kunchukuttan and Pratyush Kumar and Mitesh Shantadevi Khapra},
-      year={2021},
-      eprint={2104.05596},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL}
-    }"""
+    cite = index.ref_db.get_bibtex('ramesh2021samanantar')
     pairs = ('en-as en-bn en-gu en-hi en-kn en-ml en-mr en-or en-pa en-ta en-te as-bn as-gu as-hi'
              ' as-kn as-ml as-mr as-or as-pa as-ta as-te bn-gu bn-hi bn-kn bn-ml bn-mr bn-or bn-pa'
              ' bn-ta bn-te gu-hi gu-kn gu-ml gu-mr gu-or gu-pa gu-ta gu-te hi-kn hi-ml hi-mr hi-or'

@@ -28,7 +28,6 @@ setup(
     description=mtdata.__description__,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    license='University of Southern California (USC) Restricted License',
     classifiers=classifiers,
     python_requires='>=3.7',
     url='https://github.com/thammegowda/mtdata',
@@ -45,5 +44,9 @@ setup(
             'mtdata-iso=mtdata.iso.__main__:main',
                             ],
     },
-    install_requires=['wget', 'portalocker']
+    install_requires=[
+        'wget==3.2',
+        'portalocker==2.3.0',
+        'pybtex==0.24.0'
+    ]
 )

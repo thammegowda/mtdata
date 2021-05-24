@@ -3,57 +3,15 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
 
-from mtdata.index import Entry, Index
+from mtdata.index import Entry, Index, ReferenceDb
 
 
 def load(index: Index):
+    ref_db = ReferenceDb()
+    cite = ref_db.get_bibtex('espla-etal-2019-paracrawl')
+    cite += ref_db.get_bibtex('banon-etal-2020-paracrawl')
     # === Para crawl corpus
     PARACRAWL_v3 = 'https://s3.amazonaws.com/web-language-models/paracrawl/release3/%s-%s.bicleaner07.tmx.gz'
-    cite = r"""@inproceedings{espla-etal-2019-paracrawl,
-        title = "{P}ara{C}rawl: Web-scale parallel corpora for the languages of the {EU}",
-        author = "Espl{\`a}, Miquel  and
-          Forcada, Mikel  and
-          Ram{\'\i}rez-S{\'a}nchez, Gema  and
-          Hoang, Hieu",
-        booktitle = "Proceedings of Machine Translation Summit XVII Volume 2: Translator, Project and User Tracks",
-        month = aug,
-        year = "2019",
-        address = "Dublin, Ireland",
-        publisher = "European Association for Machine Translation",
-        url = "https://www.aclweb.org/anthology/W19-6721",
-        pages = "118--119",
-    }
-@inproceedings{banon-etal-2020-paracrawl,
-    title = "{P}ara{C}rawl: Web-Scale Acquisition of Parallel Corpora",
-    author = "Ba{\~n}{\'o}n, Marta  and
-      Chen, Pinzhen  and
-      Haddow, Barry  and
-      Heafield, Kenneth  and
-      Hoang, Hieu  and
-      Espl{\`a}-Gomis, Miquel  and
-      Forcada, Mikel L.  and
-      Kamran, Amir  and
-      Kirefu, Faheem  and
-      Koehn, Philipp  and
-      Ortiz Rojas, Sergio  and
-      Pla Sempere, Leopoldo  and
-      Ram{\'\i}rez-S{\'a}nchez, Gema  and
-      Sarr{\'\i}as, Elsa  and
-      Strelec, Marek  and
-      Thompson, Brian  and
-      Waites, William  and
-      Wiggins, Dion  and
-      Zaragoza, Jaume",
-    booktitle = "Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics",
-    month = jul,
-    year = "2020",
-    address = "Online",
-    publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/2020.acl-main.417",
-    doi = "10.18653/v1/2020.acl-main.417",
-    pages = "4555--4567",
-}    
-    """
     for pair in ['en cs', 'en de', 'en fi', 'en lt']:
         l1, l2 = pair.split()
         index.add_entry(

@@ -86,18 +86,7 @@ def load_all(index: Index):
  sl-sv sl-ta sl-te sl-tl sl-tr sl-uk sl-vi sl-zh sq-sr sq-sv sq-ta sq-te sq-tl sq-tr sq-uk sq-vi sq-zh sr-sv sr-ta sr-te
  sr-tl sr-tr sr-uk sr-vi sr-zh sv-sw sv-ta sv-te sv-tl sv-tr sv-tt sv-uk sv-vi sv-zh sw-tr sw-uk sw-vi sw-zh ta-tr ta-uk
  ta-vi ta-zh te-tr te-uk te-vi te-zh tl-tr tl-uk tl-vi tl-zh tr-tt tr-uk tr-vi tr-zh tt-uk tt-zh uk-vi uk-zh vi-zh wuu-zh"""
-    cite = """@article{wikimatrix1,
-    author    = {Holger Schwenk and Vishrav Chaudhary and Shuo Sun and Hongyu Gong and Francisco Guzm{\'{a}}n},
-    title     = {WikiMatrix: Mining 135M Parallel Sentences in 1620 Language Pairs from Wikipedia},
-    journal   = {CoRR},
-    volume    = {abs/1907.05791},
-    year      = {2019},
-    url       = {http://arxiv.org/abs/1907.05791},
-    archivePrefix = {arXiv},
-    eprint    = {1907.05791},
-    timestamp = {Wed, 17 Jul 2019 10:27:36 +0200},
-    biburl    = {https://dblp.org/rec/journals/corr/abs-1907-05791.bib},
-    bibsource = {dblp computer science bibliography, https://dblp.org}}"""
+    cite = index.ref_db.get_bibtex('wikimatrix1')
     url_pat = "https://dl.fbaipublicfiles.com/laser/WikiMatrix/v1/WikiMatrix.%s-%s.tsv.gz"
     mapping = dict(sh='hbs')
     skips = {'nds_nl', 'simple'}

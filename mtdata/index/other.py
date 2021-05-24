@@ -9,21 +9,7 @@ from mtdata.index import Index, Entry
 def load_all(index: Index):
 
     # === IITB hin eng http://www.cfilt.iitb.ac.in/iitb_parallel/
-    cite="""@article{DBLP:journals/corr/abs-1710-02855,
-  author    = {Anoop Kunchukuttan and
-               Pratik Mehta and
-               Pushpak Bhattacharyya},
-  title     = {The {IIT} Bombay English-Hindi Parallel Corpus},
-  journal   = {CoRR},
-  volume    = {abs/1710.02855},
-  year      = {2017},
-  url       = {http://arxiv.org/abs/1710.02855},
-  archivePrefix = {arXiv},
-  eprint    = {1710.02855},
-  timestamp = {Mon, 13 Aug 2018 16:48:50 +0200},
-  biburl    = {https://dblp.org/rec/journals/corr/abs-1710-02855.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
-}"""
+    cite = index.ref_db.get_bibtex('Kunchukuttan-etal-iitb')
     l1, l2 = 'hi', 'en'
     for version, prefix in [
         #('v1_0', 'http://www.cfilt.iitb.ac.in/iitb_parallel/iitb_corpus_download'),
@@ -48,12 +34,7 @@ def load_all(index: Index):
 
 
     # == Japanese ==
-    cite="""@misc{neubig11kftt,
-    author = {Graham Neubig},
-    title = {The {Kyoto} Free Translation Task},
-    howpublished = {http://www.phontron.com/kftt},
-    year = {2011}
-    }"""
+    cite = index.ref_db.get_bibtex('neubig11kftt')
     url = "http://www.phontron.com/kftt/download/kftt-data-1.0.tar.gz"
     l1, l2 = 'en', 'ja'
     for split in ['train', 'test', 'dev', 'tune']:
@@ -65,17 +46,7 @@ def load_all(index: Index):
         index.add_entry(ent)
 
     url = "http://lotus.kuee.kyoto-u.ac.jp/WAT/my-en-data/wat2020.my-en.zip"
-    cite = """@article{ding2020a,
-        title={A {Burmese} ({Myanmar}) Treebank: Guildline and Analysis},
-        author={Ding, Chenchen and {Sann Su Su Yee} and {Win Pa Pa} and {Khin Mar Soe} and Utiyama, Masao and Sumita, Eiichiro},
-        journal={ACM Transactions on Asian and Low-Resource Language Information Processing (TALLIP)},
-        volume={19},
-        number={3},
-        pages={40},
-        year={2020},
-        publisher={ACM}
-        }
-    """
+    cite = index.ref_db.get_bibtex('ding2020a')
     for split in ['dev', 'test', 'train']:
         ent = Entry(langs=('my', 'en'), url=url, name=f'WAT2020_ALT_{split}', in_ext='txt',
                     cite=cite, filename='wat2020.my-en.zip',
@@ -85,26 +56,7 @@ def load_all(index: Index):
 
     l1, l2 = 'iu', 'en'
     url="https://nrc-digital-repository.canada.ca/eng/view/dataset/?id=c7e34fa7-7629-43c2-bd6d-19b32bf64f60"
-    cite ="""@inproceedings{joanis-etal-2020-nunavut,
-    title = "The {N}unavut Hansard {I}nuktitut{--}{E}nglish Parallel Corpus 3.0 with Preliminary Machine Translation Results",
-    author = "Joanis, Eric  and
-      Knowles, Rebecca  and
-      Kuhn, Roland  and
-      Larkin, Samuel  and
-      Littell, Patrick  and
-      Lo, Chi-kiu  and
-      Stewart, Darlene  and
-      Micher, Jeffrey",
-    booktitle = "Proceedings of the 12th Language Resources and Evaluation Conference",
-    month = may,
-    year = "2020",
-    address = "Marseille, France",
-    publisher = "European Language Resources Association",
-    url = "https://www.aclweb.org/anthology/2020.lrec-1.312",
-    pages = "2562--2572",
-    language = "English",
-    ISBN = "979-10-95546-34-4",
-}"""
+    cite = index.ref_db.get_bibtex('joanis-etal-2020-nunavut')
     for split in ['dev', 'devtest', 'test', 'train']:
         path_pref = f'Nunavut-Hansard-Inuktitut-English-Parallel-Corpus-3.0/split/{split}'
         if split != 'train':

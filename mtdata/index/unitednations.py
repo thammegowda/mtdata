@@ -7,19 +7,7 @@ from mtdata.index import Index, Entry
 import itertools
 
 def load_all(index: Index):
-    cite="""@inproceedings{ziemski-etal-2016-united,
-    title = "The United Nations Parallel Corpus v1.0",
-    author = "Ziemski, Micha{\l}  and
-      Junczys-Dowmunt, Marcin  and
-      Pouliquen, Bruno",
-    booktitle = "Proceedings of the Tenth International Conference on Language Resources and Evaluation ({LREC}'16)",
-    month = may,
-    year = "2016",
-    address = "Portoro{\v{z}}, Slovenia",
-    publisher = "European Language Resources Association (ELRA)",
-    url = "https://www.aclweb.org/anthology/L16-1561",
-    pages = "3530--3534",
-}"""
+    cite = index.ref_db.get_bibtex('ziemski-etal-2016-united')
     url = "https://stuncorpusprod.blob.core.windows.net/corpusfiles/UNv1.0.testsets.tar.gz"
     langs = ['en', 'ar', 'fr', 'es', 'ru', 'zh']
     for split in ['dev', 'test']:
