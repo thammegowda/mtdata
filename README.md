@@ -46,7 +46,7 @@ Here I (/TG) have picked some commonly used datasets that I use for my work - yo
 | Statmt | 493 |
 | Paracrawl | 96 |
 | Tilde | 519 |
-| OPUS<sup>$1</sup> | 54,344 |
+| OPUS<sup>$1</sup> | 69,415 |
 | OPUS100v1 | 302 |
 | JW300<sup>$2</sup> | 45,548 |
 | GlobalVoices 2018Q4| 812 |
@@ -57,7 +57,7 @@ Here I (/TG) have picked some commonly used datasets that I use for my work - yo
 | ELRC-SHARE | 37 |
 | Other | 14 |
 | ----|----|
-| Total |108,296|
+| Total |123,433|
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
