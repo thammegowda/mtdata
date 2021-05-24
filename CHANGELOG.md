@@ -1,6 +1,29 @@
 # Change Log
 
-# 0.2.9 - 20210517
+v0.2.10-dev - WIP 
+
+- OPUS index updated (crawled on 20210522) 
+  - new: 
+    - CCAlignedV1
+    - EiTBParCC_v1
+    - EuroPat_v2
+    - MultiCCAligned_v1.1
+    - NewsCommentary_v14
+    - WikiMatrix_v1
+    - tico19_v20201028 
+  - updates (replaces old with new):
+    - GlobalVoices_v2017q3 ->GlobalVoices_v2018q4  
+    - MultiParaCrawl_v5 -> MultiParaCrawl_v7.1 
+    - ParaCrawl_v5 -> ParaCrawl_v7
+    - TED2013_v1.1 -> TED2020_v1 
+    - Tatoeba_v20190709 -> Tatoeba_v20210310  ([#37][i37])
+    - wikimedia_v20190628 -> wikimedia_v20210402 ([#35][i35])
+
+
+[i37]: https://github.com/thammegowda/mtdata/issues/37
+[i35]: https://github.com/thammegowda/mtdata/issues/35
+
+# v0.2.9 - 20210517
 
 - New datasets 
   - WMT20 Tests
@@ -22,7 +45,7 @@
 [p32]: https://github.com/thammegowda/mtdata/pull/32
 
 
-# 0.2.8 - 20210126
+# v0.2.8 - 20210126
 - Paracrawl v7 and v7.1  -- 29 new datasets
 - Fix swapping issue with TMX format (TILDE corpus); add a testcase for TMX entry 
 - Add mtdata-iso shell command

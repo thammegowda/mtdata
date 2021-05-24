@@ -23,8 +23,9 @@ class MTDataItem(scrapy.Item):
     title = Field()
     info = Field()
 
+
 class MTCorpusItem(scrapy.Item):
     url = Field()
     name = Field()
     langs = Field()
-
+    mtdata = Field()
