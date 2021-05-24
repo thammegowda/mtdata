@@ -6,7 +6,7 @@ from mtdata.entry import Entry
 from mtdata.index import Index
 
 def load(index: Index):
-    CONTENT="""EESC2017::bg-de bg-en bg-fr cs-de cs-en cs-fr da-de da-en da-fr de-el de-en de-es de-et de-fi de-fr de-hr de-hu de-is de-it de-lt de-lv de-mt de-nl de-pl de-pt de-ro de-sk de-sl de-sv el-en el-fr en-es en-et en-fi en-fr en-hr en-hu en-is en-it en-lt en-lv en-mt en-nl en-pl en-pt en-ro en-sk en-sl en-sv es-fr et-fr fi-fr fr-hr fr-hu fr-is fr-it fr-lt fr-lv fr-mt fr-nl fr-pl fr-pt fr-ro fr-sk fr-sl fr-sv
+    content = """EESC2017::bg-de bg-en bg-fr cs-de cs-en cs-fr da-de da-en da-fr de-el de-en de-es de-et de-fi de-fr de-hr de-hu de-is de-it de-lt de-lv de-mt de-nl de-pl de-pt de-ro de-sk de-sl de-sv el-en el-fr en-es en-et en-fi en-fr en-hr en-hu en-is en-it en-lt en-lv en-mt en-nl en-pl en-pt en-ro en-sk en-sl en-sv es-fr et-fr fi-fr fr-hr fr-hu fr-is fr-it fr-lt fr-lv fr-mt fr-nl fr-pl fr-pt fr-ro fr-sk fr-sl fr-sv
     EMA2016::bg-de bg-en bg-fr cs-de cs-en cs-fr da-de da-en da-fr de-el de-en de-es de-et de-fi de-fr de-hr de-hu de-is de-it de-lt de-lv de-mt de-nl de-no de-pl de-pt de-ro de-sk de-sl de-sv el-en el-fr en-es en-et en-fi en-fr en-hr en-hu en-is en-it en-lt en-lv en-mt en-nl en-no en-pl en-pt en-ro en-sk en-sl en-sv es-fr et-fr fi-fr fr-hr fr-hu fr-is fr-it fr-lt fr-lv fr-mt fr-nl fr-no fr-pl fr-pt fr-ro fr-sk fr-sl fr-sv
     airbaltic::de-en de-et de-fi de-lt de-lv de-ru en-et en-fi en-lt en-lv en-ru et-fi et-lt et-lv et-ru fi-lt fi-lv fi-ru lt-lv lt-ru lv-ru
     czechtourism::de-en de-es de-fr de-it de-pl de-pt de-ru en-es en-fr en-it en-pl en-pt en-ru es-fr es-it es-pl es-pt es-ru fr-it fr-pl fr-pt fr-ru it-pl it-pt it-ru pl-pt pl-ru pt-ru
@@ -15,24 +15,13 @@ def load(index: Index):
     rapid2016::bg-de bg-en bg-fr cs-de cs-fr da-de da-en da-fr de-el de-en de-es de-et de-fi de-fr de-hr de-hu de-is de-it de-lt de-lv de-mt de-nl de-no de-pl de-pt de-ro de-sk de-sl de-sv el-en el-fr en-es en-et en-fi en-fr en-hr en-hu en-is en-it en-lt en-lv en-mt en-nl en-no en-pt en-ro en-sk en-sl en-sv es-fr et-fr fi-fr fr-hr fr-hu fr-is fr-it fr-lt fr-lv fr-mt fr-nl fr-no fr-pl fr-pt fr-ro fr-sk fr-sl fr-sv
     rapid2019::cs-en de-en en-pl
     worldbank::en-es en-fr en-hr en-pl en-pt en-ro en-ru en-sq en-sr en-tr en-uk"""
-    TILDE_CITE = """@inproceedings{rozis-skadins-2017-tilde,
-    title = "Tilde {MODEL} - Multilingual Open Data for {EU} Languages",
-    author = "Rozis, Roberts  and
-      Skadi{\c{n}}{\v{s}}, Raivis",
-    booktitle = "Proceedings of the 21st Nordic Conference on Computational Linguistics",
-    month = may,
-    year = "2017",
-    address = "Gothenburg, Sweden",
-    publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/W17-0235",
-    pages = "263--265",
-}"""
+    cite = index.ref_db.get_bibtex('rozis-skadins-2017-tilde')
     TILDE = 'https://tilde-model.s3-eu-west-1.amazonaws.com/%s.%s-%s.tmx.zip'
-    for line in CONTENT.splitlines():
+    for line in content.splitlines():
         line = line.strip()
         name, pairs = line.split('::')
         for pair in pairs.split(' '):
             l1, l2 = pair.split('-')
             url = TILDE % (name, l1, l2)
-            index.add_entry(Entry(langs=(l1, l2), name=name, url=url, cite=TILDE_CITE,
+            index.add_entry(Entry(langs=(l1, l2), name=name, url=url, cite=cite,
                                     in_paths=["*.tmx"], in_ext='tmx'))
