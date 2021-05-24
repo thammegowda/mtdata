@@ -14,35 +14,31 @@ from mtdata.iso import iso3_code
 from html import unescape
 import datetime
 
-
 DEF_PROGRESS = 10  # seconds
 
-def parse_tmx(data, n_langs=2, log_every=DEF_PROGRESS):
+def parse_tmx(data, log_every=DEF_PROGRESS):
     context = ET.iterparse(data, events=['end'])
     tus = (el for event, el in context if el.tag == 'tu')
-    count, skips = 0, 0
+    count = 0
     st = t = time.time()
     for tu in tus:
-        langs, segs = [], []
+        lang_seg = {}
         for tuv in tu.findall('tuv'):
             lang = [v for k, v in tuv.attrib.items() if k.endswith('lang')]
-            if lang:
-                langs.append(lang[0])
             seg = tuv.findtext('seg')
-            if seg:
-                segs.append(unescape(seg.strip()))
-        if n_langs and len(segs) == len(langs) == n_langs:
-            count += 1
-            yield list(zip(langs, segs))
-        else:
-            skips += 1
-            log.warning(f"Skipped: langs {langs} segs {len(segs)} ; Parsed count {count}")
+            if lang and seg:
+                lang = iso3_code(lang[0], fail_error=True)
+                seg = unescape(seg.strip())
+                if lang in lang_seg:
+                    log.warning(f"Language {lang} appears twice in same translation unit.")
+                lang_seg[lang] = seg
+        yield lang_seg
+        count += 1
         if log_every and (time.time() - t) > log_every:
             elapsed = datetime.timedelta(seconds=round(time.time() - st))
-            log.info(f"{elapsed} :: Parsed: {count:,} Skipped:{skips:,}")
+            log.info(f"{elapsed} :: Parsed: {count:,}")
             t = time.time()
         tu.clear()
-    log.info(f"Skipped ={skips}; parsed: {count}")
 
 def read_tmx(path: Union[Path], langs=None):
     """
@@ -51,21 +47,29 @@ def read_tmx(path: Union[Path], langs=None):
     :param langs: (lang1, lang2) codes eg (de, en); when it is None the code tries to auto detect
     :return: stream of (text1, text2)
     """
+    passes = 0
+    fails = 0
     with IO.reader(path) as data:
         recs = parse_tmx(data)
-        for rec in recs:
-            (l1, t1), (l2, t2) = rec
-            l1 = iso3_code(l1, fail_error=True)
-            l2 = iso3_code(l2, fail_error=True)
+        for lang_seg in recs:
             if langs is None:
                 log.warning("langs not set; this could result in language mismatch")
-                langs = (l1, l2)
-            if l1 == langs[0] and l2 == langs[1]:
-                yield t1, t2
-            elif l2 == langs[0] and l1 == langs[1]:
-                yield t2, t1
+                if len(lang_seg) == 2:
+                    langs = (lang_seg.keys()[0], lang_seg.keys()[1])
+                else:
+                    raise Exception(f"Language autodetect for TMX only supports 2 languages, but provided with {lang_seg.keys()} in TMX {path}")
+            if langs[0] in lang_seg and langs[1] in lang_seg:
+                yield lang_seg[langs[0]], lang_seg[langs[1]]
+                passes += 1
             else:
-                raise Exception(f"Language code mismatch;; ({l1, l2}) != {langs}")
+                fails += 1
+    if passes == 0:
+        if fails == 0:
+            raise Exception(f"Empty TMX {path}")
+        raise Exception(f"Nothing for {langs[0]}--{langs[1]} in TMX {path}")
+    if fails != 0:
+        log.warning(f"Skipped {fails} entries due to language mismatch in TMX {path}")
+    log.info(f"Extracted {passes} pairs from TMX {path}")
 
 def main(inp, out):
     recs = read_tmx(inp)
