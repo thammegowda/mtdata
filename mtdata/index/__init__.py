@@ -114,7 +114,7 @@ def get_entries(langs=None, names=None, not_names=None) -> List[Entry]:
 
 
 def load_all():
-    from mtdata.index import (statmt, paracrawl, tilde, literature, joshua_indian, globalvoices,
+    from mtdata.index import (statmt, paracrawl, tilde, literature, joshua_indian,
                               unitednations, wikimatrix, other, neulab_tedtalks, elrc_share,
                               ai4bharat, eu)
     from mtdata.index.opus import opus_index, jw300, opus100
@@ -125,7 +125,6 @@ def load_all():
         ('Paracrawl', paracrawl.load),
         ('Tilde', tilde.load),
         ('JoshuaIndianCoprus', joshua_indian.load_all),
-        ('GlobalVoices', globalvoices.load_all),
         ('UnitedNations', unitednations.load_all),
         ('OPUS', opus_index.load_all),
         ('OPUS_JW300', jw300.load_all),
@@ -141,12 +140,13 @@ def load_all():
         n = len(INDEX)
         loader(INDEX)
         counts[name] = len(INDEX) - n
-    counts['Total'] = len(INDEX)
-
-    counts = '  '.join([f'{n}:{c:,}' for n, c in counts.items()])
-    log.info(f"Loaded entries: {counts}")
+    items = list(sorted(counts.items(), key=lambda x:x[1], reverse=True))
+    items += [('Total', len(INDEX))]
+    counts = '  '.join([f'{n}:{c:,}' for n, c in items])
+    log.info(f"Index status: {counts}")
     literature.load(INDEX)
 
 
-# eager load, as of now TODO: lazy load
+# eager load, as of now
+# TODO: lazy load and/or cache the index on disk
 load_all()
