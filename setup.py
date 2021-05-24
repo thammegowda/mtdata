@@ -48,5 +48,7 @@ setup(
         'wget==3.2',
         'portalocker==2.3.0',
         'pybtex==0.24.0'
-    ]
+    ],
+    include_package_data=True,
+    zip_safe=False,
 )

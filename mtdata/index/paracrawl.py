@@ -3,13 +3,12 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
 
-from mtdata.index import Entry, Index, ReferenceDb
+from mtdata.index import Entry, Index
 
 
 def load(index: Index):
-    ref_db = ReferenceDb()
-    cite = ref_db.get_bibtex('espla-etal-2019-paracrawl')
-    cite += ref_db.get_bibtex('banon-etal-2020-paracrawl')
+    cite = index.ref_db.get_bibtex('espla-etal-2019-paracrawl')
+    cite += '\n' + index.ref_db.get_bibtex('banon-etal-2020-paracrawl')
     # === Para crawl corpus
     PARACRAWL_v3 = 'https://s3.amazonaws.com/web-language-models/paracrawl/release3/%s-%s.bicleaner07.tmx.gz'
     for pair in ['en cs', 'en de', 'en fi', 'en lt']:
