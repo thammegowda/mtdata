@@ -140,12 +140,13 @@ def load_all():
         n = len(INDEX)
         loader(INDEX)
         counts[name] = len(INDEX) - n
-    counts['Total'] = len(INDEX)
-
-    counts = '  '.join([f'{n}:{c:,}' for n, c in counts.items()])
-    log.info(f"Loaded entries: {counts}")
+    items = list(sorted(counts.items(), key=lambda x:x[1], reverse=True))
+    items += [('Total', len(INDEX))]
+    counts = '  '.join([f'{n}:{c:,}' for n, c in items])
+    log.info(f"Index status: {counts}")
     literature.load(INDEX)
 
 
-# eager load, as of now TODO: lazy load
+# eager load, as of now
+# TODO: lazy load and/or cache the index on disk
 load_all()

@@ -38,26 +38,26 @@ pip install mtdata
 
 These are the summary of datasets from various sources (Updated: May 10 2020). 
 The list is incomplete and meant to see as start. 
-Here I (/TG) have picked some commonly used datasets that I use for my work - you are welcome to add more! 
+We have added some commonly used datasets - you are welcome to add more! 
  
 | Source | # of datasets |
 |---: | ---:|
-| AI4Bharath | 66 |
-| Statmt | 493 |
-| Paracrawl | 96 |
-| Tilde | 519 |
 | OPUS<sup>$1</sup> | 69,415 |
-| OPUS100v1 | 302 |
 | JW300<sup>$2</sup> | 45,548 |
-| GlobalVoices 2018Q4| 812 |
-| Joshua Indian Corpus | 29 |
-| UnitedNations<sup>$3</sup> | 30 |
-| WikiMatrix | 1,617 |
 | Neulab_TEDTalksv1 | 4,455 |
+| WikiMatrix | 1,617 |
+| EU | 925 |
+| Tilde | 519 |
+| Statmt | 493 |
+| OPUS100v1 | 302 |
+| Paracrawl | 96 |
+| AI4Bharath | 66 |
 | ELRC-SHARE | 37 |
+| UnitedNations<sup>$3</sup> | 30 |
+| Joshua Indian Corpus | 29 |
 | Other | 14 |
 | ----|----|
-| Total |123,433|
+| Total |123,546|
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
@@ -267,10 +267,13 @@ for set_name, pairs in wmt_sets.items():
 Refer to [paracrawl](mtdata/index/paracrawl.py), [tilde](mtdata/index/tilde.py), or
  [statmt](mtdata/index/statmt.py) for examples.
  
-If citation is available for a dataset, please include
+If citation is available for a dataset, please add BibTeX entry to [mtdata/index/refs.bib](mtdata/index/refs.bib) 
+
 ```python
-cite = r"""bib tex here""
-Entry(... cite=cite)
+from mtdata.index import INDEX as index, Entry
+
+cite = index.ref_db.get_bibtex('author-etal')
+Entry(..., cite=cite)
 ```
 
 For adding a custom parser, or file handler look into [`parser.read_segs()`](mtdata/parser.py) 
