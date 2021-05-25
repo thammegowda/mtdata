@@ -279,9 +279,15 @@ Entry(..., cite=cite)
 For adding a custom parser, or file handler look into [`parser.read_segs()`](mtdata/parser.py) 
 and [`cache`](mtdata/cache.py) for dealing with a new archive/file type that is not already supported.
  
+## Run tests
+Tests are located in [tests/](tests) directory. To run all the tests:
+
+    python -m pytest
 
 ## Developers and Contributor:
 See - https://github.com/thammegowda/mtdata/graphs/contributors
+
+
 
 --- 
 # Disclaimer on Datasets
