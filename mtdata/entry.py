@@ -25,7 +25,7 @@ class Entry:
 
         assert isinstance(langs, tuple)
         assert len(langs) == 2
-        for ch in '.-/* ':
+        for ch in '-/* ':
             assert ch not in name, f"Character '{ch}' is not permitted in name {name}"
 
         self.langs = tuple(iso3_code(l, fail_error=True) for l in langs)
