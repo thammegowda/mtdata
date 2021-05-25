@@ -18,7 +18,7 @@ def iso3_code(lang: str, fail_error=False, default=None) -> str:
     from mtdata.iso.iso639_1 import ISO693_1_to_3 as code1_to_3
     from mtdata.iso.custom import CUSTOM_TO_3 as custom_to_3
 
-    lang = lang.lower()
+    lang = lang.split('-')[0].lower()
     if lang in iso3_codes:
         return lang
     if lang in CODE2_TO_3:

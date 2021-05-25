@@ -22,7 +22,7 @@ v0.2.10-dev - WIP
 - Multilingual TMX parsing, add ECDC and EAC -- [#39][p39] -- contributed by [@kpu](https://github.com/kpu) 
 - Move all BibTeX to a separate file -- [#42][p42]
 - Fix line count mismatch in some XML formats [#45][p45]
-
+- Parse BCP47 codes by removing everything after first hyphen
 
 [i37]: https://github.com/thammegowda/mtdata/issues/37
 [i35]: https://github.com/thammegowda/mtdata/issues/35
