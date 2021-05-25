@@ -1,0 +1,17 @@
+dist: focal
+sudo: false
+language: python
+python:
+  - "3.6"
+  - "3.7"
+
+before_install:
+  #- sudo apt-get -y update
+  - python3 setup.py install
+
+install:
+  - pip install pytest-cov
+  - pip install .
+
+script:
+  - python3 -m pytest
