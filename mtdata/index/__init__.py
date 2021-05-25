@@ -4,14 +4,18 @@
 # Created: 4/8/20
 from mtdata import log
 from mtdata.entry import Entry, Paper
-from typing import List
+from typing import List, Optional
+from pathlib import Path
+from pybtex.database import parse_file as parse_bib_file
 
+REFS_FILE = Path(__file__).parent / 'refs.bib'
 
 class Index:
 
     def __init__(self):
         self.entries = {}  # uniq
         self.papers = {}  # uniq
+        self.ref_db = ReferenceDb()
 
     @property
     def n_entries(self) -> int:
@@ -56,6 +60,32 @@ class Index:
     def __len__(self):
         return len(self.entries)
 
+class ReferenceDb:
+
+    _instance = None  # singleton instance
+
+    def __new__(cls, file=REFS_FILE):
+        if cls._instance is None:
+            cls._instance = super(ReferenceDb, cls).__new__(cls)
+            assert file.exists(), f'{file} does not exist'
+            cls._instance.db = parse_bib_file(file, bib_format='bibtex')
+            log.debug(f"loaded {len(cls._instance)} references from {file}")
+        return cls._instance
+
+    def __getitem__(self, item):
+        return self.db.entries[item]
+
+    def __contains__(self, item):
+        return item in self.db.entries
+
+    def __len__(self):
+        return len(self.db.entries)
+
+    def get_bibtex(self, key: str) -> str:
+        return self[key].to_string(bib_format='bibtex')
+
+    def keys(self):
+        return self.db.entries.keys()
 
 INDEX: Index = Index()
 
@@ -84,7 +114,7 @@ def get_entries(langs=None, names=None, not_names=None) -> List[Entry]:
 
 
 def load_all():
-    from mtdata.index import (statmt, paracrawl, tilde, literature, joshua_indian, globalvoices,
+    from mtdata.index import (statmt, paracrawl, tilde, literature, joshua_indian,
                               unitednations, wikimatrix, other, neulab_tedtalks, elrc_share,
                               ai4bharat, eu)
     from mtdata.index.opus import opus_index, jw300, opus100
@@ -95,7 +125,6 @@ def load_all():
         ('Paracrawl', paracrawl.load),
         ('Tilde', tilde.load),
         ('JoshuaIndianCoprus', joshua_indian.load_all),
-        ('GlobalVoices', globalvoices.load_all),
         ('UnitedNations', unitednations.load_all),
         ('OPUS', opus_index.load_all),
         ('OPUS_JW300', jw300.load_all),
@@ -111,12 +140,13 @@ def load_all():
         n = len(INDEX)
         loader(INDEX)
         counts[name] = len(INDEX) - n
-    counts['Total'] = len(INDEX)
-
-    counts = '  '.join([f'{n}:{c:,}' for n, c in counts.items()])
-    log.info(f"Loaded entries: {counts}")
+    items = list(sorted(counts.items(), key=lambda x:x[1], reverse=True))
+    items += [('Total', len(INDEX))]
+    counts = '  '.join([f'{n}:{c:,}' for n, c in items])
+    log.info(f"Index status: {counts}")
     literature.load(INDEX)
 
 
-# eager load, as of now TODO: lazy load
+# eager load, as of now
+# TODO: lazy load and/or cache the index on disk
 load_all()

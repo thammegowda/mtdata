@@ -19,12 +19,7 @@ class NoisyEntry(Entry):
 
 def load_all(index: Index):
     url = "http://phontron.com/data/ted_talks.tar.gz"
-    cite = """@inproceedings{Ye2018WordEmbeddings,
-    author  = {Ye, Qi and Devendra, Sachan and Matthieu, Felix and Sarguna, Padmanabhan and Graham, Neubig},
-    title   = {When and Why are pre-trained word embeddings useful for Neural Machine Translation},
-    booktitle = {HLT-NAACL},
-    year    = {2018},
-    }"""
+    cite = index.ref_db.get_bibtex('Ye2018WordEmbeddings')
     header = (
         "-,en,es,pt-br,fr,ru,he,ar,ko,zh-cn,it,ja,zh-tw,nl,ro,tr,de,vi,pl,pt,bg,el,fa,sr,hu,hr,"
         "uk,cs,id,th,sv,sk,sq,lt,da,calv-,my,sl,mk,fr-ca,fi,hy,hi,nor,ka,mn,et,ku,gl,mr,zh,ur,"

@@ -8,23 +8,7 @@ import itertools
 
 def load(index: Index):
     WMT13_CCRAWL = "http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz"
-    WMT14_CITE = """@proceedings{ws-2014-statistical,
-        title = "Proceedings of the Ninth Workshop on Statistical Machine Translation",
-        editor = "Bojar, Ond{\v{r}}ej  and
-          Buck, Christian  and
-          Federmann, Christian  and
-          Haddow, Barry  and
-          Koehn, Philipp  and
-          Monz, Christof  and
-          Post, Matt  and
-          Specia, Lucia",
-        month = jun,
-        year = "2014",
-        address = "Baltimore, Maryland, USA",
-        publisher = "Association for Computational Linguistics",
-        url = "https://www.aclweb.org/anthology/W14-3300",
-        doi = "10.3115/v1/W14-33",
-    }"""
+    WMT14_CITE = index.ref_db.get_bibtex('ws-2014-statistical')
     for l1 in ['de', 'cs', 'fr', 'ru', 'es']:
         l2 = 'en'
         f1 = f'commoncrawl.{l1}-en.{l1}'
@@ -55,15 +39,7 @@ def load(index: Index):
 
     # === Europarl V9 corpus
     EUROPARL_v9 = 'http://www.statmt.org/europarl/v9/training/europarl-v9.%s-%s.tsv.gz'
-    cite = r"""@inproceedings{koehn2005europarl,
-      title={Europarl: A parallel corpus for statistical machine translation},
-      author={Koehn, Philipp},
-      booktitle={MT summit},
-      volume={5},
-      pages={79--86},
-      year={2005},
-      organization={Citeseer}
-    }"""
+    cite = index.ref_db.get_bibtex('koehn2005europarl')
     for pair in ['de en', 'cs en', 'cs pl', 'es pt', 'fi en', 'lt en']:
         l1, l2 = pair.split()
         index.add_entry(
@@ -71,33 +47,7 @@ def load(index: Index):
 
     # === Europarl V7 corpus
     EUROPARL_v7 = 'http://www.statmt.org/europarl/v7/%s-%s.tgz'
-    cite = r"""@inproceedings{bojar-etal-2017-findings,
-      title = "Findings of the 2017 Conference on Machine Translation ({WMT}17)",
-      author = "Bojar, Ond{\v{r}}ej  and
-        Chatterjee, Rajen  and
-        Federmann, Christian  and
-        Graham, Yvette  and
-        Haddow, Barry  and
-        Huang, Shujian  and
-        Huck, Matthias  and
-        Koehn, Philipp  and
-        Liu, Qun  and
-        Logacheva, Varvara  and
-        Monz, Christof  and
-        Negri, Matteo  and
-        Post, Matt  and
-        Rubino, Raphael  and
-        Specia, Lucia  and
-        Turchi, Marco",
-      booktitle = "Proceedings of the Second Conference on Machine Translation",
-      month = sep,
-      year = "2017",
-      address = "Copenhagen, Denmark",
-      publisher = "Association for Computational Linguistics",
-      url = "https://www.aclweb.org/anthology/W17-4717",
-      doi = "10.18653/v1/W17-4717",
-      pages = "169--214",
-    }"""
+    cite = index.ref_db.get_bibtex('bojar-etal-2017-findings')
     for l1 in 'bg cs da de el es et fi fr hu it lt lv nl pl pt ro sk sl sv'.split():
         l2 = 'en'
         src = f'europarl-v7.{l1}-{l2}.{l1}'
@@ -115,24 +65,7 @@ def load(index: Index):
 
     # === News Commentary v14
     NEWSCOM_v14 = "http://data.statmt.org/news-commentary/v14/training/news-commentary-v14.%s-%s.tsv.gz"
-    cite = r"""@inproceedings{bojar-etal-2018-findings,
-        title = "Findings of the 2018 Conference on Machine Translation ({WMT}18)",
-        author = "Bojar, Ond{\v{r}}ej  and
-          Federmann, Christian  and
-          Fishel, Mark  and
-          Graham, Yvette  and
-          Haddow, Barry  and
-          Koehn, Philipp  and
-          Monz, Christof",
-        booktitle = "Proceedings of the Third Conference on Machine Translation: Shared Task Papers",
-        month = oct,
-        year = "2018",
-        address = "Belgium, Brussels",
-        publisher = "Association for Computational Linguistics",
-        url = "https://www.aclweb.org/anthology/W18-6401",
-        doi = "10.18653/v1/W18-6401",
-        pages = "272--303"
-    }"""
+    cite = index.ref_db.get_bibtex('bojar-etal-2018-findings')
     for pair in ['ar cs', 'ar de', 'ar en', 'ar es', 'ar fr', 'ar hi', 'ar id', 'ar it',
                  'ar ja', 'ar kk', 'ar nl', 'ar pt', 'ar ru', 'ar zh', 'cs de', 'cs en', 'cs es',
                  'cs fr', 'cs hi', 'cs id', 'cs it', 'cs ja', 'cs kk', 'cs nl', 'cs pt', 'cs ru',
@@ -151,32 +84,7 @@ def load(index: Index):
 
     # ===== Wiki Titles V1
     WIKI_TITLES_v1 = 'http://data.statmt.org/wikititles/v1/wikititles-v1.%s-%s.tsv.gz'
-    cite = r"""@inproceedings{barrault-etal-2019-findings,
-        title = "Findings of the 2019 Conference on Machine Translation ({WMT}19)",
-        author = {Barrault, Lo{\"\i}c  and
-          Bojar, Ond{\v{r}}ej  and
-          Costa-juss{\`a}, Marta R.  and
-          Federmann, Christian  and
-          Fishel, Mark  and
-          Graham, Yvette  and
-          Haddow, Barry  and
-          Huck, Matthias  and
-          Koehn, Philipp  and
-          Malmasi, Shervin  and
-          Monz, Christof  and
-          M{\"u}ller, Mathias  and
-          Pal, Santanu  and
-          Post, Matt  and
-          Zampieri, Marcos},
-        booktitle = "Proceedings of the Fourth Conference on Machine Translation (Volume 2: Shared Task Papers, Day 1)",
-        month = aug,
-        year = "2019",
-        address = "Florence, Italy",
-        publisher = "Association for Computational Linguistics",
-        url = "https://www.aclweb.org/anthology/W19-5301",
-        doi = "10.18653/v1/W19-5301",
-        pages = "1--61"
-    }"""
+    cite = index.ref_db.get_bibtex('barrault-etal-2019-findings')
     for pair in ['cs en', 'cs pl', 'de en', 'es pt', 'fi en', 'gu en', 'hi ne', 'kk en', 'lt en',
                  'ru en', 'zh en']:
         l1, l2 = pair.split()
@@ -229,37 +137,7 @@ def load(index: Index):
 
     #### WMT 20 Tests
     url = "http://data.statmt.org/wmt20/translation-task/test.tgz"
-    wmt20_cite = """@inproceedings{barrault-etal-2020-findings,
-    title = "Findings of the 2020 Conference on Machine Translation ({WMT}20)",
-    author = {Barrault, Lo{\"\i}c  and
-      Biesialska, Magdalena  and
-      Bojar, Ond{\v{r}}ej  and
-      Costa-juss{\`a}, Marta R.  and
-      Federmann, Christian  and
-      Graham, Yvette  and
-      Grundkiewicz, Roman  and
-      Haddow, Barry  and
-      Huck, Matthias  and
-      Joanis, Eric  and
-      Kocmi, Tom  and
-      Koehn, Philipp  and
-      Lo, Chi-kiu  and
-      Ljube{\v{s}}i{\'c}, Nikola  and
-      Monz, Christof  and
-      Morishita, Makoto  and
-      Nagata, Masaaki  and
-      Nakazawa, Toshiaki  and
-      Pal, Santanu  and
-      Post, Matt  and
-      Zampieri, Marcos},
-    booktitle = "Proceedings of the Fifth Conference on Machine Translation",
-    month = nov,
-    year = "2020",
-    address = "Online",
-    publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/2020.wmt-1.1",
-    pages = "1--55",
-    }"""
+    wmt20_cite = index.ref_db.get_bibtex('barrault-etal-2020-findings')
     for _pref, pairs in {
         "": ["csen", "deen", "defr", "encs", "ende", "eniu", "enja", "enkm", "enpl", "enps",
              "enru", "enta", "enzh", "frde", "iuen", "jaen", "kmen", "plen", "psen", "ruen",
@@ -313,18 +191,7 @@ def load(index: Index):
 
     # ==== PMIndia V1
     PMINDIA_v1 = "http://data.statmt.org/pmindia/v1/parallel/pmindia.v1.%s-%s.tsv"
-    cite = r"""@ARTICLE{2020arXiv200109907H,
-           author = {{Haddow}, Barry and {Kirefu}, Faheem},
-            title = "{PMIndia -- A Collection of Parallel Corpora of Languages of India}",
-          journal = {arXiv e-prints},
-         keywords = {Computer Science - Computation and Language},
-             year = "2020",
-            month = "Jan",
-              eid = {arXiv:2001.09907},
-            pages = {arXiv:2001.09907},
-    archivePrefix = {arXiv},
-           eprint = {2001.09907}
-    }"""
+    cite = index.ref_db.get_bibtex('Haddow-etal-2020-PMIndia')
     for pair in ["as en", "bn en", "gu en", "hi en", "kn en", "ml en", "mni en", "mr en", "or en",
                  "pa en", "ta en", "te en", "ur en"]:
         l1, l2 = pair.split()
@@ -354,17 +221,7 @@ def load(index: Index):
                       ext='tsv.xz', cols=(0, 1))
         index.add_entry(entry)
 
-    ccalign_cite = """@InProceedings{chaudhary-EtAl:2019:WMT,
-  author    = {Chaudhary, Vishrav  and  Tang, Yuqing  and  GuzmÃƒÂ¡n, Francisco  and  Schwenk, Holger  and  Koehn, Philipp},
-  title     = {Low-Resource Corpus Filtering Using Multilingual Sentence Embeddings},
-  booktitle = {Proceedings of the Fourth Conference on Machine Translation (Volume 3: Shared Task Papers, Day 2)},
-  month     = {August},
-  year      = {2019},
-  address   = {Florence, Italy},
-  publisher = {Association for Computational Linguistics},
-  pages     = {263--268},
-  url       = {http://www.aclweb.org/anthology/W19-5435}
-}"""
+    ccalign_cite = index.ref_db.get_bibtex('chaudhary-EtAl:2019:WMT')
     CC_ALIGNED = 'http://www.statmt.org/cc-aligned/sentence-aligned/{src}-{tgt}.tsv.xz'
     tgts='es_XX et_EE fa_IR ff_NG fi_FI fr_XX gu_IN ha_NG he_IL hi_IN hr_HR ht_HT hu_HU hy_AM id_ID ig_NG is_IS it_IT ja_XX jv_ID ka_GE kg_AO kk_KZ km_KH kn_IN ko_KR ku_TR ky_KG lg_UG ln_CD lo_LA lt_LT lv_LV mg_MG mi_NZ mk_MK ml_IN mn_MN mr_IN ms_MY mt_MT my_MM ne_NP nl_XX no_XX ns_ZA ny_MW om_KE or_IN pa_IN pl_PL ps_AF pt_XX qa_MM qd_MM ro_RO ru_RU si_LK sk_SK sl_SI sn_ZW so_SO sq_AL sr_RS ss_SZ st_ZA su_ID sv_SE sw_KE sz_PL ta_IN te_IN tg_TJ th_TH ti_ET tl_XX tn_BW tr_TR ts_ZA tz_MA uk_UA ur_PK ve_ZA vi_VN wo_SN xh_ZA yo_NG zh_CN zh_TW zu_ZA zz_TR'.split()
     srcs = 'af_ZA ak_GH am_ET ar_AR as_IN ay_BO az_AZ az_IR be_BY bg_BG bm_ML bn_IN br_FR bs_BA ca_ES cb_IQ cs_CZ cx_PH cy_GB da_DK de_DE el_GR'.split()

@@ -29,3 +29,11 @@ def test_iso3_code():
     except:
         assert True
 
+def test_bcp47():
+    assert iso3_code("en-GB") == 'eng'
+    assert iso3_code("gsw-u-sd-chzh") == 'gsw'
+    assert iso3_code("he-IL-u-ca-hebrew-tz-jeruslm") == 'heb'
+
+    # language with an hyphen in their name should work as well
+    assert iso3_code('Teke-Tsaayi') == "tyi"
+    assert iso3_code('Umbu-Ungu') == "ubu"

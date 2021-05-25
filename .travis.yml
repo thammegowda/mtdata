@@ -1,0 +1,19 @@
+dist: focal
+sudo: false
+language: python
+python:
+  #- "3.6"   # dataclasses came in 3.7, so 3.6 isnt supported
+  - "3.7"
+  - "3.8"
+  - "3.9"
+
+before_install:
+  #- sudo apt-get -y update
+  - python3 setup.py install
+
+install:
+  - pip install pytest-cov
+  - pip install .
+
+script:
+  - python3 -m pytest
