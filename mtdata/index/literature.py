@@ -13,13 +13,7 @@ def load(index: Index):
         name="vaswani-etal-2017",
         title="Attention is all you need",
         url="https://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf",
-        cite="""@inproceedings{vaswani2017attention,
-                  title={Attention is all you need},
-                  author={Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N and Kaiser, {\L}ukasz and Polosukhin, Illia},
-                  booktitle={Advances in neural information processing systems},
-                  pages={5998--6008},
-                  year={2017}
-                }""",
+        cite=index.ref_db.get_bibtex('vaswani2017attention'),
         experiments=[
             Experiment.make(
                 langs=('eng', 'deu'),
