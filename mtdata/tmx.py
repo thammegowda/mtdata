@@ -55,7 +55,7 @@ def read_tmx(path: Union[Path, str], langs=None):
             if langs is None:
                 log.warning("langs not set; this could result in language mismatch")
                 if len(lang_seg) == 2:
-                    langs = (lang_seg.keys()[0], lang_seg.keys()[1])
+                    langs = tuple(lang_seg.keys())
                 else:
                     raise Exception(f"Language autodetect for TMX only supports 2 languages, but provided with {lang_seg.keys()} in TMX {path}")
             if langs[0] in lang_seg and langs[1] in lang_seg:
