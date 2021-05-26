@@ -28,7 +28,7 @@ def parse_tmx(data, log_every=DEF_PROGRESS):
             seg = tuv.findtext('seg')
             if lang and seg:
                 lang = iso3_code(lang[0], fail_error=True)
-                seg = unescape(seg.strip())
+                seg = unescape(seg.strip()).replace('\n', ' ')
                 if lang in lang_seg:
                     log.warning(f"Language {lang} appears twice in same translation unit.")
                 lang_seg[lang] = seg
@@ -55,7 +55,7 @@ def read_tmx(path: Union[Path, str], langs=None):
             if langs is None:
                 log.warning("langs not set; this could result in language mismatch")
                 if len(lang_seg) == 2:
-                    langs = (lang_seg.keys()[0], lang_seg.keys()[1])
+                    langs = tuple(lang_seg.keys())
                 else:
                     raise Exception(f"Language autodetect for TMX only supports 2 languages, but provided with {lang_seg.keys()} in TMX {path}")
             if langs[0] in lang_seg and langs[1] in lang_seg:
