@@ -1,0 +1,3 @@
+[submodule "crawler/elrc-scrape"]
+	path = crawler/elrc-scrape
+	url = https://github.com/kpu/elrc-scrape.git
