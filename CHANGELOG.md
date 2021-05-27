@@ -21,8 +21,9 @@ v0.2.10-dev - WIP
 - Removed Global Voices -- now available via OPUS -- [#41][i41]
 - Multilingual TMX parsing, add ECDC and EAC -- [#39][p39] -- contributed by [@kpu](https://github.com/kpu) 
 - Move all BibTeX to a separate file -- [#42][p42]
-- Fix line count mismatch in some XML formats [#45][p45]
-- Parse BCP47 codes by removing everything after first hyphen
+- Fix line count mismatch in some XML formats [#45][p45] 
+- Parse BCP47 codes by removing everything after first hyphen [#48][p48] -- contributed by [@kpu](https://github.com/kpu) 
+- Add Khresmoi datasets [#53][p53] -- contributed by [@kpu](https://github.com/kpu) 
 
 [i37]: https://github.com/thammegowda/mtdata/issues/37
 [i35]: https://github.com/thammegowda/mtdata/issues/35
@@ -30,6 +31,9 @@ v0.2.10-dev - WIP
 [p39]: https://github.com/thammegowda/mtdata/pull/39  
 [p42]:  https://github.com/thammegowda/mtdata/pull/42
 [p45]: https://github.com/thammegowda/mtdata/pull/45
+[p48]: https://github.com/thammegowda/mtdata/pull/48
+[p53]: https://github.com/thammegowda/mtdata/pull/53 
+
 
 ----
 # v0.2.9 - 20210517
