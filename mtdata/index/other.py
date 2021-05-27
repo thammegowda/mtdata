@@ -65,3 +65,14 @@ def load_all(index: Index):
                     cite=cite, filename='NunavutHansard_iuen_v3.tgz',
                     in_paths=[f'{path_pref}.{l1}', f'{path_pref}.{l2}'])
         index.add_entry(ent)
+
+    # https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-2122
+    url = "https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-2122/khresmoi-summary-test-set-2.0.zip"
+    cite = index.ref_db.get_bibtex('Khresmoi')
+    langs = ["cs", "de", "en", "es", "fr", "hu", "pl", "sv"]
+    for i, l1 in enumerate(langs):
+        for l2 in langs[i+1:]:
+            ent = Entry(langs=(l1, l2), url=url, name='Khresmoi_Summary_Test_v2', filename='khresmoi-summary-test-set-2.0.zip', cite=cite, in_paths=[f"khresmoi-summary-test-set-2.0/khresmoi-summary-test.{l1}", f"khresmoi-summary-test-set-2.0/khresmoi-summary-test.{l2}"], in_ext='txt')
+            index.add_entry(ent)
+            ent = Entry(langs=(l1, l2), url=url, name='Khresmoi_Summary_Dev_v2', filename='khresmoi-summary-test-set-2.0.zip', cite=cite, in_paths=[f"khresmoi-summary-test-set-2.0/khresmoi-summary-dev.{l1}", f"khresmoi-summary-test-set-2.0/khresmoi-summary-dev.{l2}"], in_ext='txt')
+            index.add_entry(ent)
