@@ -6,14 +6,14 @@ import argparse
 from pathlib import Path
 from collections import defaultdict
 import mtdata
-from mtdata import log, __version__
-from mtdata.data import Dataset, get_entries
+from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
 from mtdata.utils import IO
 from mtdata.iso import iso3_code
 
 
 
-def list_data(langs, names, not_names=None, full=False, cache_dir=None):
+def list_data(langs, names, not_names=None, full=False):
+    from mtdata.data import get_entries
     entries = get_entries(langs, names, not_names)
     log.info(f"Found {len(entries)}")
     for i, ent in enumerate(entries):
@@ -24,10 +24,11 @@ def list_data(langs, names, not_names=None, full=False, cache_dir=None):
 
 
 def get_data(args):
+    from mtdata.data import Dataset
     assert args.train_names or args.test_names, 'Required --train or --test or both'
     dataset = Dataset.prepare(args.langs, train_names=args.train_names,
                               test_names=args.test_names, out_dir=args.out,
-                              cache_dir=args.cache, merge_train=args.merge)
+                              cache_dir=CACHE_DIR, merge_train=args.merge)
     cli_sig = f'-l {"-".join(args.langs)}'
     cli_sig += f' -tr {" ".join(args.train_names)}' if args.train_names else ''
     cli_sig += f' -ts {" ".join(args.test_names)}' if args.test_names else ''
@@ -88,9 +89,12 @@ def add_boolean_arg(parser: argparse.ArgumentParser, name, default=False, help='
 
 def parse_args():
     p = argparse.ArgumentParser(formatter_class=MyFormatter, epilog=f'Loaded from {__file__} (v{__version__})')
-    p.add_argument('-c', '--cache', type=Path, help='Cache dir', default=mtdata.cache_dir)
     p.add_argument('-vv', '--verbose', action='store_true', help='verbose mode')
     p.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
+    p.add_argument('-ri', '--reindex', action='store_true',
+                   help=f"Invalidate index of entries and recreate it. This deletes"
+                        f" {cached_index_file} only and not the downloaded files. "
+                        f"Use this if you're using in developer mode and modifying mtdata index.")
 
     sub_ps = p.add_subparsers(required=True, dest='task',
                               help='''R|
@@ -150,9 +154,13 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if args.reindex and cached_index_file.exists():
+        bak_file = cached_index_file.with_suffix(".bak")
+        log.info(f"Invalidate index: {cached_index_file} -> {bak_file}")
+        cached_index_file.rename(bak_file)
+
     if args.task == 'list':
-        list_data(args.langs, args.names, not_names=args.not_names, full=args.full,
-                  cache_dir=args.cache)
+        list_data(args.langs, args.names, not_names=args.not_names, full=args.full)
     elif args.task == 'get':
         get_data(args)
     elif args.task == 'list_exp':
