@@ -13,5 +13,5 @@ def load_all(index: Index):
             in_paths = in_paths.strip().split('\t')
             # TODO: corpora that require an HTTP POST to download
             if len(post) == 0:
-                ent = Entry(langs=(l1, l2), url=download, name="ELRC_" + short, filename="ELRC_" + short + ".zip", in_ext='tmx', in_paths=in_paths)
+                ent = Entry(langs=(l1, l2), url=download, name="ELRC_" + short, filename="ELRC_" + str(num) + ".zip", in_ext='tmx', in_paths=in_paths)
                 index.add_entry(ent)
