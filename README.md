@@ -278,7 +278,7 @@ Entry(..., cite=cite)
 
 When index is modified without incrementing version number, you will have to force refresh cache of index. The following command with `-ri` or `--reindex` flag helps reindex datasets. 
 
-`python -m mtdata -ri list ` or `python -m mtdata --reindex list ` to refresh cahce of index.  
+`python -m mtdata -ri list ` or `python -m mtdata --reindex list ` to refresh cache of index.  
 
 For adding a custom parser, or file handler look into [`parser.read_segs()`](mtdata/parser.py) 
 and [`cache`](mtdata/cache.py) for dealing with a new archive/file type that is not already supported.
