@@ -28,7 +28,7 @@ def parse_tmx(data, log_every=DEF_PROGRESS):
             seg = tuv.findtext('seg')
             if lang and seg:
                 lang = iso3_code(lang[0], fail_error=True)
-                seg = unescape(seg.strip()).replace('\n', ' ')
+                seg = unescape(seg.strip()).replace('\n', ' ').replace('\t', ' ')
                 if lang in lang_seg:
                     log.warning(f"Language {lang} appears twice in same translation unit.")
                 lang_seg[lang] = seg
