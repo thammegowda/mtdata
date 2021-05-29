@@ -25,6 +25,9 @@ v0.2.10-dev - WIP
 - Fix line count mismatch in some XML formats [#45][p45] 
 - Parse BCP47 codes by removing everything after first hyphen [#48][p48] -- by [@kpu](https://github.com/kpu) 
 - Add Khresmoi datasets [#53][p53] -- by [@kpu](https://github.com/kpu)
+- Optimize index loading by using cache; 
+  - Added `-re | --reindex` CLI flag to force update index cache [#54][i54]  
+  - Removed `--cache` CLI argument. Use `export MTDATA=/path/to/cache-dir` instead (which was already supported)
 
 [i37]: https://github.com/thammegowda/mtdata/issues/37
 [i35]: https://github.com/thammegowda/mtdata/issues/35
@@ -35,6 +38,7 @@ v0.2.10-dev - WIP
 [p48]: https://github.com/thammegowda/mtdata/pull/48
 [p53]: https://github.com/thammegowda/mtdata/pull/53 
 [p43]: https://github.com/thammegowda/mtdata/pull/43 
+[i54]: https://github.com/thammegowda/mtdata/issues/54
 
 ----
 # v0.2.9 - 20210517

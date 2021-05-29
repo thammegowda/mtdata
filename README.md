@@ -236,7 +236,7 @@ print(iso3_code('eNgLIsH', fail_error=True))  # case doesnt matter
 ```
 
 # How to extend, modify, or contribute:
-Please help grow the datasets by adding missing+new datasets to [`index`](mtdata/index/__init__.py) module.
+Please help grow the datasets by adding any missing and new datasets to [`index`](mtdata/index/__init__.py) module.
 Here is an example listing europarl-v9 corpus.
 Note: the language codes such as `de` `en` etc will be mapped to 3 letter ISO codes `deu` `eng` internally
 ```python
@@ -276,13 +276,26 @@ cite = index.ref_db.get_bibtex('author-etal')
 Entry(..., cite=cite)
 ```
 
+When index is modified without incrementing version number, you will have to force refresh cache of index. The following command with `-ri` or `--reindex` flag helps reindex datasets. 
+
+`python -m mtdata -ri list ` or `python -m mtdata --reindex list ` to refresh cache of index.  
+
 For adding a custom parser, or file handler look into [`parser.read_segs()`](mtdata/parser.py) 
 and [`cache`](mtdata/cache.py) for dealing with a new archive/file type that is not already supported.
+
+## Change Cache Directory:
+
+The default cache directory is `$HOME/.mtdata`. To change it, set the following environment variable
+`export MTDATA=/path/to/new-cache-dir`
+
+
  
 ## Run tests
 Tests are located in [tests/](tests) directory. To run all the tests:
 
     python -m pytest
+
+
 
 ## Developers and Contributor:
 See - https://github.com/thammegowda/mtdata/graphs/contributors

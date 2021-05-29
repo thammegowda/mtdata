@@ -14,3 +14,4 @@ import os
 debug_mode = False
 log.basicConfig(level=log.INFO)
 cache_dir = Path(os.environ.get('MTDATA', '~/.mtdata')).expanduser()
+cached_index_file = cache_dir / f'mtdata.index.{__version__}.pkl'

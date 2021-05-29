@@ -15,7 +15,7 @@ def load(index: Index):
         url="https://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf",
         cite=index.ref_db.get_bibtex('vaswani2017attention'),
         experiments=[
-            Experiment.make(
+            Experiment.make(index=index,
                 langs=('eng', 'deu'),
                 train=['wmt13_europarl_v7', 'wmt13_commoncrawl', 'wmt18_news_commentary_v13'],
                 tests=['newstest2013', 'newstest2014_deen'])

@@ -83,10 +83,9 @@ class Experiment:
             assert t
 
     @classmethod
-    def make(cls, langs: Tuple[str, str], train: List[str], tests: List[str]):
-        from mtdata.index import INDEX
-        train = [INDEX.get_entry(name, langs) for name in train]
-        tests = [INDEX.get_entry(name, langs) for name in tests]
+    def make(cls, index, langs: Tuple[str, str], train: List[str], tests: List[str]):
+        train = [index.get_entry(name, langs) for name in train]
+        tests = [index.get_entry(name, langs) for name in tests]
         return cls(langs, train=train, tests=tests)
 
 
