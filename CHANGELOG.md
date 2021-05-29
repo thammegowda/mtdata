@@ -12,18 +12,19 @@ v0.2.10-dev - WIP
     - WikiMatrix_v1
     - tico19_v20201028 
   - updates (replaces old with new):
-    - GlobalVoices_v2017q3 ->GlobalVoices_v2018q4  
+    - GlobalVoices_v2017q3 -> GlobalVoices_v2018q4  
     - MultiParaCrawl_v5 -> MultiParaCrawl_v7.1 
     - ParaCrawl_v5 -> ParaCrawl_v7
     - TED2013_v1.1 -> TED2020_v1 
     - Tatoeba_v20190709 -> Tatoeba_v20210310  -- [#37][i37]
     - wikimedia_v20190628 -> wikimedia_v20210402 -- [#35][i35]
+- Multilingual TMX parsing, add ECDC and EAC -- [#39][p39] -- by [@kpu](https://github.com/kpu)
 - Removed Global Voices -- now available via OPUS -- [#41][i41]
-- Multilingual TMX parsing, add ECDC and EAC -- [#39][p39] -- contributed by [@kpu](https://github.com/kpu) 
 - Move all BibTeX to a separate file -- [#42][p42]
+- Add ELRC-Share datasets [#43][p43] --  by [@kpu](https://github.com/kpu)
 - Fix line count mismatch in some XML formats [#45][p45] 
-- Parse BCP47 codes by removing everything after first hyphen [#48][p48] -- contributed by [@kpu](https://github.com/kpu) 
-- Add Khresmoi datasets [#53][p53] -- contributed by [@kpu](https://github.com/kpu) 
+- Parse BCP47 codes by removing everything after first hyphen [#48][p48] -- by [@kpu](https://github.com/kpu) 
+- Add Khresmoi datasets [#53][p53] -- by [@kpu](https://github.com/kpu)
 
 [i37]: https://github.com/thammegowda/mtdata/issues/37
 [i35]: https://github.com/thammegowda/mtdata/issues/35
@@ -33,7 +34,7 @@ v0.2.10-dev - WIP
 [p45]: https://github.com/thammegowda/mtdata/pull/45
 [p48]: https://github.com/thammegowda/mtdata/pull/48
 [p53]: https://github.com/thammegowda/mtdata/pull/53 
-
+[p43]: https://github.com/thammegowda/mtdata/pull/43 
 
 ----
 # v0.2.9 - 20210517
