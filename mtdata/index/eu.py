@@ -32,4 +32,16 @@ def load_all(index: Index):
                         name="EAC_Reference", in_ext='tmx', cite=cite, in_paths=["EAC_REFRENCE_DATA.tmx"])
             index.add_entry(ent)
 
+    # === DCEP ===
+    # https://ec.europa.eu/jrc/en/language-technologies/dcep
+    # This was annoying to process so I ended up rehosting it.
+    # Don't bother with TR; it doesn't have sentences anyway.
+    cite = index.ref_db.get_bibtex('dcep')
+    langs = 'BG CS DA DE EL EN ES ET FI FR GA HU IT LT LV MT NL PL PT RO SK SL SV'.split()
+    for i, l1 in enumerate(langs):
+        for l2 in langs[i+1:]:
+            ent = Entry(langs=(l1, l2), url=f"http://data.statmt.org/DCEP/{l1}-{l2}.tsv.xz",
+                        name="DCEP", in_ext='tsv', cite=cite)
+            index.add_entry(ent)
+
     # Note: DGT-TM is already in via OPUS.
