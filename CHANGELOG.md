@@ -28,6 +28,7 @@ v0.2.10-dev - WIP
 - Optimize index loading by using cache; 
   - Added `-re | --reindex` CLI flag to force update index cache [#54][i54]  
   - Removed `--cache` CLI argument. Use `export MTDATA=/path/to/cache-dir` instead (which was already supported)
+- Add : `DCEP` corpus, 253 language pairs [#58](p58) -- by [@kpu](https://github.com/kpu)
 
 [i37]: https://github.com/thammegowda/mtdata/issues/37
 [i35]: https://github.com/thammegowda/mtdata/issues/35
@@ -39,6 +40,7 @@ v0.2.10-dev - WIP
 [p53]: https://github.com/thammegowda/mtdata/pull/53 
 [p43]: https://github.com/thammegowda/mtdata/pull/43 
 [i54]: https://github.com/thammegowda/mtdata/issues/54
+[p58]: https://github.com/thammegowda/mtdata/pull/58
 
 ----
 # v0.2.9 - 20210517
