@@ -28,6 +28,7 @@ class Index:
         if not cls.obj:
             if not cached_index_file.exists():
                 log.info("Creating a fresh index object")
+                cached_index_file.parent.mkdir(exist_ok=True)
                 lock_file = cached_index_file.with_suffix("._lock")
                 with portalocker.Lock(lock_file, 'w', timeout=60) as fh:
                     # got lock, check cache is not created by parallel processes while we waited
