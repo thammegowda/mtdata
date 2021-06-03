@@ -91,7 +91,7 @@ def main(inp, out, wmt21xml=False):
             line = '\t'.join(rec) + '\n'
             out.write(line)
             count += 1
-        log.warning(f"Wrote {count} lines to {out}")
+        log.info(f"Wrote {count} lines to {out}")
 
 
 if __name__ == '__main__':
