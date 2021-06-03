@@ -140,6 +140,8 @@ class Dataset:
                     continue
                 if swap:
                     sent2, sent1 = sent1, sent2
+                sent1 = sent1.replace('\n', ' ').replace('\t', ' ')
+                sent2 = sent2.replace('\n', ' ').replace('\t', ' ')
                 f1.write(f'{sent1}\n')
                 f2.write(f'{sent2}\n')
                 count += 1
@@ -149,4 +151,5 @@ class Dataset:
                 log.warning(msg)
             if noise > 0:
                 log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100*noise/count:.4f}%")
+            log.info(f"wrote {count} lines to {l1} == {l2}")
         return count, skips

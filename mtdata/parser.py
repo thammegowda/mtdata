@@ -39,7 +39,6 @@ class Parser:
     def __post_init__(self):
         if not isinstance(self.paths, list):
             self.paths = [self.paths]
-        assert 1 <= len(self.paths) <= 3
         for p in self.paths:
             assert p.exists(), f'{p} not exists'
 
@@ -50,6 +49,9 @@ class Parser:
                 exts = ['txt']  # treat that as plain text
             assert len(set(exts)) == 1, f'Expected a type of exts, but found: {exts}'
             self.ext = exts[0]
+        assert 1 <= len(self.paths)
+        # tsv and tmx just concatenate all of them
+        assert len(self.paths) <= 3 or self.ext == 'tmx' or self.ext == 'tsv'
 
     def read_segs(self):
         readers = []
@@ -78,6 +80,9 @@ class Parser:
 
         if len(readers) == 1:
             yield from readers[0]
+        elif self.ext == 'tmx' or self.ext == 'tsv':
+            for reader in readers:
+                yield from reader
         elif len(readers) == 2:
             for seg1, seg2 in zip_longest(*readers):
                 if seg1 is None or seg2 is None:

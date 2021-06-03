@@ -2,16 +2,86 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
-from mtdata import log
+from mtdata import log, cached_index_file, __version__
 from mtdata.entry import Entry, Paper
-from typing import List
+from typing import List, Optional
+from pathlib import Path
+import pickle
+import portalocker
+from pybtex.database import parse_file as parse_bib_file
+
+REFS_FILE = Path(__file__).parent / 'refs.bib'
 
 
 class Index:
 
+    obj = None   # singleton object
+
     def __init__(self):
-        self.entries = {}  # uniq
-        self.papers = {}  # uniq
+        self.entries = {}  # unique
+        self.papers = {}  # unique
+        self.ref_db = ReferenceDb()
+        self.version = __version__
+
+    @classmethod
+    def get_instance(cls):
+        if not cls.obj:
+            if not cached_index_file.exists():
+                log.info("Creating a fresh index object")
+                cached_index_file.parent.mkdir(exist_ok=True)
+                lock_file = cached_index_file.with_suffix("._lock")
+                with portalocker.Lock(lock_file, 'w', timeout=60) as fh:
+                    # got lock, check cache is not created by parallel processes while we waited
+                    if not cached_index_file.exists():
+                        obj = Index()
+                        log.info("Indexing all datasets...")
+                        obj.load_all()
+                        log.info(f"Caching my index file at {cached_index_file}")
+                        with open(cached_index_file, 'wb') as out:
+                            pickle.dump(obj, out)
+
+            assert cached_index_file.exists()
+            log.info(f"Loading index from cache {cached_index_file}")
+            with open(cached_index_file, 'rb') as inp:
+                obj = pickle.load(inp)
+
+            assert isinstance(obj, cls), f'{cached_index_file} isnt valid. please move or remove it'
+            cls.obj = obj
+        return cls.obj
+
+
+    def load_all(self):
+        from mtdata.index import (statmt, paracrawl, tilde, literature, joshua_indian,
+                                  unitednations, wikimatrix, other, neulab_tedtalks, elrc_share,
+                                  ai4bharat, eu)
+        from mtdata.index.opus import opus_index, jw300, opus100
+
+        counts = {}
+        subsets = [
+            ('Statmt.org', statmt.load),
+            ('Paracrawl', paracrawl.load),
+            ('Tilde', tilde.load),
+            ('JoshuaIndianCoprus', joshua_indian.load_all),
+            ('UnitedNations', unitednations.load_all),
+            ('OPUS', opus_index.load_all),
+            ('OPUS_JW300', jw300.load_all),
+            ('OPUS100', opus100.load_all),
+            ('WikiMatrix', wikimatrix.load_all),
+            ('Other', other.load_all),
+            ('Neulab_TEDTalksv1', neulab_tedtalks.load_all),
+            ('ELRC-SHARE', elrc_share.load_all),
+            ('AI4Bharat', ai4bharat.load_all),
+            ('EU', eu.load_all)
+        ]
+        for name, loader in subsets:
+            n = len(self)
+            loader(self)
+            counts[name] = len(self) - n
+        items = list(sorted(counts.items(), key=lambda x: x[1], reverse=True))
+        items += [('Total', len(self))]
+        counts = '  '.join([f'{n}:{c:,}' for n, c in items])
+        log.info(f"Index status: {counts}")
+        literature.load(self)
 
     @property
     def n_entries(self) -> int:
@@ -56,8 +126,32 @@ class Index:
     def __len__(self):
         return len(self.entries)
 
+class ReferenceDb:
 
-INDEX: Index = Index()
+    _instance = None  # singleton instance
+
+    def __new__(cls, file=REFS_FILE):
+        if cls._instance is None:
+            cls._instance = super(ReferenceDb, cls).__new__(cls)
+            assert file.exists(), f'{file} does not exist'
+            cls._instance.db = parse_bib_file(file, bib_format='bibtex')
+            log.debug(f"loaded {len(cls._instance)} references from {file}")
+        return cls._instance
+
+    def __getitem__(self, item):
+        return self.db.entries[item]
+
+    def __contains__(self, item):
+        return item in self.db.entries
+
+    def __len__(self):
+        return len(self.db.entries)
+
+    def get_bibtex(self, key: str) -> str:
+        return self[key].to_string(bib_format='bibtex')
+
+    def keys(self):
+        return self.db.entries.keys()
 
 
 def get_entries(langs=None, names=None, not_names=None) -> List[Entry]:
@@ -82,40 +176,4 @@ def get_entries(langs=None, names=None, not_names=None) -> List[Entry]:
         select = [e for e in select if e.name not in not_names]
     return select
 
-
-def load_all():
-    from mtdata.index import (statmt, paracrawl, tilde, literature, joshua_indian, globalvoices,
-                              unitednations, wikimatrix, other, neulab_tedtalks, elrc_share,
-                              ai4bharat)
-    from mtdata.index.opus import opus_index, jw300, opus100
-
-    counts = {}
-    subsets = [
-        ('Statmt.org', statmt.load),
-        ('Paracrawl', paracrawl.load),
-        ('Tilde', tilde.load),
-        ('JoshuaIndianCoprus', joshua_indian.load_all),
-        ('GlobalVoices', globalvoices.load_all),
-        ('UnitedNations', unitednations.load_all),
-        ('OPUS', opus_index.load_all),
-        ('OPUS_JW300', jw300.load_all),
-        ('OPUS100', opus100.load_all),
-        ('WikiMatrix', wikimatrix.load_all),
-        ('Other', other.load_all),
-        ('Neulab_TEDTalksv1', neulab_tedtalks.load_all),
-        ('ELRC-SHARE', elrc_share.load_all),
-        ('AI4Bharat', ai4bharat.load_all),
-    ]
-    for name, loader in subsets:
-        n = len(INDEX)
-        loader(INDEX)
-        counts[name] = len(INDEX) - n
-    counts['Total'] = len(INDEX)
-
-    counts = '  '.join([f'{n}:{c:,}' for n, c in counts.items()])
-    log.info(f"Loaded entries: {counts}")
-    literature.load(INDEX)
-
-
-# eager load, as of now TODO: lazy load
-load_all()
+INDEX: Index = Index.get_instance()

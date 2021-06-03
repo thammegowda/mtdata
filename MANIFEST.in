@@ -1,0 +1,4 @@
+include README.md
+include mtdata/index/refs.bib
+include mtdata/index/elrc_share.tsv
+global-exclude *.pyc

@@ -55,7 +55,12 @@ class OpusSpider(scrapy.Spider):
                 self.logger.info(f"Found {len(urls)} pairs")
                 url = urls[0]
                 full_url = response.urljoin('/'.join(url.split('/')[:-1]) + f'/%s-%s{suffix}')
-                corp_name = '_'.join(url.split('?f=')[-1].split('/')[:-2]).replace('-', '_')
+
+                # ?f=name/v1/moses/xx-yy.zip   sometimes its just f=name/xx-yy.zip
+                name_parts = url.split('?f=')[-1].split('/')[:-1]
+                if name_parts[-1] == 'moses':
+                    name_parts =  name_parts[:-1]
+                corp_name = '_'.join(name_parts).replace('-', '')
                 langs = []
                 for url in urls:
                     lang_pair = url.split('/')[-1].replace(suffix, '').split('-')
@@ -68,4 +73,9 @@ class OpusSpider(scrapy.Spider):
                 item['url'] = full_url
                 item['name'] = corp_name
                 item['langs'] = langs
+
+                # this is what goes into mtdata https://github.com/thammegowda/mtdata/blob/master/mtdata/index/opus/opus_index.py
+                min_url = full_url.replace('https://opus.nlpl.eu/download.php?f=', '')
+                langs_str = ' '.join('-'.join(pair) for pair in langs)
+                item['mtdata'] = '\t'.join([corp_name, min_url, langs_str])
                 yield item

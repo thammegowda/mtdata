@@ -25,7 +25,7 @@ class Entry:
 
         assert isinstance(langs, tuple)
         assert len(langs) == 2
-        for ch in '.-/* ':
+        for ch in '-/* ':
             assert ch not in name, f"Character '{ch}' is not permitted in name {name}"
 
         self.langs = tuple(iso3_code(l, fail_error=True) for l in langs)
@@ -83,10 +83,9 @@ class Experiment:
             assert t
 
     @classmethod
-    def make(cls, langs: Tuple[str, str], train: List[str], tests: List[str]):
-        from mtdata.index import INDEX
-        train = [INDEX.get_entry(name, langs) for name in train]
-        tests = [INDEX.get_entry(name, langs) for name in tests]
+    def make(cls, index, langs: Tuple[str, str], train: List[str], tests: List[str]):
+        train = [index.get_entry(name, langs) for name in train]
+        tests = [index.get_entry(name, langs) for name in tests]
         return cls(langs, train=train, tests=tests)
 
 

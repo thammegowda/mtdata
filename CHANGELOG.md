@@ -1,7 +1,49 @@
 # Change Log
 
-# 0.2.9 - 20210517
+v0.2.10-dev - WIP 
 
+- OPUS index updated (crawled on 20210522) 
+  - new: 
+    - CCAlignedV1
+    - EiTBParCC_v1
+    - EuroPat_v2
+    - MultiCCAligned_v1.1
+    - NewsCommentary_v14
+    - WikiMatrix_v1
+    - tico19_v20201028 
+  - updates (replaces old with new):
+    - GlobalVoices_v2017q3 -> GlobalVoices_v2018q4  
+    - MultiParaCrawl_v5 -> MultiParaCrawl_v7.1 
+    - ParaCrawl_v5 -> ParaCrawl_v7
+    - TED2013_v1.1 -> TED2020_v1 
+    - Tatoeba_v20190709 -> Tatoeba_v20210310  -- [#37][i37]
+    - wikimedia_v20190628 -> wikimedia_v20210402 -- [#35][i35]
+- Multilingual TMX parsing, add ECDC and EAC -- [#39][p39] -- by [@kpu](https://github.com/kpu)
+- Removed Global Voices -- now available via OPUS -- [#41][i41]
+- Move all BibTeX to a separate file -- [#42][p42]
+- Add ELRC-Share datasets [#43][p43] --  by [@kpu](https://github.com/kpu)
+- Fix line count mismatch in some XML formats [#45][p45] 
+- Parse BCP47 codes by removing everything after first hyphen [#48][p48] -- by [@kpu](https://github.com/kpu) 
+- Add Khresmoi datasets [#53][p53] -- by [@kpu](https://github.com/kpu)
+- Optimize index loading by using cache; 
+  - Added `-re | --reindex` CLI flag to force update index cache [#54][i54]  
+  - Removed `--cache` CLI argument. Use `export MTDATA=/path/to/cache-dir` instead (which was already supported)
+- Add : `DCEP` corpus, 253 language pairs [#58](p58) -- by [@kpu](https://github.com/kpu)
+
+[i37]: https://github.com/thammegowda/mtdata/issues/37
+[i35]: https://github.com/thammegowda/mtdata/issues/35
+[i41]: https://github.com/thammegowda/mtdata/issues/41
+[p39]: https://github.com/thammegowda/mtdata/pull/39  
+[p42]:  https://github.com/thammegowda/mtdata/pull/42
+[p45]: https://github.com/thammegowda/mtdata/pull/45
+[p48]: https://github.com/thammegowda/mtdata/pull/48
+[p53]: https://github.com/thammegowda/mtdata/pull/53 
+[p43]: https://github.com/thammegowda/mtdata/pull/43 
+[i54]: https://github.com/thammegowda/mtdata/issues/54
+[p58]: https://github.com/thammegowda/mtdata/pull/58
+
+----
+# v0.2.9 - 20210517
 - New datasets 
   - WMT20 Tests
   - Paracrawl_v5_1 for Pashto and Khmer -English
@@ -21,23 +63,25 @@
 [i26]: https://github.com/thammegowda/mtdata/issues/26 
 [p32]: https://github.com/thammegowda/mtdata/pull/32
 
-
-# 0.2.8 - 20210126
+----
+# v0.2.8 - 20210126
 - Paracrawl v7 and v7.1  -- 29 new datasets
 - Fix swapping issue with TMX format (TILDE corpus); add a testcase for TMX entry 
 - Add mtdata-iso shell command
 - Add "mtdata report" sub command to summarize datasets by language and names
 
+----
 # v0.2.7 - 20200912
 - Add OPUS 100 corpus
 
+----
 # v0.2.6 - 20200827
 - Add all pairs of neulab_tedtalksv1 - train,test,dev  -- 4,455 of them
 - Add support for cleaning noise. Entry.is_noise(seg1, seg2)
 - some basic noise is removed by default from training 
 - add `__slots__` to Entry class (takes less memory and faster attrib lookup)
 
-
+----
 # v0.2.5 - 20200610
 - Add all pairs of Wikimatrix  -- 1,617 of them
 - Add support for specifying `cols` of `.tsv` file
@@ -45,6 +89,7 @@
 - Remove hin-eng `dict` from JoshuaIndianParallelCorpus
 - Remove Wikimatrix1 from statmt -- they are moved to separate file 
 
+----
 # v0.2.4 - 20200605
 - File locking using portalocker to deal with race conditions 
  when multiple `mtdata get` are invoked in parallel
@@ -53,18 +98,22 @@
 - CLI to print version name
 - Added KFTT Japanese-English set
 
+----
 # 0.2.3 - (Not released to PyPi)
 - IITB hin-eng datasets
 - Fix issue with dataset counting
 
+----
 # 0.2.2 - 
 
 - Pypi release bug fix: select all nested packages
 - add UnitedNations test set
 
+----
 # 0.2.1 -  
 -  Add JW300 Corpus 
 
+----
 # 0.2.0 - 
 - All Languages are internally mapped to 3 letter codes of ISO codes
 - 53,000 entries from OPUS are indexed

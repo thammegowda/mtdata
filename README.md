@@ -38,26 +38,26 @@ pip install mtdata
 
 These are the summary of datasets from various sources (Updated: May 10 2020). 
 The list is incomplete and meant to see as start. 
-Here I (/TG) have picked some commonly used datasets that I use for my work - you are welcome to add more! 
+We have added some commonly used datasets - you are welcome to add more! 
  
 | Source | # of datasets |
 |---: | ---:|
-| AI4Bharath | 66 |
-| Statmt | 493 |
-| Paracrawl | 96 |
-| Tilde | 519 |
-| OPUS<sup>$1</sup> | 54,344 |
-| OPUS100v1 | 302 |
+| OPUS<sup>$1</sup> | 69,415 |
 | JW300<sup>$2</sup> | 45,548 |
-| GlobalVoices 2018Q4| 812 |
-| Joshua Indian Corpus | 29 |
-| UnitedNations<sup>$3</sup> | 30 |
-| WikiMatrix | 1,617 |
 | Neulab_TEDTalksv1 | 4,455 |
-| ELRC-SHARE | 37 |
-| Other | 14 |
+| WikiMatrix | 1,617 |
+| ELRC-SHARE | 1,297 |
+| EU | 925 |
+| Tilde | 519 |
+| Statmt | 493 |
+| OPUS100v1 | 302 |
+| Paracrawl | 96 |
+| AI4Bharath | 66 |
+| UnitedNations<sup>$3</sup> | 30 |
+| Joshua Indian Corpus | 29 |
+| Other | 70 |
 | ----|----|
-| Total |108,296|
+| Total | 124,844 |
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
@@ -236,7 +236,7 @@ print(iso3_code('eNgLIsH', fail_error=True))  # case doesnt matter
 ```
 
 # How to extend, modify, or contribute:
-Please help grow the datasets by adding missing+new datasets to [`index`](mtdata/index/__init__.py) module.
+Please help grow the datasets by adding any missing and new datasets to [`index`](mtdata/index/__init__.py) module.
 Here is an example listing europarl-v9 corpus.
 Note: the language codes such as `de` `en` etc will be mapped to 3 letter ISO codes `deu` `eng` internally
 ```python
@@ -267,18 +267,40 @@ for set_name, pairs in wmt_sets.items():
 Refer to [paracrawl](mtdata/index/paracrawl.py), [tilde](mtdata/index/tilde.py), or
  [statmt](mtdata/index/statmt.py) for examples.
  
-If citation is available for a dataset, please include
+If citation is available for a dataset, please add BibTeX entry to [mtdata/index/refs.bib](mtdata/index/refs.bib) 
+
 ```python
-cite = r"""bib tex here""
-Entry(... cite=cite)
+from mtdata.index import INDEX as index, Entry
+
+cite = index.ref_db.get_bibtex('author-etal')
+Entry(..., cite=cite)
 ```
+
+When index is modified without incrementing version number, you will have to force refresh cache of index. The following command with `-ri` or `--reindex` flag helps reindex datasets. 
+
+`python -m mtdata -ri list ` or `python -m mtdata --reindex list ` to refresh cache of index.  
 
 For adding a custom parser, or file handler look into [`parser.read_segs()`](mtdata/parser.py) 
 and [`cache`](mtdata/cache.py) for dealing with a new archive/file type that is not already supported.
+
+## Change Cache Directory:
+
+The default cache directory is `$HOME/.mtdata`. To change it, set the following environment variable
+`export MTDATA=/path/to/new-cache-dir`
+
+
  
+## Run tests
+Tests are located in [tests/](tests) directory. To run all the tests:
+
+    python -m pytest
+
+
 
 ## Developers and Contributor:
 See - https://github.com/thammegowda/mtdata/graphs/contributors
+
+
 
 --- 
 # Disclaimer on Datasets

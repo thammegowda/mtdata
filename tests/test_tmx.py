@@ -27,4 +27,16 @@ def test_rapid1019():
         assert ces[0].strip() =='(^) Výrobky, které byly určeny k prodeji před 20. květnem 2016, mohou být v EU stále prodávány do roku 2017.'
 
 
-test_rapid1019()
+def test_eac_ref():
+    with TemporaryDirectory() as out_dir:
+        out_dir = Path(out_dir)
+        args = Namespace(cache=mtdata.cache_dir, langs=('nor', 'slk'), merge=False,
+                         out=out_dir, task='get', test_names=None, train_names=['EAC_Reference'])
+        get_data(args)
+        parts_dir = out_dir / 'train-parts'
+        nor = parts_dir / 'EAC_Reference-nor_slk.nor'
+        slk = parts_dir / 'EAC_Reference-nor_slk.slk'
+        nor = nor.read_text().splitlines()
+        slk = slk.read_text().splitlines()
+        print('nor, slk == ', len(nor), len(slk))
+        assert len(nor) == len(slk)
