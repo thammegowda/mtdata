@@ -49,12 +49,12 @@ class IO:
         self.fd = None
 
     @classmethod
-    def reader(cls, path, text=True):
-        return cls(path, 'rt' if text else 'rb')
+    def reader(cls, path, text=True, **kwargs):
+        return cls(path, 'rt' if text else 'rb', **kwargs)
 
     @classmethod
-    def writer(cls, path, text=True, append=False):
-        return cls(path, ('a' if append else 'w') + ('t' if text else 'b'))
+    def writer(cls, path, text=True, append=False, **kwargs):
+        return cls(path, ('a' if append else 'w') + ('t' if text else 'b'), **kwargs)
 
     @classmethod
     def get_lines(cls, path, col=0, delim='\t', line_mapper=None, newline_fix=True):

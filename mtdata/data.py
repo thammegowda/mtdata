@@ -14,6 +14,8 @@ from itertools import zip_longest
 import collections as coll
 import json
 
+DEF_COMPRESS = 'gz'
+
 
 class Dataset:
 
@@ -31,7 +33,6 @@ class Dataset:
         self.drop_train_noise = drop_train_noise
         self.drop_test_noise = drop_test_noise
 
-
     @classmethod
     def resolve_entries(cls, langs, names):
         inp_names = set(names)
@@ -47,7 +48,7 @@ class Dataset:
     @classmethod
     def prepare(cls, langs, train_names: Optional[List[str]], test_names: Optional[List[str]],
                 out_dir: Path, cache_dir: Path, merge_train=False,
-                drop_noise: Tuple[bool, bool]=(True, False)):
+                drop_noise: Tuple[bool, bool] = (True, False), compress=False):
         drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
         assert train_names or test_names, 'Either train_names or test_names should be given'
@@ -61,29 +62,35 @@ class Dataset:
 
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir,
                       drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise)
-        if test_entries: # tests are smaller so quicker; no merging needed
+        if test_entries:  # tests are smaller so quicker; no merging needed
             dataset.add_test_entries(test_entries)
 
-        if train_entries: # this might take some time
-            dataset.add_train_entries(train_entries, merge_train=merge_train)
+        if train_entries:  # this might take some time
+            dataset.add_train_entries(train_entries, merge_train=merge_train, compress=compress)
         return dataset
 
-    def add_train_entries(self, entries, merge_train=False):
-        self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise)
+    def add_train_entries(self, entries, merge_train=False, compress=False):
+
+        self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise,
+                       compress=compress)
         if not merge_train:
             return
         # merge
         l1, l2 = self.langs
-        l1_files = list(self.train_parts_dir.glob(f"*.{l1}"))
+        compress_ext = f'.{DEF_COMPRESS}' if compress else ''
+        l1_ext = f'{l1}{compress_ext}'
+        l2_ext = f'{l2}{compress_ext}'
+        l1_files = list(self.train_parts_dir.glob(f"*.{l1_ext}"))
         assert l1_files and len(l1_files) >= len(entries)
 
-        l2_files = [l1_f.with_suffix(f".{l2}") for l1_f in l1_files]
+        l2_files = [l1_f.with_name(rreplace(l1_f.name, '.' + l1_ext, '.' + l2_ext))
+                    for l1_f in l1_files]
         assert all(l2_f.exists() for l2_f in l2_files)
         log.info(f"Going to merge {len(l1_files)} files as one train file")
         counts = coll.defaultdict(int)
-        of1 = self.dir / f'train.{l1}'
-        of2 = self.dir / f'train.{l2}'
-        of3 = self.dir / f'train.meta.gz'
+        of1 = self.dir / f'train.{l1_ext}'
+        of2 = self.dir / f'train.{l2_ext}'
+        of3 = self.dir / f'train.meta.{DEF_COMPRESS}'
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
             for if1, if2 in zip(l1_files, l2_files):
                 name = if1.name.rstrip(f'.{l1}')
@@ -96,7 +103,7 @@ class Dataset:
         counts = {'total': total, 'parts': counts}
         counts_msg = json.dumps(counts, indent=2)
         log.info('Train stats:\n' + counts_msg)
-        IO.write_lines(self.dir /'train.stats.json', counts_msg)
+        IO.write_lines(self.dir / 'train.stats.json', counts_msg)
         return counts
 
     @classmethod
@@ -110,20 +117,27 @@ class Dataset:
     def add_test_entries(self, entries):
         self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise)
 
-    def add_parts(self, dir_path, entries, drop_noise=False):
+    def add_parts(self, dir_path, entries, drop_noise=False, compress=False):
         for ent in entries:
-            n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise)
+            n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
+                                          compress=compress)
             log.info(f"{ent.name} : found {n_good:} segments and {n_bad:} errors")
 
-    def add_part(self, dir_path: Path, entry: Entry, drop_noise=False):
+    def add_part(self, dir_path: Path, entry: Entry, drop_noise=False, compress=False):
         path = self.cache.get_entry(entry)
         swap = entry.is_swap(self.langs)
         parser = Parser(path, langs=self.langs, ext=entry.in_ext or None, ent=entry)
         langs = '_'.join(self.langs)
-        l1 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[0]}')
-        l2 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[1]}')
-        mode = dict(mode='w', encoding='utf-8', errors='ignore')
-        with l1.open(**mode) as f1, l2.open(**mode) as f2:
+        prefix = f'{entry.name}-{langs}'
+        l1_name = f'{prefix}.{self.langs[0]}'
+        l2_name = f'{prefix}.{self.langs[1]}'
+        if compress:
+            l1_name += f'.{DEF_COMPRESS}'
+            l2_name += f'.{DEF_COMPRESS}'
+        l1 = dir_path / l1_name
+        l2 = dir_path / l2_name
+        io_args = dict(encoding='utf-8', errors='ignore')
+        with IO.writer(l1, **io_args) as f1, IO.writer(l2, **io_args) as f2:
             count, skips, noise = 0, 0, 0
             for rec in parser.read_segs():
                 rec = rec[:2]  # get the first two recs
@@ -150,6 +164,14 @@ class Dataset:
             if skips > count:
                 log.warning(msg)
             if noise > 0:
-                log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100*noise/count:.4f}%")
+                log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100 * noise / count:.4f}%")
             log.info(f"wrote {count} lines to {l1} == {l2}")
         return count, skips
+
+
+def rreplace(text: str, cut: str, place: str):
+    """ right replace: https://stackoverflow.com/a/9943875/1506477
+        >>> 'XXX'.join('mississippi'.rsplit('iss', 1))
+        'missXXXippi'
+    """
+    return place.join(text.split(cut, 1))

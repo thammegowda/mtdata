@@ -28,7 +28,7 @@ def get_data(args):
     assert args.train_names or args.test_names, 'Required --train or --test or both'
     dataset = Dataset.prepare(args.langs, train_names=args.train_names,
                               test_names=args.test_names, out_dir=args.out,
-                              cache_dir=CACHE_DIR, merge_train=args.merge)
+                              cache_dir=CACHE_DIR, merge_train=args.merge, compress=args.compress)
     cli_sig = f'-l {"-".join(args.langs)}'
     cli_sig += f' -tr {" ".join(args.train_names)}' if args.train_names else ''
     cli_sig += f' -ts {" ".join(args.test_names)}' if args.test_names else ''
@@ -40,6 +40,7 @@ def get_data(args):
 
 
 def generate_report(langs, names, not_names=None, format='plain'):
+    from mtdata.data import get_entries
     entries = get_entries(langs, names, not_names)
     lang_stats = defaultdict(int)
     name_stats = defaultdict(int)
@@ -128,6 +129,8 @@ def parse_args():
     You may also use shell expansion if your shell supports it.
     e.g. "-tt newstest201{8,9}_deen." ''')
     add_boolean_arg(get_p, 'merge', default=False, help='Merge train into a single file')
+    get_p.add_argument(f'--compress', action='store_true', default=False,
+                       help="Keep the files compressed")
 
     get_p.add_argument('-o', '--out', type=Path, required=True, help='Output directory name')
 

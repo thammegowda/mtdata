@@ -14,7 +14,7 @@ def test_rapid1019():
     #out_dir = Path('tmp-test-tmx1')
     with TemporaryDirectory() as out_dir:
         out_dir = Path(out_dir)
-        args = Namespace(cache=mtdata.cache_dir, langs=('eng', 'ces'), merge=False,
+        args = Namespace(cache=mtdata.cache_dir, langs=('eng', 'ces'), merge=False, compress=False,
                          out=out_dir, task='get', test_names=None, train_names=['rapid2019'])
         get_data(args)
         parts_dir = out_dir / 'train-parts'
@@ -30,7 +30,7 @@ def test_rapid1019():
 def test_eac_ref():
     with TemporaryDirectory() as out_dir:
         out_dir = Path(out_dir)
-        args = Namespace(cache=mtdata.cache_dir, langs=('nor', 'slk'), merge=False,
+        args = Namespace(cache=mtdata.cache_dir, langs=('nor', 'slk'), merge=False, compress=False,
                          out=out_dir, task='get', test_names=None, train_names=['EAC_Reference'])
         get_data(args)
         parts_dir = out_dir / 'train-parts'
