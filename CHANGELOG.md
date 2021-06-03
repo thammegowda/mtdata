@@ -29,9 +29,11 @@ v0.2.10-dev - WIP
   - Added `-re | --reindex` CLI flag to force update index cache [#54][i54]  
   - Removed `--cache` CLI argument. Use `export MTDATA=/path/to/cache-dir` instead (which was already supported)
 - Add : `DCEP` corpus, 253 language pairs [#58](p58) -- by [@kpu](https://github.com/kpu)
+- Add : WMT 21 dev sets: eng-hau eng-isl isl-eng hau-eng [#36](i36)
 
 [i37]: https://github.com/thammegowda/mtdata/issues/37
 [i35]: https://github.com/thammegowda/mtdata/issues/35
+[i36]: https://github.com/thammegowda/mtdata/issues/36
 [i41]: https://github.com/thammegowda/mtdata/issues/41
 [p39]: https://github.com/thammegowda/mtdata/pull/39  
 [p42]:  https://github.com/thammegowda/mtdata/pull/42

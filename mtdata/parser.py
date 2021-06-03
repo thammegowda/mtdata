@@ -75,6 +75,9 @@ class Parser:
                 elif 'sgm' in self.ext:
                     from mtdata.sgm import read_sgm
                     readers.append(read_sgm(p))
+                elif 'wmt21xml' in self.ext:
+                    from mtdata.sgm import read_wmt21_xml
+                    readers.append(read_wmt21_xml(p))
                 else:
                     raise Exception(f'Not supported {self.ext} : {p}')
 

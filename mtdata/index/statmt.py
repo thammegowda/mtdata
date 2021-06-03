@@ -135,23 +135,6 @@ def load(index: Index):
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
                                   cite=cite))
 
-    #### WMT 20 Tests
-    url = "http://data.statmt.org/wmt20/translation-task/test.tgz"
-    wmt20_cite = index.ref_db.get_bibtex('barrault-etal-2020-findings')
-    for _pref, pairs in {
-        "": ["csen", "deen", "defr", "encs", "ende", "eniu", "enja", "enkm", "enpl", "enps",
-             "enru", "enta", "enzh", "frde", "iuen", "jaen", "kmen", "plen", "psen", "ruen",
-             "taen", "zhen"],
-        "B": ["deen", "ende", "enzh", "ruen", "zhen"]}.items():
-        for pair in pairs:
-            l1, l2 = pair[:2], pair[2:]
-            name = f'newstest{_pref}2020'
-            f1 = f'sgm/{name}-{pair}-src.{l1}.sgm'
-            f2 = f'sgm/{name}-{pair}-ref.{l2}.sgm'
-            name = f'{name}_{pair}'  # name cant have -, so have an _ instead
-            index.add_entry(Entry((l1, l2), name=name, filename='wmt20tests.tgz', in_paths=[f1, f2],
-                                  in_ext='sgm', cite=wmt20_cite, url=url))
-
     # Multi parallel
     wmt_sets = {
         '2009': ['en', 'cs', 'de', 'es', 'fr'],
@@ -177,6 +160,35 @@ def load(index: Index):
             index.add_entry(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
                                   in_ext='txt', cite=cite))
+
+    #### WMT 20 Tests
+    url = "http://data.statmt.org/wmt20/translation-task/test.tgz"
+    wmt20_cite = index.ref_db.get_bibtex('barrault-etal-2020-findings')
+    for _pref, pairs in {
+        "": ["csen", "deen", "defr", "encs", "ende", "eniu", "enja", "enkm", "enpl", "enps",
+             "enru", "enta", "enzh", "frde", "iuen", "jaen", "kmen", "plen", "psen", "ruen",
+             "taen", "zhen"],
+        "B": ["deen", "ende", "enzh", "ruen", "zhen"]}.items():
+        for pair in pairs:
+            l1, l2 = pair[:2], pair[2:]
+            name = f'newstest{_pref}2020'
+            f1 = f'sgm/{name}-{pair}-src.{l1}.sgm'
+            f2 = f'sgm/{name}-{pair}-ref.{l2}.sgm'
+            name = f'{name}_{pair}'  # name cant have -, so have an _ instead
+            index.add_entry(Entry((l1, l2), name=name, filename='wmt20tests.tgz', in_paths=[f1, f2],
+                                  in_ext='sgm', cite=wmt20_cite, url=url))
+
+    # WMT 21 Dev
+    url = "http://data.statmt.org/wmt21/translation-task/dev.tgz"
+    pairs = "en-ha en-is is-en ha-en".split()
+    for pair in pairs:
+        l1, l2 = pair.split('-')
+        name = f'newsdev2021_{l1}{l2}'
+        in_path = f'dev/xml/newsdev2021.{l1}-{l2}.xml'
+        ent = Entry((l1, l2), name=name, filename='wmt21dev.tgz', in_paths=[in_path],
+              in_ext='wmt21xml', cite=wmt20_cite, url=url)
+        index.add_entry(ent)
+
 
     # ==== TED Talks 2.0 ar-en
     index.add_entry(Entry(('en', 'ar'), 'tedtalks_v2_clean', ext='tsv.xz',
