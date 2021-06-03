@@ -14,13 +14,23 @@ class IO:
     Copied from my other project https://github.com/isi-nlp/rtg/blob/master/rtg/utils.py
     """
     def __init__(self, path, mode='r', encoding=None, errors=None):
-        self.path = path if type(path) is Path else Path(path)
+
+        if hasattr(path, 'write'):
+            self.path = None
+            self.fd = path
+        else:
+            self.fd = None
+            self.path = path if type(path) is Path else Path(path)
         self.mode = mode
-        self.fd = None
+
         self.encoding = encoding or 'utf-8' if 't' in mode else None
         self.errors = errors or 'replace'
 
     def __enter__(self):
+        if not self.path and self.fd is not None:
+            # already opened
+            return self.fd
+
         if self.path.name.endswith(".gz"):   # gzip mode
             self.fd = gzip.open(self.path, self.mode, encoding=self.encoding, errors=self.errors)
         elif self.path.name.endswith(".xz"):
