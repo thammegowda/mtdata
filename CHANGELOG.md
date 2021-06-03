@@ -1,6 +1,6 @@
 # Change Log
 
-v0.2.10-dev - WIP 
+v0.2.10 - 20200503 
 
 - OPUS index updated (crawled on 20210522) 
   - new: 
