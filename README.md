@@ -1,6 +1,7 @@
 # MTData
-MTData tool automates the dataset collection and preparation for machine translation research.
-It provides CLI and python APIs, so it can be used as a standalone tool or embedded into
+
+MTData tool automates collection and preparation of machine translation datasets.
+It provides CLI and python APIs, so it can be either used as a standalone tool or embedded into
  python apps for preparing MT experiments.
 
 This tool knows:
@@ -300,7 +301,28 @@ Tests are located in [tests/](tests) directory. To run all the tests:
 ## Developers and Contributor:
 See - https://github.com/thammegowda/mtdata/graphs/contributors
 
+## Citation
 
+To appear at ACL 2021 Demos
+
+```
+@article{DBLP:journals/corr/abs-2104-00290,
+  author    = {Thamme Gowda and
+               Zhao Zhang and
+               Chris A. Mattmann and
+               Jonathan May},
+  title     = {Many-to-English Machine Translation Tools, Data, and Pretrained Models},
+  journal   = {CoRR},
+  volume    = {abs/2104.00290},
+  year      = {2021},
+  url       = {https://arxiv.org/abs/2104.00290},
+  archivePrefix = {arXiv},
+  eprint    = {2104.00290},
+  timestamp = {Mon, 12 Apr 2021 16:14:56 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2104-00290.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+```
 
 --- 
 # Disclaimer on Datasets
