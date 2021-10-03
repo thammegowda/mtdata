@@ -78,9 +78,24 @@ def load(index: Index):
                  'id zh', 'it kk', 'it nl', 'it pt', 'it ru', 'it zh', 'ja ru', 'ja zh', 'kk nl',
                  'kk pt', 'kk ru', 'kk zh', 'nl pt', 'nl ru', 'nl zh', 'pt ru', 'pt zh', 'ru zh']:
         l1, l2 = pair.split()
-        index.add_entry(
-            Entry(langs=(l1, l2), name='news_commentary_v14', url=NEWSCOM_v14 % (l1, l2),
-                  cite=cite))
+        index.add_entry(Entry(langs=(l1, l2), name='news_commentary_v14', url=NEWSCOM_v14 % (l1, l2), cite=cite))
+
+    for v in [15, 16]:
+        cite = index.ref_db.get_bibtex('barrault-etal-2020-findings')
+        url = f"http://data.statmt.org/news-commentary/v{v}/training/news-commentary-v{v}.%s-%s.tsv.gz"
+        for pair in ['ar cs', 'ar de', 'ar en', 'ar es', 'ar fr', 'ar hi', 'ar id', 'ar it', 'ar ja', 'ar kk', 'ar nl',
+                     'ar pt', 'ar ru', 'ar zh', 'cs de', 'cs en', 'cs es', 'cs fr', 'cs hi', 'cs id', 'cs it', 'cs ja',
+                     'cs kk', 'cs nl', 'cs pt', 'cs ru', 'cs zh', 'de en', 'de es', 'de fr', 'de hi', 'de id', 'de it',
+                     'de ja', 'de kk', 'de nl', 'de pt', 'de ru', 'de zh', 'en es', 'en fr', 'en hi', 'en id', 'en it',
+                     'en ja', 'en kk', 'en nl', 'en pt', 'en ru', 'en zh', 'es fr', 'es hi', 'es id', 'es it', 'es ja',
+                     'es kk', 'es nl', 'es pt', 'es ru', 'es zh', 'fr hi', 'fr id', 'fr it', 'fr ja', 'fr kk', 'fr nl',
+                     'fr pt', 'fr ru', 'fr zh', 'hi id', 'hi it', 'hi nl', 'hi pt', 'hi ru', 'hi zh', 'id it', 'id ja',
+                     'id kk', 'id nl', 'id pt', 'id ru', 'id zh', 'it kk', 'it nl', 'it pt', 'it ru', 'it zh', 'ja pt',
+                     'ja ru', 'ja zh', 'kk nl', 'kk pt', 'kk ru', 'kk zh', 'nl pt', 'nl ru', 'nl zh', 'pt ru', 'pt zh',
+                     'ru zh']:
+            l1, l2 = pair.split()
+            index.add_entry(Entry(langs=(l1, l2), name=f'news_commentary_v{v}', url=url % (l1, l2), cite=cite))
+
 
     # ===== Wiki Titles V1
     WIKI_TITLES_v1 = 'http://data.statmt.org/wikititles/v1/wikititles-v1.%s-%s.tsv.gz'
@@ -186,7 +201,7 @@ def load(index: Index):
         name = f'newsdev2021_{l1}{l2}'
         in_path = f'dev/xml/newsdev2021.{l1}-{l2}.xml'
         ent = Entry((l1, l2), name=name, filename='wmt21dev.tgz', in_paths=[in_path],
-              in_ext='wmt21xml', cite=wmt20_cite, url=url)
+                    in_ext='wmt21xml', cite=wmt20_cite, url=url)
         index.add_entry(ent)
 
 
@@ -239,9 +254,9 @@ def load(index: Index):
     srcs = 'af_ZA ak_GH am_ET ar_AR as_IN ay_BO az_AZ az_IR be_BY bg_BG bm_ML bn_IN br_FR bs_BA ca_ES cb_IQ cs_CZ cx_PH cy_GB da_DK de_DE el_GR'.split()
     pairs = [('en_XX', tgt) for tgt in tgts] + [(src, 'en_XX') for src in srcs]
     dont_know = {'qa', 'qd'}
-     # Cant find them in ISO 639-1:  https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-     #                and lingo http://www.lingoes.net/en/translator/langcode.htm
-     #               and web-info https://wp-info.org/tools/languagecodes.php
+    # Cant find them in ISO 639-1:  https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    #                and lingo http://www.lingoes.net/en/translator/langcode.htm
+    #               and web-info https://wp-info.org/tools/languagecodes.php
     unsupported = {'zh_TW', 'az_IR'}
     # country locales are not supported; they create conflicts. keeping large ones instead
     for src, tgt in pairs:

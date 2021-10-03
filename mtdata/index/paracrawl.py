@@ -59,3 +59,9 @@ def load(index: Index):
         url = PARACRAWL_BONUS.format(pair=pair)
         ent = Entry(langs=(l1, l2), name='paracrawl_bonus', url=url, cite=cite, ext='tsv.gz')
         index.add_entry(ent)
+
+    # Japanese-English paracrawl (5.1) used by WMT20 and WMT21
+    ent = Entry(langs=('eng', 'jpn'), name='jparacrawl_kecl_2.0', in_paths=['en-ja/en-ja.bicleaner05.txt'],
+                in_ext='tsv', cols=(2, 3), cite='',
+                url='http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/2.0/bitext/en-ja.tar.gz')
+    index.add_entry(ent)

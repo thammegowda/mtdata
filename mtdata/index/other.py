@@ -53,9 +53,8 @@ def load_all(index: Index):
               in_paths=[f'wat2020.my-en/alt/{split}.alt.my', f'wat2020.my-en/alt/{split}.alt.en'])
         index.add_entry(ent)
 
-
     l1, l2 = 'iu', 'en'
-    url="https://nrc-digital-repository.canada.ca/eng/view/dataset/?id=c7e34fa7-7629-43c2-bd6d-19b32bf64f60"
+    url = "https://nrc-digital-repository.canada.ca/eng/view/dataset/?id=c7e34fa7-7629-43c2-bd6d-19b32bf64f60"
     cite = index.ref_db.get_bibtex('joanis-etal-2020-nunavut')
     for split in ['dev', 'devtest', 'test', 'train']:
         path_pref = f'Nunavut-Hansard-Inuktitut-English-Parallel-Corpus-3.0/split/{split}'
@@ -72,7 +71,20 @@ def load_all(index: Index):
     langs = ["cs", "de", "en", "es", "fr", "hu", "pl", "sv"]
     for i, l1 in enumerate(langs):
         for l2 in langs[i+1:]:
-            ent = Entry(langs=(l1, l2), url=url, name='Khresmoi_Summary_Test_v2', filename='khresmoi-summary-test-set-2.0.zip', cite=cite, in_paths=[f"khresmoi-summary-test-set-2.0/khresmoi-summary-test.{l1}", f"khresmoi-summary-test-set-2.0/khresmoi-summary-test.{l2}"], in_ext='txt')
+            ent = Entry(langs=(l1, l2), url=url, name='Khresmoi_Summary_Test_v2',
+                        filename='khresmoi-summary-test-set-2.0.zip', cite=cite, in_ext='txt',
+                        in_paths=[f"khresmoi-summary-test-set-2.0/khresmoi-summary-test.{l1}",
+                                  f"khresmoi-summary-test-set-2.0/khresmoi-summary-test.{l2}"])
             index.add_entry(ent)
-            ent = Entry(langs=(l1, l2), url=url, name='Khresmoi_Summary_Dev_v2', filename='khresmoi-summary-test-set-2.0.zip', cite=cite, in_paths=[f"khresmoi-summary-test-set-2.0/khresmoi-summary-dev.{l1}", f"khresmoi-summary-test-set-2.0/khresmoi-summary-dev.{l2}"], in_ext='txt')
+            ent = Entry(langs=(l1, l2), url=url, name='Khresmoi_Summary_Dev_v2',
+                        filename='khresmoi-summary-test-set-2.0.zip', cite=cite, in_ext='txt',
+                        in_paths=[f"khresmoi-summary-test-set-2.0/khresmoi-summary-dev.{l1}",
+                                  f"khresmoi-summary-test-set-2.0/khresmoi-summary-dev.{l2}"])
             index.add_entry(ent)
+
+    jesc_url = 'https://nlp.stanford.edu/projects/jesc/data/split.tar.gz'
+    jesc_cite = index.ref_db.get_bibtex('pryzant_jesc_2018')
+    for split in ['train', 'dev', 'test']:
+        ent = Entry(langs=('en', 'ja'), name=f'JESC_{split}', url=jesc_url, filename='jesc-split.tar.gz', in_ext='tsv',
+                    in_paths=[f"split/{split}"], cite=jesc_cite)
+        index.add_entry(ent)
