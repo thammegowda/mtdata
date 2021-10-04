@@ -9,7 +9,9 @@ tz,zgh
 zz,zza
 cb,ckb
 cx,bsb
-sh,srp'''
+sh,srp
+in,ind
+iw,heb'''
 # these are manual mappings from https://wp-info.org/tools/languagecodes.php
 
 CUSTOM_TO_3={}

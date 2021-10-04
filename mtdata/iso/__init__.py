@@ -4,11 +4,10 @@
 # Created: 5/8/20
 
 
-
 def iso3_code(lang: str, fail_error=False, default=None) -> str:
     """
     Lookup 693_3 code of a language
-    :param code: language name or a code, maybe of 2 or 3 letters
+    :param lang: language name or a code, maybe of 2 or 3 letters
     :param default: return this value when no iso code is found
     :param fail_error: raise error when no ISO code is found
     :return: ISO 639_3 code
