@@ -20,3 +20,9 @@ These conventions include:
 * [ISO15924] recommends that script codes use lowercase with the initial letter capitalized ('Cyrl' Cyrillic).
 * [ISO3166-1] recommends that country codes be capitalized ('MN' Mongolia).
 
+
+== BCP47 (minimal data)
+
+
+    python bcp47_data.py > ../../mtdata/iso/bcp47.json
+
