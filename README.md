@@ -44,7 +44,7 @@ We have added some commonly used datasets - you are welcome to add more!
 | Source | # of datasets |
 |---: | ---:|
 | OPUS<sup>$1</sup> | 69,415 |
-| JW300<sup>$2</sup> | 45,548 |
+| JW300<sup>$2</sup> | 45,548 (x2 versions) |
 | Neulab_TEDTalksv1 | 4,455 |
 | WikiMatrix | 1,617 |
 | ELRC-SHARE | 1,297 |
@@ -52,13 +52,14 @@ We have added some commonly used datasets - you are welcome to add more!
 | Tilde | 519 |
 | Statmt | 493 |
 | OPUS100v1 | 302 |
-| Paracrawl | 96 |
+| Linguatools | 253 | 
+| Paracrawl | 97 |
 | AI4Bharath | 66 |
 | UnitedNations<sup>$3</sup> | 30 |
 | Joshua Indian Corpus | 29 |
-| Other | 70 |
+| Other | 73 |
 | ----|----|
-| Total | 124,844 |
+| Total | 171K |
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.

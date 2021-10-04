@@ -49,11 +49,10 @@ class Index:
             cls.obj = obj
         return cls.obj
 
-
     def load_all(self):
-        from mtdata.index import (statmt, paracrawl, tilde, literature, joshua_indian,
-                                  unitednations, wikimatrix, other, neulab_tedtalks, elrc_share,
-                                  ai4bharat, eu)
+        from mtdata.index import (
+            statmt, paracrawl, tilde, literature, joshua_indian, unitednations, wikimatrix, other, neulab_tedtalks,
+            elrc_share, ai4bharat, eu, linguatools)
         from mtdata.index.opus import opus_index, jw300, opus100
 
         counts = {}
@@ -71,7 +70,8 @@ class Index:
             ('Neulab_TEDTalksv1', neulab_tedtalks.load_all),
             ('ELRC-SHARE', elrc_share.load_all),
             ('AI4Bharat', ai4bharat.load_all),
-            ('EU', eu.load_all)
+            ('EU', eu.load_all),
+            ('LinguaTools', linguatools.load_all)
         ]
         for name, loader in subsets:
             n = len(self)
@@ -125,6 +125,7 @@ class Index:
 
     def __len__(self):
         return len(self.entries)
+
 
 class ReferenceDb:
 

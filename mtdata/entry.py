@@ -41,9 +41,13 @@ class Entry:
         self.cite = cite
         self.cols = cols
 
+        assert not self.ext.startswith("."), f'ext {self.ext} should not start with a dot (.)'
         self.is_archive = self.ext in ('zip', 'tar', 'tar.gz', 'tgz')
         if self.is_archive:
             assert self.in_paths and len(self.in_paths) > 0, 'Archive entries must have in_paths'
+        else:
+            if self.in_ext != 'opus_xces':
+                assert not self.in_paths, f"in_paths is not applicable for non archive format {self.ext}"
 
     def is_swap(self, langs):
         if self.in_ext == 'tmx':

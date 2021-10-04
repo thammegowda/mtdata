@@ -2,7 +2,11 @@
 
 ## v0.2.11-dev - WIP
 - Add JESC, jpn paracrawl, news commentary 15 and 16
--  JW300 -> JW300_v1 (tokenized); Added JW300_v1c (raw)
+- Force unicode encoding; make it work on windows (Issue #71)
+- JW300 -> JW300_v1 (tokenized); Added JW300_v1c (raw)  (Issue #70)
+- Add all Wikititle datasets from lingual tool (Issue #63) 
+-
+
 ---
 ## v0.2.10 - 20210503 
 
