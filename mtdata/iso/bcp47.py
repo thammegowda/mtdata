@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-#
+# This module along with accompanying bcp47.json, tries to parse BCP47 like language IDs
+# This is not 100% compatible with BCP47
+# We diverge on :
+#   using three letter code for all languages
+#      => language: 3 letter (lowercase), script: 4 letter (title case), and country: 2 letter (uppercase)
+#   no support for too many variations: limited to (lll, Ssss, CC) i.e (lang, script, country)
 #
 # Author: Thamme Gowda [tg (at) isi.edu]
 # Created: 10/3/21
@@ -33,11 +38,11 @@ class BCP47:
             assert script_code in self.scripts
             self.default_scripts[code3] = script_code
 
-    def parse(self, code):
-        code_orig = code
-        code = code.replace('_', '-').strip()
-        assert code
-        parts = code.split('-')
+    def parse(self, tag):
+        code_orig = tag
+        tag = tag.replace('_', '-').strip()
+        assert tag
+        parts = tag.split('-')
         assert 1 <= len(parts) <= 3, f'BCP47 code longer than 3 parts not supported yet; given {code_orig}'
         lang, script, country = None, None, None
         # part 1: it has to be language
@@ -67,8 +72,12 @@ class BCP47:
             script = None   # suppress script
         return lang, script, country
 
+    def __call__(self, tag):
+        return self.parse(tag)
+
 
 bcp47 = BCP47(data=load_json(data_file))
+
 
 if __name__ == '__main__':
     for i in ["en-GB", "en", "en-Latn-US", "en-IN", "en-Latn-GB"]:
