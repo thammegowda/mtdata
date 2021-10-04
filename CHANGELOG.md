@@ -2,8 +2,7 @@
 
 ## v0.2.11-dev - WIP
 - Add JESC, jpn paracrawl, news commentary 15 and 16
-- 
-
+-  JW300 -> JW300_v1 (tokenized); Added JW300_v1c (raw)
 ---
 ## v0.2.10 - 20210503 
 

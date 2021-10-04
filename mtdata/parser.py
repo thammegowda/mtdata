@@ -56,9 +56,12 @@ class Parser:
     def read_segs(self):
         readers = []
         if self.ext == 'opus_xces':
+            preprocessing = 'xml'
+            if "/raw/" in self.ent.in_paths[0]:
+                preprocessing = 'raw'
             align, lang1_dir, lang2_dir = self.paths
             from mtdata.opus_xces import OpusXcesParser
-            reader = OpusXcesParser.read(align, lang1_dir, lang2_dir)
+            reader = OpusXcesParser.read(align, lang1_dir, lang2_dir, preprocessing=preprocessing)
             readers.append(reader)
         else:
             for p in self.paths:

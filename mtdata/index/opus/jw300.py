@@ -427,11 +427,19 @@ def load_all(index: Index):
             if not iso_l2:
                 skips[l2] += 1
                 continue
-            url = bi_url_pat % (l1, l2)
+            aln_url = bi_url_pat % (l1, l2)
+            l1_url = mon_url_pat % l1
+            l2_url = mon_url_pat % l2
             langs = (iso_l1, iso_l2)
-            if index.contains_entry(name=name, langs=langs):  # dupe due to many-to-one lang id
+            if index.contains_entry(name=name + '_v1', langs=langs):  # dupe due to many-to-one lang id
                 continue
 
-            ent = Entry(langs=langs, name=name, url=url, cite=cite, in_ext='opus_xces',
-                        in_paths=[mon_url_pat % l1, mon_url_pat % l2])
+            ent = Entry(langs=langs, name=name + '_v1', url=aln_url, cite=cite, in_ext='opus_xces',
+                        in_paths=[l1_url, l2_url])
+            index.add_entry(ent)
+            aln_url = aln_url.replace("/v1/", "/v1c/")
+            l1_url, l2_url = [url.replace("/v1/xml/", "/v1c/raw/") for url in [l1_url, l2_url]]
+
+            ent = Entry(langs=langs, name=name + '_v1c', url=aln_url, cite=cite, in_ext='opus_xces',
+                        in_paths=[l1_url, l2_url])
             index.add_entry(ent)
