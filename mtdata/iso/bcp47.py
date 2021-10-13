@@ -9,12 +9,12 @@
 # Author: Thamme Gowda [tg (at) isi.edu]
 # Created: 10/3/21
 
-from pathlib import Path
 import json
-from mtdata.iso import iso3_code
-from dataclasses import dataclass
-from typing import Optional
 from collections import namedtuple
+from pathlib import Path
+from typing import Optional
+
+from mtdata.iso import iso3_code
 
 
 def load_json(path: Path):
@@ -25,15 +25,24 @@ def load_json(path: Path):
 
 class BCP47Tag(namedtuple('BCP47Tag', ('lang', 'script', 'region', 'tag'))):
     __slots__ = ()
+    joiner = '_'  # per BCP47, we must use '-' hyphen not underscore, but we use '-' to separate languages e.g. eng-deu
 
-    def __new__(cls, lang, script: Optional[str]=None, region: Optional[str]=None):
-        tag = ''.join([lang, f'-{script}' if script else '', f'-{region}' if region else ''])
+    def __new__(cls, lang, script: Optional[str] = None, region: Optional[str] = None, tag: Optional[str] = None):
+        tag = tag or ''.join([lang,
+                              f'{cls.joiner}{script}' if script else '',
+                              f'{cls.joiner}{region}' if region else ''])
         obj = super(BCP47Tag, cls).__new__(cls, lang, script, region, tag)
-        #obj.tag = tag
+        # obj.tag = tag
         return obj
 
     def __str__(self):
         return self.tag
+
+    def __repr__(self):
+        return f'BCP47({self.tag})'
+
+    def __lt__(self, other):
+        return self.tag > other.tag
 
 
 class BCP47Parser:
@@ -70,8 +79,9 @@ class BCP47Parser:
         lang, script, region = None, None, None
         # part 1: it has to be language
         lang = iso3_code(parts[0], default=None)
-        assert lang, f'Unable to recognize {code_orig}; Unknown language'
-        assert lang in self.languages, f'{lang} is invalid'
+        if not lang or lang not in self.languages:
+            raise ValueError(f'Unable to recognize {code_orig}; Unknown language')
+        # assert lang in self.languages, f'Language "{lang}" is invalid; input: {code_orig}'
 
         parts = parts[1:]
         if parts:  # part 2 can be either script or region code
@@ -79,6 +89,8 @@ class BCP47Parser:
                 script = parts[0].title()
             elif parts[0].upper() in self.countries:
                 region = parts[0].upper()
+            elif parts[0] == 'XX':      # placeholder for a country
+                pass
             else:
                 raise ValueError(f'Unable to parse {code_orig}')
             parts = parts[1:]
@@ -91,10 +103,25 @@ class BCP47Parser:
                 raise ValueError(f"Cant find {code_orig}; Unknown region")
             parts = parts[1:]
         assert not parts  # all parts are consumed
-        if script and self.default_scripts[lang] == script:
+        if script and lang in self.default_scripts and self.default_scripts[lang] == script:
             script = None  # suppress script
-        tag = BCP47Tag(lang=lang, script=script, region=region)
-        return tag
+        return BCP47Tag(lang=lang, script=script, region=region)
+
+    def try_parse(self, tag, default=None):
+        """
+        Tries to parse a language tag; upon failure, returns the default value
+        Parameters
+        ----------
+        tag : tag to be parsed
+        default : default value to return upon failure
+
+        Returns
+        -------
+        """
+        try:
+            return self(tag)
+        except ValueError:
+            return default
 
     def __call__(self, tag) -> BCP47Tag:
         """
@@ -105,6 +132,8 @@ class BCP47Parser:
         -------
            BCP47Tag
         """
+        if isinstance(tag, BCP47Tag):
+            return tag
         return self.parse(tag)
 
 

@@ -2,7 +2,8 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 6/9/20
-from mtdata.index import Entry, Index
+from mtdata.index import Entry, Index, DatasetId
+
 
 def load_all(index: Index):
     data="""an-ca an-de an-en an-es an-fr an-gl an-it an-pl an-pt an-ru ar-arz ar-az ar-ba ar-be ar-bg ar-bn ar-br ar-bs ar-ca ar-ceb
@@ -88,13 +89,12 @@ def load_all(index: Index):
  ta-vi ta-zh te-tr te-uk te-vi te-zh tl-tr tl-uk tl-vi tl-zh tr-tt tr-uk tr-vi tr-zh tt-uk tt-zh uk-vi uk-zh vi-zh wuu-zh"""
     cite = index.ref_db.get_bibtex('wikimatrix1')
     url_pat = "https://dl.fbaipublicfiles.com/laser/WikiMatrix/v1/WikiMatrix.%s-%s.tsv.gz"
-    mapping = dict(sh='hbs')
     skips = {'nds_nl', 'simple'}
     for pair in data.split():
         l1, l2 = pair.split('-')
         if l1 in skips or l2 in skips:
             continue
-        l1iso, l2iso = mapping.get(l1, l1), mapping.get(l2, l2)
         url = url_pat % (l1, l2)
-        ent = Entry(langs=(l1iso, l2iso), url=url, name='WikiMatrix_v1', cols=(1, 2), cite=cite)
+        ent = Entry(did=DatasetId(group='Facebook', name=f'wikimatrix', version='1', langs=(l1, l2)),
+                    url=url, cols=(1, 2), cite=cite)
         index.add_entry(ent)

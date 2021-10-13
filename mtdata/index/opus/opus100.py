@@ -2,7 +2,7 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 9/12/20
-from mtdata.index import Index, Entry
+from mtdata.index import Index, Entry, DatasetId
 supervised_v1 = (
     "af-en,am-en,an-en,ar-en,as-en,az-en,be-en,bg-en,bn-en,br-en,bs-en,ca-en,cs-en,cy-en,da-en,"
     "de-en,dz-en,el-en,en-eo,en-es,en-et,en-eu,en-fa,en-fi,en-fr,en-fy,en-ga,en-gd,en-gl,en-gu,"
@@ -18,32 +18,11 @@ zeroshot_v1 = (
 
 def load_all(index: Index):
     URL = "https://object.pouta.csc.fi/OPUS-100/v1.0/opus-100-corpus-v1.0.tar.gz"
-    cite="""
-@inproceedings{zhang-etal-2020-improving,
-    title = "Improving Massively Multilingual Neural Machine Translation and Zero-Shot Translation",
-    author = "Zhang, Biao  and
-      Williams, Philip  and
-      Titov, Ivan  and
-      Sennrich, Rico",
-    booktitle = "Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics",
-    month = jul,
-    year = "2020",
-    address = "Online",
-    publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/2020.acl-main.148",
-    doi = "10.18653/v1/2020.acl-main.148",
-    pages = "1628--1639",
-}
-@inproceedings{tiedemann2012parallel,
-  title={Parallel Data, Tools and Interfaces in OPUS.},
-  author={Tiedemann, J{\"o}rg},
-  booktitle={Lrec},
-  volume={2012},
-  pages={2214--2218},
-  year={2012}
-}"""
+    cite = index.ref_db.get_bibtex('zhang-etal-2020-improving')
+    cite += '\n\n' + index.ref_db.get_bibtex('tiedemann2012parallel')
     filename = 'opus-100-corpus-v1.0.tar.gz'
     code_map = dict(nb='nob', sh='hbs')  # these arent obvious to iso lookup function, so helping
+    group, name = 'OPUS', 'opus100'
     for pair in supervised_v1:
         l1, l2 = pair.split("-")
         l1 = code_map.get(l1, l1)
@@ -54,13 +33,13 @@ def load_all(index: Index):
         for split in splits:
             f1 = f'opus-100-corpus/v1.0/supervised/{l1}-{l2}/opus.{l1}-{l2}-{split}.{l1}'
             f2 = f'opus-100-corpus/v1.0/supervised/{l1}-{l2}/opus.{l1}-{l2}-{split}.{l2}'
-            ent = Entry(langs=(l1, l2), url=URL, name=f'OPUS100v1_{split}',
-                        filename=filename, in_paths=[f1, f2], in_ext='txt', cite=cite)
+            ent = Entry(did=DatasetId(group=group, name=f'{name}_{split}', version='1', langs=(l1, l2)),
+                    url=URL, filename=filename, in_paths=[f1, f2], in_ext='txt', cite=cite)
             index.add_entry(ent)
     for pair in zeroshot_v1:
         l1, l2 = pair.split("-")
         f1 = f'opus-100-corpus/v1.0/zero-shot/{l1}-{l2}/opus.{l1}-{l2}-test.{l1}'
         f2 = f'opus-100-corpus/v1.0/zero-shot/{l1}-{l2}/opus.{l1}-{l2}-test.{l2}'
-        ent = Entry(langs=(l1, l2), url=URL, name=f'OPUS100v1_test', filename=filename,
-                    in_paths=[f1, f2], in_ext='txt', cite=cite)
+        ent = Entry(did=DatasetId(group=group, name=f'{name}_test', version='1', langs=(l1, l2)),
+                    url=URL, filename=filename, in_paths=[f1, f2], in_ext='txt', cite=cite)
         index.add_entry(ent)

@@ -8,13 +8,12 @@ from collections import defaultdict
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
 from mtdata.utils import IO
-from mtdata.iso import iso3_code
-
+from mtdata.iso.bcp47 import bcp47
 
 
 def list_data(langs, names, not_names=None, full=False):
     from mtdata.data import get_entries
-    entries = get_entries(langs, names, not_names)
+    entries = get_entries(langs, names, not_names, fuzzy_match=True)
     log.info(f"Found {len(entries)}")
     for i, ent in enumerate(entries):
         print(ent.format(delim='\t'))
@@ -29,7 +28,7 @@ def get_data(args):
     dataset = Dataset.prepare(args.langs, train_names=args.train_names,
                               test_names=args.test_names, out_dir=args.out,
                               cache_dir=CACHE_DIR, merge_train=args.merge)
-    cli_sig = f'-l {"-".join(args.langs)}'
+    cli_sig = f'-l {"-".join(str(l) for l in args.langs)}'
     cli_sig += f' -tr {" ".join(args.train_names)}' if args.train_names else ''
     cli_sig += f' -ts {" ".join(args.test_names)}' if args.test_names else ''
     sig = f'mtdata get {cli_sig} -o <out-dir>\nmtdata version {mtdata.__version__}\n'
@@ -40,6 +39,7 @@ def get_data(args):
 
 
 def generate_report(langs, names, not_names=None, format='plain'):
+    from mtdata.data import get_entries
     entries = get_entries(langs, names, not_names)
     lang_stats = defaultdict(int)
     name_stats = defaultdict(int)
@@ -73,12 +73,17 @@ def LangPair(string):
     if len(parts) != 2:
         msg = f'expected value of form "xx-yy" eg "de-en"; given {string}'
         raise argparse.ArgumentTypeError(msg)
-    iso_codes = [iso3_code(part, fail_error=True) for part in parts]
-    if iso_codes != parts:
-        log.warning(f"Suggestion: Use ISO 639_3 codes {'-'.join(iso_codes)} instead of {string}."
-                    f" Let's make a little space for all 7000+ languages of our planet 😢.")
-    return tuple(iso_codes)
+    std_codes = tuple(bcp47(part) for part in parts)
+    std_form = '-'.join(str(lang) for lang in std_codes)
+    if std_form != string:
+        log.warning(f"Suggestion: Use codes {std_form} instead of {string}."
+                    f" Let's make a little space for all languages of our planet 😢.")
+    return std_codes
 
+
+def DatasetId(string):
+    assert ':' in string, f'{string} is invalid. DatasetID format is is group:<name>:<version>:<lang1>-<lang2>'
+    return string
 
 
 def add_boolean_arg(parser: argparse.ArgumentParser, name, default=False, help=''):
@@ -86,6 +91,7 @@ def add_boolean_arg(parser: argparse.ArgumentParser, name, default=False, help='
     group.add_argument(f'--{name}', action='store_true', dest=name, default=default, help=help)
     group.add_argument(f'--no-{name}', action='store_false', dest=name, default=not default,
                        help='Do not ' + help)
+
 
 def parse_args():
     p = argparse.ArgumentParser(formatter_class=MyFormatter, epilog=f'Loaded from {__file__} (v{__version__})')
@@ -169,7 +175,6 @@ def main():
         generate_report(args.langs, names=args.names, not_names=args.not_names)
     else:
         raise Exception(f'{args.task} not implemented')
-
 
 
 if __name__ == '__main__':

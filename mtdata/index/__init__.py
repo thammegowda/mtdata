@@ -2,13 +2,16 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
-from mtdata import log, cached_index_file, __version__
-from mtdata.entry import Entry, Paper
-from typing import List, Optional
-from pathlib import Path
 import pickle
+from pathlib import Path
+from typing import List
+
 import portalocker
 from pybtex.database import parse_file as parse_bib_file
+
+from mtdata import log, cached_index_file, __version__
+from mtdata.entry import Entry, Paper, DatasetId
+from mtdata.iso.bcp47 import bcp47, BCP47Tag
 
 REFS_FILE = Path(__file__).parent / 'refs.bib'
 
@@ -51,7 +54,7 @@ class Index:
 
     def load_all(self):
         from mtdata.index import (
-            statmt, paracrawl, tilde, literature, joshua_indian, unitednations, wikimatrix, other, neulab_tedtalks,
+            statmt, paracrawl, tilde, joshua_indian, unitednations, wikimatrix, other, neulab_tedtalks,
             elrc_share, ai4bharat, eu, linguatools)
         from mtdata.index.opus import opus_index, jw300, opus100
 
@@ -81,7 +84,6 @@ class Index:
         items += [('Total', len(self))]
         counts = '  '.join([f'{n}:{c:,}' for n, c in items])
         log.info(f"Index status: {counts}")
-        literature.load(self)
 
     @property
     def n_entries(self) -> int:
@@ -89,7 +91,7 @@ class Index:
 
     def add_entry(self, entry: Entry):
         assert isinstance(entry, Entry)
-        key = (entry.name, entry.langs)
+        key = entry.did
         assert key not in self.entries, f'{key} is a duplicate'
         self.entries[key] = entry
 
@@ -104,9 +106,8 @@ class Index:
     def get_papers(self):
         return self.papers.values()
 
-    def contains_entry(self, name, langs):
-        key = (name, langs)
-        return key in self.entries
+    def contains_entry(self, did: DatasetId):
+        return did in self.entries
 
     def contains_paper(self, name):
         return name in self.papers
@@ -114,6 +115,7 @@ class Index:
     def get_entry(self, name, langs):
         assert isinstance(name, str)
         assert isinstance(langs, tuple)
+        langs = tuple(lang if isinstance(lang, BCP47Tag) else bcp47(lang) for lang in langs)
         key = (name, langs)
         rev_key = (name, tuple(reversed(langs)))
         if key not in self.entries and rev_key in self.entries:
@@ -155,13 +157,37 @@ class ReferenceDb:
         return self.db.entries.keys()
 
 
-def get_entries(langs=None, names=None, not_names=None) -> List[Entry]:
+def is_compatible(lang1: BCP47Tag, lang2: BCP47Tag):
+    # exact same tag => true
+    if lang1.tag == lang2.tag:
+        return True
+    # languages or scripts are different
+    if lang1.lang != lang2.lang or lang1.script != lang2.script:
+        return False
+    # one of them is general, other is a variant of region
+    if not lang1.region or not lang2.region:
+        return True
+    return False
+
+
+def bitext_lang_match(pair1, pair2, fuzzy_match=False) -> bool:
+    x1, y1 = sorted(pair1)
+    x2, y2 = sorted(pair2)
+    if fuzzy_match:
+        return is_compatible(x1, x2) and is_compatible(y1, y2)
+    else:
+        return x1 == x2 and y1 == y1
+
+
+def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False) -> List[Entry]:
     """
     :param langs: language pairs  to select eg ('en', 'de')
     :param names:  names to select
     :param not_names:  names to exclude
+    :param fuzzy_match
     :return: list of dataset entries that match the criteria
     """
+    # TODO: our index has grown too big; improve search with fuzzy matches
     select = list(INDEX.get_entries())
     if names:
         if not isinstance(names, set):
@@ -170,11 +196,12 @@ def get_entries(langs=None, names=None, not_names=None) -> List[Entry]:
     if langs:
         assert len(langs) == 2
         langs = sorted(langs)
-        select = [e for e in select if langs == sorted(e.langs)]
+        select = [e for e in select if bitext_lang_match(langs, e.did.langs, fuzzy_match=fuzzy_match)]
     if not_names:
         if not isinstance(not_names, set):
             not_names = set(not_names)
         select = [e for e in select if e.name not in not_names]
     return select
+
 
 INDEX: Index = Index.get_instance()

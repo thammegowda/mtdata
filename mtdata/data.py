@@ -31,12 +31,11 @@ class Dataset:
         self.drop_train_noise = drop_train_noise
         self.drop_test_noise = drop_test_noise
 
-
     @classmethod
     def resolve_entries(cls, langs, names):
         inp_names = set(names)
         assert len(inp_names) == len(names), f'{names} are not unique.'
-        entries = get_entries(langs=langs, names=inp_names)
+        entries = get_entries(langs=langs, names=inp_names, fuzzy_match=False)
         out_names = set(e.name for e in entries)
         if inp_names & out_names != inp_names | out_names:
             missed = inp_names - out_names
@@ -119,9 +118,9 @@ class Dataset:
         path = self.cache.get_entry(entry)
         swap = entry.is_swap(self.langs)
         parser = Parser(path, langs=self.langs, ext=entry.in_ext or None, ent=entry)
-        langs = '_'.join(self.langs)
-        l1 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[0]}')
-        l2 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[1]}')
+        langs = '_'.join(str(lang) for lang in self.langs)
+        l1 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[0].tag}')
+        l2 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[1].tag}')
         mode = dict(mode='w', encoding='utf-8', errors='ignore')
         with l1.open(**mode) as f1, l2.open(**mode) as f2:
             count, skips, noise = 0, 0, 0

@@ -3,7 +3,7 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 5/13/20
 
-from mtdata.index import Index, Entry
+from mtdata.index import Index, Entry, DatasetId
 import itertools
 
 def load_all(index: Index):
@@ -14,6 +14,6 @@ def load_all(index: Index):
         for l1, l2 in itertools.combinations(langs, 2):
             f1 = f'testsets/{split}set/UNv1.0.{split}set.{l1}'
             f2 = f'testsets/{split}set/UNv1.0.{split}set.{l2}'
-            ent = Entry(langs=(l1, l2), url=url, filename='UNv1.0.testsets.tar.gz', name=f'UNv1_{split}', in_ext='txt',
-                        in_paths=[f1, f2], cite=cite)
+            ent = Entry(did=DatasetId(group='UN', name=f'UN_{split}', version='1', langs=(l1, l2)),
+                 url=url, filename='UNv1.0.testsets.tar.gz', in_ext='txt', in_paths=[f1, f2], cite=cite)
             index.add_entry(ent)

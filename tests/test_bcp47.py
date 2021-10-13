@@ -8,6 +8,7 @@ from pytest import fail
 
 
 def test_bcp47():
+    assert bcp47("en-GB")[:3] == ('eng', None, 'GB')
     assert bcp47("en-GB") == ('eng', None, 'GB', 'eng-GB')
     assert bcp47("en") == ('eng', None, None, 'eng')
     assert bcp47("en-IN") == ('eng', None, 'IN', 'eng-IN')
@@ -54,3 +55,26 @@ def test_py_obj_model():
     assert bcp47("en-Latn") == bcp47("English")  # ignore default script again
     assert bcp47("en-Latn") == bcp47("ENG")  # ignore default script again
     assert bcp47("en-US") != bcp47("en")      # dont ignore region
+
+    # Custom class, e.g. BCP47Tag, instead of plain old str obj could create bugs due to improper hashing;
+    # so test it out
+    mem = set()
+    assert bcp47('en') not in mem
+    mem.add(bcp47('en'))
+    assert bcp47('en') in mem
+    mem.add(bcp47('en'))
+    assert len(mem) == 1  # dupes are removed
+    mem.add(bcp47('en-Latn'))
+    mem.add(bcp47('english'))
+    mem.add(bcp47('English'))
+    mem.add(bcp47('eng'))
+    assert len(mem) == 1       # dupes are removed
+
+    mem = dict()
+    mem[bcp47('en')] = 10
+    assert mem[bcp47('en')] == 10
+    assert mem[bcp47('en')] != 11
+    assert mem[bcp47('eng')] == 10
+    assert mem[bcp47('english')] == 10
+    assert mem[bcp47('English-Latn')] == 10
+
