@@ -50,6 +50,25 @@ def test_iso3_code():
 
 # BCP 47
 
+```bash
+$ python -m mtdata.iso.bcp47 en English en_US en_GB en-Latn_US \
+    kn kn-in kn-IN kn-Knda Kannada-Knda kannada-Deva-In kn-Knda-IN
+INPUT   STANDARDIZED    LANG    SCRIPT  COUNTRY
+en      eng     eng     None    None
+English eng     eng     None    None
+en_US   eng-US  eng     None    US
+en_GB   eng-GB  eng     None    GB
+en-Latn_US      eng-US  eng     None    US
+kn      kan     kan     None    None
+kn-in   kan-IN  kan     None    IN
+kn-IN   kan-IN  kan     None    IN
+kn-Knda kan     kan     None    None
+Kannada-Knda    kan     kan     None    None
+kannada-Deva-In kan-Deva-IN     kan     Deva    IN
+kn-Knda-IN      kan-IN  kan     None    IN
+
+```
+
 RFC: https://www.rfc-editor.org/info/bcp47
 
 * Country codes: (they did not give a download link; I scraped it)
