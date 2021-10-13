@@ -410,7 +410,7 @@ def load_all(index: Index):
             l1_url = mon_url_pat % l1
             l2_url = mon_url_pat % l2
             data_id = DatasetId(group=group, name=name, version='1', langs=(iso_l1, iso_l2))
-            if index.contains_entry(data_id):  # dupe due to many-to-one lang id
+            if data_id in index:  # dupe due to many-to-one lang id
                 dupes[name].add(f'{l1}-{l2}')
                 continue
 

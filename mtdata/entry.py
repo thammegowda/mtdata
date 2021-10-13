@@ -21,9 +21,10 @@ class DatasetId:
         assert self.name
         assert self.version
         for name in [self.group, self.version, self.name]:
-            for ch in '-/*|[](){}?&:;,!^$"\' ':
+            for ch in '-/*|[](){}<>?&:;,!^$"\' ':
                 assert ch not in name, f"Character '{ch}' is not permitted in name {name}"
         # ensure lang ID is BCP47 tag
+        assert isinstance(self.langs, tuple), f'Expected tuple (l1, l2); given={self.langs}'
         langs = tuple(lang if isinstance(lang, BCP47Tag) else bcp47(lang) for lang in self.langs)
         if langs != self.langs:
             object.__setattr__(self, 'langs', langs)      # bypass frozen=True
@@ -32,7 +33,7 @@ class DatasetId:
     def lang_str(self):
         return '-'.join(str(lang) for lang in self.langs)
 
-    def format(self, delim=':'):
+    def format(self, delim='-'):
         return f'{self.group}{delim}{self.name}{delim}{self.version}{delim}{self.lang_str}'
 
     def __str__(self):
@@ -85,7 +86,7 @@ class Entry:
         return self.did.lang_str
 
     def format(self, delim: str = ' '):
-        msg = f'{self.did.format(":")}{delim}{self.url}{delim}{",".join(self.in_paths or [])}'
+        msg = f'{self.did}{delim}{self.url}{delim}{",".join(self.in_paths or [])}'
         return msg
 
     def is_noisy(self, seg1, seg2) -> bool:

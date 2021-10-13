@@ -111,7 +111,7 @@ def load_all(index: Index):
                     skip_counts[str(l2)] += 1
                 continue
             data_id = DatasetId(group=group_id, name=data_name, version=version, langs=(iso_l1, iso_l2))
-            if index.contains_entry(data_id):
+            if data_id in index:
                 dupes[name].add(f'{l1}-{l2}')
                 continue
             entry = Entry(did=data_id, url=url, cite=citation, in_paths=[f'*.{l1}', f'*.{l2}'], in_ext=in_ext)

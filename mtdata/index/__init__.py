@@ -4,7 +4,7 @@
 # Created: 4/8/20
 import pickle
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 import portalocker
 from pybtex.database import parse_file as parse_bib_file
@@ -21,8 +21,8 @@ class Index:
     obj = None   # singleton object
 
     def __init__(self):
-        self.entries = {}  # unique
-        self.papers = {}  # unique
+        self.entries: Dict[DatasetId, Entry] = {}  # unique dids
+        self.papers = {}                            # unique
         self.ref_db = ReferenceDb()
         self.version = __version__
 
@@ -106,8 +106,13 @@ class Index:
     def get_papers(self):
         return self.papers.values()
 
-    def contains_entry(self, did: DatasetId):
-        return did in self.entries
+    def __contains__(self, item):
+        assert isinstance(item, DatasetId)
+        return item in self.entries
+
+    def __getitem__(self, item):
+        assert isinstance(item, DatasetId)
+        return self.entries[item]
 
     def contains_paper(self, name):
         return name in self.papers
@@ -190,9 +195,8 @@ def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False) -> Li
     # TODO: our index has grown too big; improve search with fuzzy matches
     select = list(INDEX.get_entries())
     if names:
-        if not isinstance(names, set):
-            names = set(names)
-        select = [e for e in select if e.name in names]
+        names = set(n.lower() for n in names)
+        select = [e for e in select if e.did.name in names]
     if langs:
         assert len(langs) == 2
         langs = sorted(langs)

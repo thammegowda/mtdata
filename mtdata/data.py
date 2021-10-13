@@ -6,7 +6,7 @@
 from pathlib import Path
 from mtdata import log
 from mtdata.cache import Cache
-from mtdata.index import Entry, get_entries
+from mtdata.index import INDEX, Entry, get_entries, DatasetId
 from mtdata.parser import Parser
 from mtdata.utils import IO
 from typing import Optional, List, Tuple
@@ -32,38 +32,38 @@ class Dataset:
         self.drop_test_noise = drop_test_noise
 
     @classmethod
-    def resolve_entries(cls, langs, names):
-        inp_names = set(names)
-        assert len(inp_names) == len(names), f'{names} are not unique.'
-        entries = get_entries(langs=langs, names=inp_names, fuzzy_match=False)
-        out_names = set(e.name for e in entries)
-        if inp_names & out_names != inp_names | out_names:
-            missed = inp_names - out_names
-            assert missed
-            raise Exception(f'Could not find: {missed} for languages: {langs}')
+    def resolve_entries(cls, dids: List[DatasetId]):
+        inp_dids = set(dids)
+        assert len(inp_dids) == len(dids), f'{dids} are not unique.'
+        entries = []
+        for did in inp_dids:
+            if did in INDEX:
+                entries.append(INDEX[did])
+            else:
+                raise Exception(f'Could not find {did}; try "mtdata list | grep -i <name>" to locate it')
         return entries
 
     @classmethod
-    def prepare(cls, langs, train_names: Optional[List[str]], test_names: Optional[List[str]],
+    def prepare(cls, langs, train_dids: Optional[List[DatasetId]], test_dids: Optional[List[DatasetId]],
                 out_dir: Path, cache_dir: Path, merge_train=False,
                 drop_noise: Tuple[bool, bool]=(True, False)):
         drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
-        assert train_names or test_names, 'Either train_names or test_names should be given'
+        assert train_dids or test_dids, 'Either train_names or test_names should be given'
         # First, resolve and check if they exist before going to process them.
         # Fail early for typos in name
         train_entries, test_entries = None, None
-        if test_names:
-            test_entries = cls.resolve_entries(langs, test_names)
-        if train_names:
-            train_entries = cls.resolve_entries(langs, train_names)
+        if test_dids:
+            test_entries = cls.resolve_entries(test_dids)
+        if train_dids:
+            train_entries = cls.resolve_entries(train_dids)
 
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir,
                       drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise)
-        if test_entries: # tests are smaller so quicker; no merging needed
+        if test_entries:    # tests are smaller so quicker; no merging needed
             dataset.add_test_entries(test_entries)
 
-        if train_entries: # this might take some time
+        if train_entries:   # this might take some time
             dataset.add_train_entries(train_entries, merge_train=merge_train)
         return dataset
 
@@ -112,15 +112,16 @@ class Dataset:
     def add_parts(self, dir_path, entries, drop_noise=False):
         for ent in entries:
             n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise)
-            log.info(f"{ent.name} : found {n_good:} segments and {n_bad:} errors")
+            log.info(f"{ent.did} : found {n_good:} segments and {n_bad:} errors")
 
     def add_part(self, dir_path: Path, entry: Entry, drop_noise=False):
         path = self.cache.get_entry(entry)
         swap = entry.is_swap(self.langs)
         parser = Parser(path, langs=self.langs, ext=entry.in_ext or None, ent=entry)
-        langs = '_'.join(str(lang) for lang in self.langs)
-        l1 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[0].tag}')
-        l2 = (dir_path / f'{entry.name}-{langs}').with_suffix(f'.{self.langs[1].tag}')
+        # langs = '_'.join(str(lang) for lang in self.langs)
+        # Check that files are written in correct order
+        l1 = (dir_path / f'{entry.did}').with_suffix(f'.{entry.did.langs[0]}')
+        l2 = (dir_path / f'{entry.did}').with_suffix(f'.{entry.did.langs[1]}')
         mode = dict(mode='w', encoding='utf-8', errors='ignore')
         with l1.open(**mode) as f1, l2.open(**mode) as f2:
             count, skips, noise = 0, 0, 0
