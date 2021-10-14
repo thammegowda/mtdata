@@ -41,7 +41,7 @@ class Dataset:
             if did in INDEX:
                 entries.append(INDEX[did])
             else:
-                raise Exception(f'Could not find {did}; try "mtdata list | grep -i <name>" to locate it')
+                raise Exception(f'Could not find {did}; try "mtdata list | grep -i {did}" to locate it')
         return entries
 
     @classmethod
@@ -170,7 +170,7 @@ class Dataset:
 
     def add_part(self, dir_path: Path, entry: Entry, drop_noise=False):
         path = self.cache.get_entry(entry)
-        swap = entry.is_swap(self.langs)
+        #swap = entry.is_swap(self.langs)
         parser = Parser(path, langs=self.langs, ext=entry.in_ext or None, ent=entry)
         # langs = '_'.join(str(lang) for lang in self.langs)
         # Check that files are written in correct order
@@ -191,10 +191,10 @@ class Dataset:
                 if not sent1 or not sent2:
                     skips += 1
                     continue
-                if swap:
-                    sent2, sent1 = sent1, sent2
-                sent1 = sent1.replace('\n', ' ').replace('\t', ' ')
-                sent2 = sent2.replace('\n', ' ').replace('\t', ' ')
+                # if swap:
+                #    sent2, sent1 = sent1, sent2
+                sent1 = sent1.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
+                sent2 = sent2.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
                 f1.write(f'{sent1}\n')
                 f2.write(f'{sent2}\n')
                 count += 1

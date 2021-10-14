@@ -10,11 +10,13 @@ import argparse
 from mtdata import log
 from mtdata.utils import IO
 import time
-from mtdata.iso import iso3_code
+from mtdata.iso.bcp47 import bcp47
+from mtdata.main import lang_pair
 from html import unescape
 import datetime
 
 DEF_PROGRESS = 10  # seconds
+
 
 def parse_tmx(data, log_every=DEF_PROGRESS):
     context = ET.iterparse(data, events=['end'])
@@ -27,7 +29,7 @@ def parse_tmx(data, log_every=DEF_PROGRESS):
             lang = [v for k, v in tuv.attrib.items() if k.endswith('lang')]
             seg = tuv.findtext('seg')
             if lang and seg:
-                lang = iso3_code(lang[0], fail_error=True)
+                lang = bcp47(lang[0])
                 seg = unescape(seg.strip()).replace('\n', ' ').replace('\t', ' ')
                 if lang in lang_seg:
                     log.warning(f"Language {lang} appears twice in same translation unit.")
@@ -39,6 +41,7 @@ def parse_tmx(data, log_every=DEF_PROGRESS):
             log.info(f"{elapsed} :: Parsed: {count:,}")
             t = time.time()
         tu.clear()
+
 
 def read_tmx(path: Union[Path, str], langs=None):
     """
@@ -57,7 +60,8 @@ def read_tmx(path: Union[Path, str], langs=None):
                 if len(lang_seg) == 2:
                     langs = tuple(lang_seg.keys())
                 else:
-                    raise Exception(f"Language autodetect for TMX only supports 2 languages, but provided with {lang_seg.keys()} in TMX {path}")
+                    raise Exception(f"Language autodetect for TMX only supports 2 languages,"
+                                    f" but provided with {lang_seg.keys()} in TMX {path}")
             if langs[0] in lang_seg and langs[1] in lang_seg:
                 yield lang_seg[langs[0]], lang_seg[langs[1]]
                 passes += 1
@@ -66,10 +70,11 @@ def read_tmx(path: Union[Path, str], langs=None):
     if passes == 0:
         if fails == 0:
             raise Exception(f"Empty TMX {path}")
-        raise Exception(f"Nothing for {langs[0]}--{langs[1]} in TMX {path}")
+        raise Exception(f"Nothing for {langs[0]}-{langs[1]} in TMX {path}")
     if fails != 0:
         log.warning(f"Skipped {fails} entries due to language mismatch in TMX {path}")
     log.info(f"Extracted {passes} pairs from TMX {path}")
+
 
 def main(inp, out, langs):
     recs = read_tmx(inp, langs=langs)
@@ -81,8 +86,6 @@ def main(inp, out, langs):
             count += 1
         log.warning(f"Wrote {count} lines to {out}")
 
-def split_tuple(text: str):
-    return tuple(text.split("-"))
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='A tool to convert TMX to TSV',
@@ -90,7 +93,7 @@ if __name__ == '__main__':
     p.add_argument('-i', '--inp', type=Path, required=True, help='Input file path')
     p.add_argument('-o', '--out', type=Path, default=Path('/dev/stdout'),
                    help='Output file path')
-    p.add_argument('-l', '--langs', type=split_tuple, default=None,
+    p.add_argument('-l', '--langs', type=lang_pair, default=None,
                    help='Languages from TMX. example: eng-fra or en-fr')
 
     args = vars(p.parse_args())

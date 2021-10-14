@@ -13,7 +13,7 @@ import json
 from collections import namedtuple
 from pathlib import Path
 from typing import Optional, Union
-
+from functools import lru_cache
 from mtdata.iso import iso3_code
 
 
@@ -82,6 +82,7 @@ class BCP47Parser:
             assert script_code in self.scripts
             self.default_scripts[code3] = script_code
 
+    @lru_cache(maxsize=10000)
     def parse(self, tag) -> BCP47Tag:
         """
         Parameters
