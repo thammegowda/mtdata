@@ -381,65 +381,48 @@ zne	zpa,zsl,zu
 zpa	zpg,zu
 zsl	zu"""
 
-from mtdata.index import Index, Entry
-from mtdata.iso import iso3_code
+from mtdata.index import Index, Entry, DatasetId
+from mtdata.iso.bcp47 import bcp47
 from mtdata import log
 from collections import defaultdict
 
 
 def load_all(index: Index):
-    cite = """@inproceedings{agic-vulic-2019-jw300,
-    title = "{JW}300: A Wide-Coverage Parallel Corpus for Low-Resource Languages",
-    author = "Agi{\'c}, {\v{Z}}eljko  and
-      Vuli{\'c}, Ivan",
-    booktitle = "Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics",
-    month = jul,
-    year = "2019",
-    address = "Florence, Italy",
-    publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/P19-1310",
-    doi = "10.18653/v1/P19-1310",
-    pages = "3204--3210",
-    abstract = "Viable cross-lingual transfer critically depends on the availability of parallel texts. Shortage of such resources imposes a development and evaluation bottleneck in multilingual processing. We introduce JW300, a parallel corpus of over 300 languages with around 100 thousand parallel sentences per language pair on average. In this paper, we present the resource and showcase its utility in experiments with cross-lingual word embedding induction and multi-source part-of-speech projection.",
-}
-@inproceedings{tiedemann2012parallel,
-  title={Parallel Data, Tools and Interfaces in OPUS.},
-  author={Tiedemann, J{\"o}rg},
-  booktitle={Lrec},
-  volume={2012},
-  pages={2214--2218},
-  year={2012}
-}
-"""
+    cite = index.ref_db.get_bibtex('agic-vulic-2019-jw300') + '\n\n' + index.ref_db.get_bibtex('tiedemann2012parallel')
     skips = defaultdict(int)
+    dupes = defaultdict(set)
     bi_url_pat = 'http://opus.nlpl.eu/download.php?f=JW300/v1/xml/%s-%s.xml.gz'
     mon_url_pat = 'http://opus.nlpl.eu/download.php?f=JW300/v1/xml/%s.zip'
-    name = 'JW300'
+    group, name = 'OPUS_JW300', 'jw300'
     for line in data.splitlines(False):
         l1, l2s = line.split('\t')
-        iso_l1 = iso3_code(l1, default=None)
+        iso_l1 = bcp47.try_parse(l1, default=None)
         if not iso_l1:
             skips[l1] += 1
             continue
         l2s = l2s.split(',')
         for l2 in l2s:
-            iso_l2 = iso3_code(l2, default=None)
+            iso_l2 = bcp47.try_parse(l2, default=None)
             if not iso_l2:
                 skips[l2] += 1
                 continue
             aln_url = bi_url_pat % (l1, l2)
             l1_url = mon_url_pat % l1
             l2_url = mon_url_pat % l2
-            langs = (iso_l1, iso_l2)
-            if index.contains_entry(name=name + '_v1', langs=langs):  # dupe due to many-to-one lang id
+            data_id = DatasetId(group=group, name=name, version='1', langs=(iso_l1, iso_l2))
+            if data_id in index:  # dupe due to many-to-one lang id
+                dupes[name].add(f'{l1}-{l2}')
                 continue
 
-            ent = Entry(langs=langs, name=name + '_v1', url=aln_url, cite=cite, in_ext='opus_xces',
-                        in_paths=[l1_url, l2_url])
+            ent = Entry(did=data_id, url=aln_url, cite=cite, in_ext='opus_xces', in_paths=[l1_url, l2_url])
             index.add_entry(ent)
             aln_url = aln_url.replace("/v1/", "/v1c/")
             l1_url, l2_url = [url.replace("/v1/xml/", "/v1c/raw/") for url in [l1_url, l2_url]]
 
-            ent = Entry(langs=langs, name=name + '_v1c', url=aln_url, cite=cite, in_ext='opus_xces',
-                        in_paths=[l1_url, l2_url])
+            data_id = DatasetId(group=group, name=name, version='1c', langs=(iso_l1, iso_l2))
+            ent = Entry(did=data_id, url=aln_url, cite=cite, in_ext='opus_xces', in_paths=[l1_url, l2_url])
             index.add_entry(ent)
+    if skips:
+        log.info(f"Skips per lang: {dict(skips)}")
+    if dupes:
+        log.info(f"Skipped dupes: {dict(dupes)}")

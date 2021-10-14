@@ -74,7 +74,7 @@ class Parser:
                     readers.append(self.read_plain(p))
                 elif 'tmx' in self.ext:
                     from mtdata.tmx import read_tmx
-                    readers.append(read_tmx(path=p, langs=self.langs))
+                    readers.append(read_tmx(path=p, langs=self.ent.did.langs))
                 elif 'sgm' in self.ext:
                     from mtdata.sgm import read_sgm
                     readers.append(read_sgm(p))

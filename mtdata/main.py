@@ -5,16 +5,17 @@
 import argparse
 from pathlib import Path
 from collections import defaultdict
+
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
+from mtdata.entry import DatasetId, LangPair
 from mtdata.utils import IO
-from mtdata.iso import iso3_code
-
+from mtdata.iso.bcp47 import bcp47
 
 
 def list_data(langs, names, not_names=None, full=False):
-    from mtdata.data import get_entries
-    entries = get_entries(langs, names, not_names)
+    from mtdata.index import get_entries
+    entries = get_entries(langs, names, not_names, fuzzy_match=True)
     log.info(f"Found {len(entries)}")
     for i, ent in enumerate(entries):
         print(ent.format(delim='\t'))
@@ -23,29 +24,38 @@ def list_data(langs, names, not_names=None, full=False):
     print(f"Total {len(entries)} entries")
 
 
-def get_data(args):
+def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_did=None, merge_train=False, **kwargs):
     from mtdata.data import Dataset
-    assert args.train_names or args.test_names, 'Required --train or --test or both'
-    dataset = Dataset.prepare(args.langs, train_names=args.train_names,
-                              test_names=args.test_names, out_dir=args.out,
-                              cache_dir=CACHE_DIR, merge_train=args.merge)
-    cli_sig = f'-l {"-".join(args.langs)}'
-    cli_sig += f' -tr {" ".join(args.train_names)}' if args.train_names else ''
-    cli_sig += f' -ts {" ".join(args.test_names)}' if args.test_names else ''
+    assert train_dids or test_dids, 'Required --train or --test or both'
+    dataset = Dataset.prepare(
+        langs, train_dids=train_dids, test_dids=test_dids, out_dir=out_dir,
+        dev_did=dev_did, cache_dir=CACHE_DIR, merge_train=merge_train)
+    cli_sig = f'-l {"-".join(str(l) for l in langs)}'
+    if train_dids:
+        cli_sig += f' -tr {" ".join(str(d) for d in train_dids)}'
+    if test_dids:
+        cli_sig += f' -ts {" ".join(str(d) for d in test_dids)}'
+    if dev_did:
+        cli_sig += f' -dev {dev_did}'
+    if merge_train:
+        cli_sig += f' --merge'
     sig = f'mtdata get {cli_sig} -o <out-dir>\nmtdata version {mtdata.__version__}\n'
     log.info(f'Dataset is ready at {dataset.dir}')
     log.info(f'mtdata args for reproducing this dataset:\n {sig}')
-    with IO.writer(args.out / 'mtdata.signature.txt', append=True) as w:
+    with IO.writer(out_dir / 'mtdata.signature.txt', append=True) as w:
         w.write(sig)
 
 
 def generate_report(langs, names, not_names=None, format='plain'):
+    from mtdata.index import get_entries
     entries = get_entries(langs, names, not_names)
     lang_stats = defaultdict(int)
     name_stats = defaultdict(int)
+    group_stats = defaultdict(int)
     for ent in entries:
-        lang_stats['_'.join(ent.langs)] += 1
-        name_stats[ent.name] += 1
+        lang_stats['_'.join(ent.did.langs)] += 1
+        name_stats[ent.did.name] += 1
+        group_stats[ent.did.group] += 1
 
     print("Languages:")
     for key, val in lang_stats.items():
@@ -53,6 +63,10 @@ def generate_report(langs, names, not_names=None, format='plain'):
 
     print("\nNames:")
     for key, val in name_stats.items():
+        print(f'{key}\t{val:,}')
+
+    print("\nGroups:")
+    for key, val in group_stats.items():
         print(f'{key}\t{val:,}')
 
 
@@ -68,24 +82,41 @@ class MyFormatter(argparse.ArgumentDefaultsHelpFormatter):
         return super()._split_lines(text, width)
 
 
-def LangPair(string):
+def lang_pair(string) -> LangPair:
     parts = string.split('-')
     if len(parts) != 2:
-        msg = f'expected value of form "xx-yy" eg "de-en"; given {string}'
+        msg = f'expected value of form "xxx-yyz" eg "deu-eng"; given {string}'
         raise argparse.ArgumentTypeError(msg)
-    iso_codes = [iso3_code(part, fail_error=True) for part in parts]
-    if iso_codes != parts:
-        log.warning(f"Suggestion: Use ISO 639_3 codes {'-'.join(iso_codes)} instead of {string}."
-                    f" Let's make a little space for all 7000+ languages of our planet 😢.")
-    return tuple(iso_codes)
+    std_codes = (bcp47(parts[0]), bcp47(parts[1]))
+    std_form = '-'.join(str(lang) for lang in std_codes)
+    if std_form != string:
+        log.info(f"Suggestion: Use codes {std_form} instead of {string}."
+                 f" Let's make a little space for all languages of our planet 😢.")
+    return std_codes
 
 
+def dataset_id(string) -> DatasetId:
+    expected_format = "<group>-<name>-<version>-<l1>-<l2>"
+    parts = string.strip().split('-')
+    if len(parts) != 5:
+        raise argparse.ArgumentTypeError(f'Dataset ID expected in format: {expected_format}; but given {string}.'
+                                         f' If you are unsure, run "mtdata list | grep -i <name>" and copy its id.')
+    group, name, version, lang1, lang2 = parts
+    langs = lang_pair(f'{lang1}-{lang2}')
+    try:
+        did = DatasetId(group=group, name=name, version=version, langs=langs)
+    except Exception as e:
+        raise argparse.ArgumentTypeError(e)
+    return did
 
-def add_boolean_arg(parser: argparse.ArgumentParser, name, default=False, help=''):
+
+def add_boolean_arg(parser: argparse.ArgumentParser, name, dest=None, default=False, help=''):
     group = parser.add_mutually_exclusive_group()
-    group.add_argument(f'--{name}', action='store_true', dest=name, default=default, help=help)
-    group.add_argument(f'--no-{name}', action='store_false', dest=name, default=not default,
+    dest = dest or name
+    group.add_argument(f'--{name}', action='store_true', dest=dest, default=default, help=help)
+    group.add_argument(f'--no-{name}', action='store_false', dest=dest, default=not default,
                        help='Do not ' + help)
+
 
 def parse_args():
     p = argparse.ArgumentParser(formatter_class=MyFormatter, epilog=f'Loaded from {__file__} (v{__version__})')
@@ -105,7 +136,7 @@ def parse_args():
 ''')
 
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
-    list_p.add_argument('-l', '--langs', metavar='L1-L2', type=LangPair,
+    list_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
                         help='Language pairs; e.g.: deu-eng')
     list_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
                         help='Name of dataset set; eg europarl_v9.')
@@ -115,34 +146,30 @@ def parse_args():
                                                        'Only used in "get" subcommand.')
 
     get_p = sub_ps.add_parser('get', formatter_class=MyFormatter)
-    get_p.add_argument('-l', '--langs', metavar='L1-L2', type=LangPair,
+    get_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
                        help='Language pairs; e.g.: deu-eng',
                        required=True)
-    get_p.add_argument('-tr', '--train', metavar='NAME', dest='train_names', nargs='*',
+    get_p.add_argument('-tr', '--train', metavar='ID', dest='train_dids', nargs='*', type=dataset_id,
                        help='''R|Names of datasets separated by space, to be used for *training*.
-    e.g. -tr news_commentary_v14 europarl_v9 .
+    e.g. -tr Statmt-news_commentary-16-deu-eng europarl_v9 .
      To concatenate all these into a single train file, set --merge flag.''')
-    get_p.add_argument('-ts', '--test', metavar='NAME', dest='test_names', nargs='*',
+    get_p.add_argument('-ts', '--test', metavar='ID', dest='test_dids', nargs='*', type=dataset_id,
                        help='''R|Names of datasets separated by space, to be used for *testing*. 
-    e.g. "-tt newstest2018_deen newstest2019_deen".
+    e.g. "-ts Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng ".
     You may also use shell expansion if your shell supports it.
-    e.g. "-tt newstest201{8,9}_deen." ''')
-    add_boolean_arg(get_p, 'merge', default=False, help='Merge train into a single file')
+    e.g. "-ts Statmt-newstest_deen-20{19,20}-deu-eng" ''')
+    get_p.add_argument('-dev', '--dev', metavar='ID', dest='dev_did', type=dataset_id, required=False,
+                       help='''R|Dataset to be used for development (aka validation). 
+    e.g. "-dev Statmt-newstest_deen-2017-deu-eng"''')
+    add_boolean_arg(get_p, 'merge', dest='merge_train', default=False, help='Merge train into a single file')
 
-    get_p.add_argument('-o', '--out', type=Path, required=True, help='Output directory name')
-
-    # list-exp
-    list_exp_p = sub_ps.add_parser('list-exp', formatter_class=MyFormatter)
-    list_exp_p.add_argument('-l', '--langs', metavar='L1-L2', type=LangPair,
-                            help='Language pairs; e.g.: en-de')
-    list_exp_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
-                            help='Name/identifier for paper eg vaswani-etal-2017')
+    get_p.add_argument('-o', '--out', dest='out_dir', type=Path, required=True, help='Output directory name')
 
     report_p = sub_ps.add_parser('report', formatter_class=MyFormatter)
-    report_p.add_argument('-l', '--langs', metavar='L1-L2', type=LangPair,
-                        help='Language pairs; e.g.: deu-eng')
+    report_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
+                          help='Language pairs; e.g.: deu-eng')
     report_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
-                        help='Name of dataset set; eg europarl_v9.')
+                          help='Name of dataset set; eg europarl_v9.')
     report_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
 
     args = p.parse_args()
@@ -162,14 +189,13 @@ def main():
     if args.task == 'list':
         list_data(args.langs, args.names, not_names=args.not_names, full=args.full)
     elif args.task == 'get':
-        get_data(args)
+        get_data(**vars(args))
     elif args.task == 'list_exp':
         list_experiments(args)
     elif args.task == 'report':
         generate_report(args.langs, names=args.names, not_names=args.not_names)
     else:
         raise Exception(f'{args.task} not implemented')
-
 
 
 if __name__ == '__main__':

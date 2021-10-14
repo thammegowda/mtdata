@@ -3,38 +3,66 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
 
-from typing import Tuple, List, Optional, Set
+from typing import Tuple, List, Optional, Set, Union
 from dataclasses import dataclass, field
 from mtdata.parser import detect_extension
-from mtdata.iso import iso3_code
+from mtdata.iso.bcp47 import BCP47Tag, bcp47
+
+
+LangPair = Tuple[BCP47Tag, BCP47Tag]
+
+
+@dataclass(frozen=True)
+class DatasetId:
+    group: str
+    name: str
+    version: str
+    langs: Union[Tuple[str, str], LangPair]  # one=monolingual, two=bitext; many=multi
+
+    def __post_init__(self):
+        assert self.group
+        assert self.name
+        assert self.version
+        assert self.name.islower(), f'name {self.name} has to be lower cased for consistency'
+        for name in [self.group, self.version, self.name]:
+            for ch in '-/*|[](){}<>?&:;,!^$"\' ':
+                assert ch not in name, f"Character '{ch}' is not permitted in name {name}"
+        # ensure lang ID is BCP47 tag
+        assert isinstance(self.langs, tuple), f'Expected tuple (l1, l2); given={self.langs}'
+        langs = tuple(lang if isinstance(lang, BCP47Tag) else bcp47(lang) for lang in self.langs)
+        if langs != self.langs:
+            object.__setattr__(self, 'langs', langs)      # bypass frozen=True
+
+    @property
+    def lang_str(self):
+        return '-'.join(str(lang) for lang in self.langs)
+
+    def format(self, delim='-'):
+        return f'{self.group}{delim}{self.name}{delim}{self.version}{delim}{self.lang_str}'
+
+    def __str__(self):
+        return self.format()
 
 
 class Entry:
-    __slots__ = ('langs', 'name', 'url', 'filename', 'ext', 'in_paths', 'in_ext', 'cite', 'cols',
-                 'is_archive')
+    __slots__ = ('did', 'url', 'filename', 'ext', 'in_paths', 'in_ext', 'cite', 'cols', 'is_archive')
 
-    def __init__(self, langs: Tuple[str, str],
-        name: str,
-        url: str,
-        filename: Optional[str] = None ,
-        ext: Optional[str] = None,
-        in_paths: Optional[List[str]] = None,
-        in_ext: Optional[str] = None,
-        cite: Optional[str] = None,
-        cols: Optional[Tuple[int, int]] = None):
+    def __init__(self, did: DatasetId,
+                 url: str,
+                 filename: Optional[str] = None,
+                 ext: Optional[str] = None,
+                 in_paths: Optional[List[str]] = None,
+                 in_ext: Optional[str] = None,
+                 cite: Optional[str] = None,
+                 cols: Optional[Tuple[int, int]] = None):
 
-        assert isinstance(langs, tuple)
-        assert len(langs) == 2
-        for ch in '-/* ':
-            assert ch not in name, f"Character '{ch}' is not permitted in name {name}"
-
-        self.langs = tuple(iso3_code(l, fail_error=True) for l in langs)
-        self.name = name
+        assert isinstance(did, DatasetId)
+        self.did = did
         self.url = url
         self.filename = filename
         orig_name = self.url.split('/')[-1]
         self.ext = ext or detect_extension(filename or orig_name)
-        self.filename = self.filename or f'{self.name}.{self.ext}'
+        self.filename = self.filename or f'{self.did.name}.{self.ext}'
 
         self.in_paths = in_paths
         self.in_ext = in_ext
@@ -52,14 +80,17 @@ class Entry:
     def is_swap(self, langs):
         if self.in_ext == 'tmx':
             return False
-        return tuple(reversed(langs)) == tuple(self.langs)
+        return tuple(reversed(langs)) == tuple(self.lang_str)
 
     def __str__(self):
         return self.format(delim=' ')
 
+    @property
+    def lang_str(self):
+        return self.did.lang_str
+
     def format(self, delim: str = ' '):
-        msg = f'{self.name}{delim}{"-".join(self.langs)}{delim}{self.url}{delim}' \
-              f'{",".join(self.in_paths or [])}'
+        msg = f'{self.did}{delim}{self.url}{delim}{",".join(self.in_paths or [])}'
         return msg
 
     def is_noisy(self, seg1, seg2) -> bool:
@@ -74,13 +105,14 @@ class JW300Entry(Entry):
 
 @dataclass
 class Experiment:
-    langs: Tuple[str, str]  # (lang1 , lang2)  lang1 -> lang2
+    langs: Tuple[BCP47Tag, BCP47Tag]  # (lang1 , lang2)  lang1 -> lang2
     train: List[Entry]  # training should be merged from all these
     tests: List[Entry]  # multiple tests; one of them can be validation set
     papers: Set['Paper'] = field(default_factory=set)
 
     def __post_init__(self):
-        self.langs = tuple(iso3_code(l, fail_error=True) for l in self.langs)
+        if any(not isinstance(lang, BCP47Tag) for lang in self.langs):
+            self.langs = tuple(bcp47(l) for l in self.langs)
         for t in self.tests:
             assert t
         for t in self.train:

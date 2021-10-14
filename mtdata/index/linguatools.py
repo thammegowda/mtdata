@@ -1,4 +1,4 @@
-from mtdata.index import Index, Entry
+from mtdata.index import Index, Entry, DatasetId
 
 wiki_titles = """04j515tc7j2jgpj,arbg
 fzrq1bg6rzx56iq,arcs
@@ -264,8 +264,8 @@ def load_all(index: Index):
         l1, l2 = pair[:2], pair[2:]
         url = url_ptn.format(uid=uid, l1=l1, l2=l2)
         in_file = f'wikititles-2014_{l1}{l2}'
-        ent = Entry(langs=(l1, l2), name="LT_wikititles_2014", url=url, ext='tgz', in_ext='txt',
-                    in_paths=[f'{in_file}.{l1}', f'{in_file}.{l2}'])
+        ent = Entry(did=DatasetId(group='LinguaTools', name=f'wikititles', version='2014', langs=(l1, l2)),
+                    url=url, ext='tgz', in_ext='txt', in_paths=[f'{in_file}.{l1}', f'{in_file}.{l2}'])
         index.add_entry(ent)
 
 
