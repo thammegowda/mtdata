@@ -12,7 +12,7 @@
 import json
 from collections import namedtuple
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from mtdata.iso import iso3_code
 
@@ -43,6 +43,22 @@ class BCP47Tag(namedtuple('BCP47Tag', ('lang', 'script', 'region', 'tag'))):
 
     def __lt__(self, other):
         return self.tag > other.tag
+
+    def is_compatible(self, lang2: Union[str, 'BCP47Tag']):
+
+        if isinstance(lang2, str):
+            lang2 = bcp47(lang2)
+        # exact same tag => true
+        if self.tag == lang2.tag:
+            return True
+        # languages or scripts are different
+        if self.lang != lang2.lang or self.script != lang2.script:
+            return False
+        # one of them is general, other is a variant of region
+        # e.g. eng vs eng_US
+        if not self.region or not lang2.region:
+            return True
+        return False
 
 
 class BCP47Parser:

@@ -6,7 +6,8 @@
 from pathlib import Path
 from mtdata import log
 from mtdata.cache import Cache
-from mtdata.index import INDEX, Entry, get_entries, DatasetId
+from mtdata.index import INDEX, Entry, DatasetId, LangPair
+from mtdata.iso.bcp47 import bcp47
 from mtdata.parser import Parser
 from mtdata.utils import IO
 from typing import Optional, List, Tuple
@@ -17,7 +18,7 @@ import json
 
 class Dataset:
 
-    def __init__(self, dir: Path, langs, cache_dir: Path, drop_train_noise=True,
+    def __init__(self, dir: Path, langs: LangPair, cache_dir: Path, drop_train_noise=True,
                  drop_test_noise=False):
         self.dir = dir
         self.langs = langs
@@ -46,7 +47,7 @@ class Dataset:
     @classmethod
     def prepare(cls, langs, train_dids: Optional[List[DatasetId]], test_dids: Optional[List[DatasetId]],
                 out_dir: Path, cache_dir: Path, merge_train=False,
-                drop_noise: Tuple[bool, bool]=(True, False)):
+                drop_noise: Tuple[bool, bool] = (True, False)):
         drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
         assert train_dids or test_dids, 'Either train_names or test_names should be given'
@@ -60,10 +61,10 @@ class Dataset:
 
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir,
                       drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise)
-        if test_entries:    # tests are smaller so quicker; no merging needed
+        if test_entries:  # tests are smaller so quicker; no merging needed
             dataset.add_test_entries(test_entries)
 
-        if train_entries:   # this might take some time
+        if train_entries:  # this might take some time
             dataset.add_train_entries(train_entries, merge_train=merge_train)
         return dataset
 
@@ -72,20 +73,36 @@ class Dataset:
         if not merge_train:
             return
         # merge
-        l1, l2 = self.langs
-        l1_files = list(self.train_parts_dir.glob(f"*.{l1}"))
-        assert l1_files and len(l1_files) >= len(entries)
+        lang1, lang2 = self.langs
+        if lang1.is_compatible(lang2):
+            raise Exception(f"Unable to merge for {lang1}-{lang2}; it can result in unpredictable behavior.")
+        paired_files = {}
+        for path in self.train_parts_dir.glob("*.*"):
+            if path.name.startswith("."):
+                continue
+            parts = path.name.split(".")
+            assert len(parts) == 2, f'Invalid file name {path.name}; Unable to merge parts'
+            did, ext = path.name.split(".")
+            ext = bcp47(ext)
+            if did not in paired_files:
+                paired_files[did] = [None, None]
+            if lang1.is_compatible(ext):
+                assert not lang2.is_compatible(ext)
+                paired_files[did][0] = path
+            elif lang2.is_compatible(ext):
+                paired_files[did][1] = path
+            else:
+                raise Exception(f"Unable to decide the side of train-part {path}; ext={ext}: we have {lang1}-{lang2}")
+        for did, (f1, f2) in paired_files.items():
+            assert f1 and f1.exists(), f'Invalid state: part {did} does not have pair, or pair is are removed'
 
-        l2_files = [l1_f.with_suffix(f".{l2}") for l1_f in l1_files]
-        assert all(l2_f.exists() for l2_f in l2_files)
-        log.info(f"Going to merge {len(l1_files)} files as one train file")
+        log.info(f"Going to merge {len(paired_files)} files as one train file")
         counts = coll.defaultdict(int)
-        of1 = self.dir / f'train.{l1}'
-        of2 = self.dir / f'train.{l2}'
+        of1 = self.dir / f'train.{lang1}'
+        of2 = self.dir / f'train.{lang2}'
         of3 = self.dir / f'train.meta.gz'
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
-            for if1, if2 in zip(l1_files, l2_files):
-                name = if1.name.rstrip(f'.{l1}')
+            for name, (if1, if2) in paired_files.items():
                 for seg1, seg2 in self.read_parallel(if1, if2):
                     w1.write(seg1 + '\n')
                     w2.write(seg2 + '\n')
@@ -95,7 +112,7 @@ class Dataset:
         counts = {'total': total, 'parts': counts}
         counts_msg = json.dumps(counts, indent=2)
         log.info('Train stats:\n' + counts_msg)
-        IO.write_lines(self.dir /'train.stats.json', counts_msg)
+        IO.write_lines(self.dir / 'train.stats.json', counts_msg)
         return counts
 
     @classmethod
@@ -150,6 +167,6 @@ class Dataset:
             if skips > count:
                 log.warning(msg)
             if noise > 0:
-                log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100*noise/count:.4f}%")
+                log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100 * noise / count:.4f}%")
             log.info(f"wrote {count} lines to {l1} == {l2}")
         return count, skips

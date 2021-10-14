@@ -9,16 +9,13 @@ from typing import Tuple
 
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
-from mtdata.entry import DatasetId
+from mtdata.entry import DatasetId, LangPair
 from mtdata.utils import IO
-from mtdata.iso.bcp47 import bcp47, BCP47Tag
-
-
-LangPair = Tuple[BCP47Tag, BCP47Tag]
+from mtdata.iso.bcp47 import bcp47
 
 
 def list_data(langs, names, not_names=None, full=False):
-    from mtdata.data import get_entries
+    from mtdata.index import get_entries
     entries = get_entries(langs, names, not_names, fuzzy_match=True)
     log.info(f"Found {len(entries)}")
     for i, ent in enumerate(entries):
@@ -45,13 +42,15 @@ def get_data(args):
 
 
 def generate_report(langs, names, not_names=None, format='plain'):
-    from mtdata.data import get_entries
+    from mtdata.index import get_entries
     entries = get_entries(langs, names, not_names)
     lang_stats = defaultdict(int)
     name_stats = defaultdict(int)
+    group_stats = defaultdict(int)
     for ent in entries:
-        lang_stats['_'.join(ent.langs)] += 1
-        name_stats[ent.name] += 1
+        lang_stats['_'.join(ent.did.langs)] += 1
+        name_stats[ent.did.name] += 1
+        group_stats[ent.did.group] += 1
 
     print("Languages:")
     for key, val in lang_stats.items():
@@ -59,6 +58,10 @@ def generate_report(langs, names, not_names=None, format='plain'):
 
     print("\nNames:")
     for key, val in name_stats.items():
+        print(f'{key}\t{val:,}')
+
+    print("\nGroups:")
+    for key, val in group_stats.items():
         print(f'{key}\t{val:,}')
 
 

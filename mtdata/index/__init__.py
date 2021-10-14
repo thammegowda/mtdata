@@ -10,7 +10,7 @@ import portalocker
 from pybtex.database import parse_file as parse_bib_file
 
 from mtdata import log, cached_index_file, __version__
-from mtdata.entry import Entry, Paper, DatasetId
+from mtdata.entry import Entry, Paper, DatasetId, LangPair
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
 
 REFS_FILE = Path(__file__).parent / 'refs.bib'
@@ -163,16 +163,7 @@ class ReferenceDb:
 
 
 def is_compatible(lang1: BCP47Tag, lang2: BCP47Tag):
-    # exact same tag => true
-    if lang1.tag == lang2.tag:
-        return True
-    # languages or scripts are different
-    if lang1.lang != lang2.lang or lang1.script != lang2.script:
-        return False
-    # one of them is general, other is a variant of region
-    if not lang1.region or not lang2.region:
-        return True
-    return False
+    return lang1.is_compatible(lang2)
 
 
 def bitext_lang_match(pair1, pair2, fuzzy_match=False) -> bool:
@@ -204,7 +195,7 @@ def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False) -> Li
     if not_names:
         if not isinstance(not_names, set):
             not_names = set(not_names)
-        select = [e for e in select if e.name not in not_names]
+        select = [e for e in select if e.did.name not in not_names]
     return select
 
 

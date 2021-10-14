@@ -14,6 +14,7 @@ from .parser import detect_extension
 
 MAX_TIMEOUT = 12 * 60 * 60  # 12 hours
 
+
 @dataclass
 class Cache:
     root: Path
@@ -44,7 +45,7 @@ class Cache:
         return local
 
     def get_local_in_paths(self, entry: Entry, fix_missing=True):
-        if entry.in_ext == 'opus_xces': # this is special case
+        if entry.in_ext == 'opus_xces':     # this is special case
             l1_url, l2_url = entry.in_paths
             align_file = self.get_local_path(entry.url, fix_missing=fix_missing)
             l1_path = self.get_local_path(l1_url, fix_missing=True)

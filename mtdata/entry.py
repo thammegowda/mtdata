@@ -9,12 +9,15 @@ from mtdata.parser import detect_extension
 from mtdata.iso.bcp47 import BCP47Tag, bcp47
 
 
+LangPair = Tuple[BCP47Tag, BCP47Tag]
+
+
 @dataclass(frozen=True)
 class DatasetId:
     group: str
     name: str
     version: str
-    langs: Union[Tuple[str, str], Tuple[BCP47Tag, BCP47Tag]]  # one=monolingual, two=bitext; many=multi
+    langs: Union[Tuple[str, str], LangPair]  # one=monolingual, two=bitext; many=multi
 
     def __post_init__(self):
         assert self.group
