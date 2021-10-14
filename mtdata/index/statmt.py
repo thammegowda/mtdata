@@ -181,7 +181,7 @@ def load(index: Index):
             src = f'dev/{set_name}.{l1}-{l2}.{l1}'
             ref = f'dev/{set_name}.{l1}-{l2}.{l2}'
             name = f'{set_name.replace(".", "_")}_{l1}{l2}'
-            index.add_entry(Entry(did=DatasetId(group=group_id, name=name, version=year, langs=(l1, l2)),
+            index.add_entry(Entry(did=DatasetId(group=group_id, name=name, version='1', langs=(l1, l2)),
                                  filename='wmt20dev.tgz', in_paths=[src, ref], in_ext='txt', cite=cite,
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz'))
 
@@ -194,12 +194,12 @@ def load(index: Index):
              "taen", "zhen"],
         "B": ["deen", "ende", "enzh", "ruen", "zhen"]}.items():
         year = "2020"
+        name = f'newstest{_pref}'
         for pair in pairs:
             l1, l2 = pair[:2], pair[2:]
             f1 = f'sgm/{name}{year}-{pair}-src.{l1}.sgm'
             f2 = f'sgm/{name}{year}-{pair}-ref.{l2}.sgm'
-            name = f'{name}_{pair}'  # name cant have -, so have an _ instead
-            index.add_entry(Entry(did=DatasetId(group=group_id, name=name, version=year, langs=(l1, l2)),
+            index.add_entry(Entry(did=DatasetId(group=group_id, name=f'{name}_{pair}', version=year, langs=(l1, l2)),
                 filename='wmt20tests.tgz', in_paths=[f1, f2], in_ext='sgm', cite=wmt20_cite, url=url))
 
     # WMT 21 Dev
