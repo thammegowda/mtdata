@@ -14,7 +14,7 @@ def load(index: Index):
         l2 = 'en'
         f1 = f'commoncrawl.{l1}-en.{l1}'
         f2 = f'commoncrawl.{l1}-en.en'
-        data_id = DatasetId(group=group_id, name='wmt13_commoncrawl', version='1.0', langs=(l1, l2))
+        data_id = DatasetId(group=group_id, name='commoncrawl_wmt13', version='1', langs=(l1, l2))
         index.add_entry(Entry(did=data_id, url=WMT13_CCRAWL,
                               filename='wmt13_parallel_commoncrawl.tgz',
                               in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
@@ -24,7 +24,7 @@ def load(index: Index):
         l2 = 'en'
         f1 = f'training/europarl-v7.{l1}-{l2}.{l1}'
         f2 = f'training/europarl-v7.{l1}-{l2}.{l2}'
-        data_id = DatasetId(group=group_id, name='wmt13_europarl_v7', version='1.0', langs=(l1, l2))
+        data_id = DatasetId(group=group_id, name='europarl_wmt13', version='7', langs=(l1, l2))
         index.add_entry(Entry(did=data_id, url="http://www.statmt.org/wmt13/training-parallel-europarl-v7.tgz",
                               filename="wmt13_europarl_v7.tgz",
                               in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
@@ -34,7 +34,7 @@ def load(index: Index):
         l2 = 'en'
         f1 = f'training-parallel-nc-v13/news-commentary-v13.{l1}-{l2}.{l1}'
         f2 = f'training-parallel-nc-v13/news-commentary-v13.{l1}-{l2}.{l2}'
-        data_id = DatasetId(group=group_id, name='news_commentary', version='13_wmt18', langs=(l1, l2))
+        data_id = DatasetId(group=group_id, name='news_commentary_wmt18', version='13', langs=(l1, l2))
         index.add_entry(Entry(did=data_id,
                               url="http://data.statmt.org/wmt18/translation-task/training-parallel-nc-v13.tgz",
                               filename="wmt18_news_commentary_v13.tgz",
@@ -60,10 +60,10 @@ def load(index: Index):
                               url=EUROPARL_v7 % (l1, l2), in_ext='txt', cite=cite))
 
     # === Digital Corpus of European Parliament
-    index.add_entry(Entry(did=DatasetId(group=group_id, name='dcep', version='1_wmt17', langs=(l1, l2)),
+    index.add_entry(Entry(did=DatasetId(group=group_id, name='dcep_wmt17', version='1', langs=(l1, l2)),
                           in_paths=['*/*.lv', f'*/*.en'], cite=cite,
                           url='http://data.statmt.org/wmt17/translation-task/dcep.lv-en.v1.tgz'))
-    index.add_entry(Entry(did=DatasetId(group=group_id, name='books', version='1_wmt17', langs=(l1, l2)),
+    index.add_entry(Entry(did=DatasetId(group=group_id, name='books_wmt17', version='1', langs=(l1, l2)),
                           in_paths=['*/*.lv', f'*/*.en'], cite=cite,
                           url='http://data.statmt.org/wmt17/translation-task/books.lv-en.v1.tgz'))
 
