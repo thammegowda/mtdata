@@ -199,7 +199,7 @@ def load(index: Index):
             l1, l2 = pair[:2], pair[2:]
             f1 = f'sgm/{name}{year}-{pair}-src.{l1}.sgm'
             f2 = f'sgm/{name}{year}-{pair}-ref.{l2}.sgm'
-            index.add_entry(Entry(did=DatasetId(group=group_id, name=f'{name}_{pair}', version=year, langs=(l1, l2)),
+            index.add_entry(Entry(did=DatasetId(group=group_id, name=f'{name}_{pair}'.lower(), version=year, langs=(l1, l2)),
                 filename='wmt20tests.tgz', in_paths=[f1, f2], in_ext='sgm', cite=wmt20_cite, url=url))
 
     # WMT 21 Dev

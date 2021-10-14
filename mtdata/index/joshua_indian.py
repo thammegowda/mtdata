@@ -19,7 +19,7 @@ def load_all(index: Index):
             f2 = f'*/{l1}-{l2}/{split}.{l1}-{l2}.{l2}'
             if split not in ('training', 'dict'):
                 f2 += '.0'
-            ent = Entry(did=DatasetId(group='JoshuaDec', name=f'Indian_{split}', version='1', langs=(l1, l2)),
+            ent = Entry(did=DatasetId(group='JoshuaDec', name=f'indian_{split}', version='1', langs=(l1, l2)),
                   url=url, filename='joshua-indian-parallel-corpora.tar.gz',
                   in_paths=[f1, f2], in_ext='txt', cite=cite)
             index.add_entry(ent)

@@ -23,6 +23,7 @@ class DatasetId:
         assert self.group
         assert self.name
         assert self.version
+        assert self.name.islower(), f'name {self.name} has to be lower cased for consistency'
         for name in [self.group, self.version, self.name]:
             for ch in '-/*|[](){}<>?&:;,!^$"\' ':
                 assert ch not in name, f"Character '{ch}' is not permitted in name {name}"

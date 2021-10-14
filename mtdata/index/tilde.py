@@ -27,5 +27,5 @@ def load(index: Index):
         for pair in pairs.split(' '):
             l1, l2 = pair.split('-')
             url = TILDE % (name.replace(';', ''), l1, l2)
-            index.add_entry(Entry(did=DatasetId(group='Tilde', name=sub_name, version=version, langs=(l1, l2)),
+            index.add_entry(Entry(did=DatasetId(group='Tilde', name=sub_name.lower(), version=version, langs=(l1, l2)),
                     url=url, cite=cite, in_paths=["*.tmx"], in_ext='tmx'))
