@@ -4,7 +4,7 @@
 # Created: 8/27/20
 
 
-from mtdata.index import Index, Entry
+from mtdata.index import Index, Entry, DatasetId
 
 
 class NoisyEntry(Entry):
@@ -33,8 +33,7 @@ def load_all(index: Index):
             col1 = col_idx[lang1]
             for lang2 in langs[idx1 + 1:]:
                 col2 = col_idx[lang2]
-                ent = NoisyEntry(langs=(lang1, lang2),
-                                 name=f"neulab_tedtalksv1_{split}",
+                ent = NoisyEntry(did=DatasetId(group='Neulab', name=f'tedtalks_{split}', version='1', langs=(lang1, lang2)),
                                  filename='neulab_ted_talksv1.tar.gz',
                                  url=url, in_paths=[f"all_talks_{split}.tsv"],
                                  cols=(col1, col2), cite=cite)

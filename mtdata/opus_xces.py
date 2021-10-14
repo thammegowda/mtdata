@@ -38,36 +38,43 @@ class OpusXcesParser:
             log.info(f"read {count} docs from {align_file}")
 
     @classmethod
-    def read_doc(cls, data):
+    def read_doc(cls, data, tokenized=True):
         mem = {}
         context = ET.iterparse(data, events=['end'])
         segs = (el for event, el in context if el.tag == 's')
         for seg in segs:
             seg_id = seg.attrib['id']
-            mem[seg_id] = ' '.join(w.text for w in seg.findall('.//w'))
+            if tokenized:
+                text = ' '.join(w.text for w in seg.findall('.//w'))
+            else:
+                text = seg.text.strip()
+            mem[seg_id] = text
         return mem
 
     @classmethod
-    def read(cls, align_file: Path, l1_dir: Path, l2_dir: Path, name='JW300', min_confidence=0.01):
+    def read(cls, align_file: Path, l1_dir: Path, l2_dir: Path, name='JW300', min_confidence=0.01,
+             preprocessing='xml'):
         doc_aligns = cls.read_alignments(align_file)
         assert l1_dir.is_file() and l1_dir.suffix == '.zip', f'{l1_dir}'
         assert l2_dir.is_file() and l2_dir.suffix == '.zip', f'{l2_dir}'
         from zipfile import ZipFile
         stats = coll.defaultdict(int)
+        assert preprocessing in ('xml', 'raw')
+        tokenized = preprocessing != 'raw'
 
         with ZipFile(l1_dir) as l1_zip, ZipFile(l2_dir) as l2_zip:
             l1_doc_names = set(l1_zip.namelist())
             l2_doc_names = set(l2_zip.namelist())
             for d in doc_aligns:
-                src_doc_path = f'{name}/xml/' + re.sub(r'\.gz$', '', d['src_doc'])
-                tgt_doc_path = f'{name}/xml/' + re.sub(r'\.gz$', '', d['tgt_doc'])
+                src_doc_path = f'{name}/{preprocessing}/' + re.sub(r'\.gz$', '', d['src_doc'])
+                tgt_doc_path = f'{name}/{preprocessing}/' + re.sub(r'\.gz$', '', d['tgt_doc'])
                 if src_doc_path not in l1_doc_names or tgt_doc_path not in l2_doc_names:
                     stats['doc_not_found'] += 1
                     continue
                 with l1_zip.open(src_doc_path) as f1:
-                    src_doc = cls.read_doc(f1)
+                    src_doc = cls.read_doc(f1, tokenized=tokenized)
                 with l2_zip.open(tgt_doc_path) as f2:
-                    tgt_doc = cls.read_doc(f2)
+                    tgt_doc = cls.read_doc(f2, tokenized=tokenized)
 
                 for confidence, src_ids, tgt_ids in d['align']:
                     if not src_ids or not tgt_ids:
