@@ -10,6 +10,9 @@ __author__ = 'Thamme Gowda'
 import logging as log
 from pathlib import Path
 import os
+import enlighten
+
+pbar_man = enlighten.get_manager()
 
 debug_mode = False
 _log_format = '%(asctime)s %(module)s.%(funcName)s:%(lineno)s %(levelname)s:: %(message)s'

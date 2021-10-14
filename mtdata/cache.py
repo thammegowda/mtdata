@@ -5,14 +5,18 @@
 from dataclasses import dataclass
 from pathlib import Path
 from mtdata.index import Entry
-from mtdata import log
-import wget
+from mtdata import log, __version__, pbar_man
+
 import portalocker
 from hashlib import md5
 from urllib.parse import urlparse
 from .parser import detect_extension
+import requests
+import math
 
-MAX_TIMEOUT = 12 * 60 * 60  # 12 hours
+MAX_TIMEOUT = 2 * 60 * 60  # 2 hours
+
+headers = {'User-Agent': f'mtdata downloader {__version__}; cURL and wget like.'}
 
 
 @dataclass
@@ -45,20 +49,20 @@ class Cache:
         return local
 
     def get_local_in_paths(self, entry: Entry, fix_missing=True):
-        if entry.in_ext == 'opus_xces':     # this is special case
+        if entry.in_ext == 'opus_xces':  # this is special case
             l1_url, l2_url = entry.in_paths
             align_file = self.get_local_path(entry.url, fix_missing=fix_missing)
             l1_path = self.get_local_path(l1_url, fix_missing=True)
             l2_path = self.get_local_path(l2_url, fix_missing=True)
-            #l1_dir = self._get_extracted_path(l1_url, ext='', fix_missing=fix_missing)
-            #l2_dir = self._get_extracted_path(l2_url, ext='', fix_missing=fix_missing)
-            #return [align_file, l1_dir, l2_dir]
+            # l1_dir = self._get_extracted_path(l1_url, ext='', fix_missing=fix_missing)
+            # l2_dir = self._get_extracted_path(l2_url, ext='', fix_missing=fix_missing)
+            # return [align_file, l1_dir, l2_dir]
             return [align_file, l1_path, l2_path]
 
         x_dir = self.get_extracted_path(entry, fix_missing=fix_missing)
         local_x_path = []
         for p in entry.in_paths:
-            if '*' in p: # glob
+            if '*' in p:  # glob
                 paths = list(x_dir.glob(p))
                 if not paths:
                     raise Exception(f"{entry} with in path {p} did not find a match")
@@ -96,11 +100,19 @@ class Cache:
             # check if downloaded by  other parallel process
             if valid_flag.exists() and save_at.exists():
                 return save_at
-            log.info(f"Got the lock. Downloading {url} --> {save_at}")
-            out_file = wget.download(url, out=str(save_at))
-            log.info(" Done.")
-            assert Path(out_file).resolve() == save_at.resolve()  # saved where we asked it to save
-
+            log.info(f"Downloading {url} --> {save_at}")
+            resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True)
+            assert resp.status_code == 200, resp.status_code
+            buf_size = 2 ** 10
+            n_buffers = math.ceil(int(resp.headers.get('Content-Length', '0')) / buf_size) or None
+            desc = url
+            if len(desc) > 40:
+                desc = desc[:30] + '...' + desc[-10:]
+            with pbar_man.counter(color='green', total=n_buffers, unit='KiB', leave=True,
+                                  desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
+                for chunk in resp.iter_content(chunk_size=buf_size):
+                    out.write(chunk)
+                    pbar.update()
             valid_flag.touch()
             return save_at
 
@@ -128,7 +140,6 @@ class Cache:
                     zip.extractall(path=x_dir)
             else:
                 raise Exception(f'"{ext}" type extraction not supported')
-
             valid_file.touch()
 
 

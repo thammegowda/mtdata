@@ -4,7 +4,7 @@
 # Created: 4/5/20
 
 from pathlib import Path
-from mtdata import log
+from mtdata import log, pbar_man
 from mtdata.cache import Cache
 from mtdata.index import INDEX, Entry, DatasetId, LangPair
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
@@ -77,7 +77,7 @@ class Dataset:
     def add_train_entries(self, entries, merge_train=False, compress=False):
 
         self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise,
-                       compress=compress)
+                       compress=compress, desc='Training sets')
         if not merge_train:
             return
         # merge
@@ -141,7 +141,7 @@ class Dataset:
                 yield seg1.strip(), seg2.strip()
 
     def add_test_entries(self, entries):
-        self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise)
+        self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise, desc='Held-out sets')
         if len(entries) <= 4:
             for i, entry in enumerate(entries, start=1):
                 self.link_to_part(entry, self.tests_dir, f"test{i}")
@@ -171,11 +171,14 @@ class Dataset:
         # create a link
         self.link_to_part(entry, self.tests_dir, "dev")
 
-    def add_parts(self, dir_path, entries, drop_noise=False, compress=False):
-        for ent in entries:
-            n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
-                                          compress=compress)
-            log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
+    def add_parts(self, dir_path, entries, drop_noise=False, compress=False, desc=None):
+        with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
+                              autorefresh=True) as pbar:
+            for ent in entries:
+                n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
+                                              compress=compress)
+                log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
+                pbar.update(force=True)
 
     @classmethod
     def get_paths(cls, dir_path: Path, entry: Entry, compress=False) -> Tuple[Path, Path]:

@@ -46,6 +46,8 @@ setup(
     },
     install_requires=[
         'wget==3.2',
+        'requests==2.26.0',
+        'enlighten==1.10.1',
         'portalocker==2.3.0',
         'pybtex==0.24.0'
     ],
