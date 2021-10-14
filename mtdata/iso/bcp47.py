@@ -60,6 +60,11 @@ class BCP47Tag(namedtuple('BCP47Tag', ('lang', 'script', 'region', 'tag'))):
             return True
         return False
 
+    @classmethod
+    def are_compatible(cls, tag1, tag2):
+        tag1 = tag1 if isinstance(tag1, cls) else bcp47(tag1)
+        return tag1.is_compatible(tag2)
+
 
 class BCP47Parser:
 

@@ -7,7 +7,7 @@ from pathlib import Path
 from mtdata import log
 from mtdata.cache import Cache
 from mtdata.index import INDEX, Entry, DatasetId, LangPair
-from mtdata.iso.bcp47 import bcp47
+from mtdata.iso.bcp47 import bcp47, BCP47Tag
 from mtdata.parser import Parser
 from mtdata.utils import IO
 from typing import Optional, List, Tuple
@@ -46,7 +46,7 @@ class Dataset:
 
     @classmethod
     def prepare(cls, langs, train_dids: Optional[List[DatasetId]], test_dids: Optional[List[DatasetId]],
-                out_dir: Path, cache_dir: Path, merge_train=False,
+                dev_did: Optional[DatasetId], out_dir: Path, cache_dir: Path, merge_train=False,
                 drop_noise: Tuple[bool, bool] = (True, False)):
         drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
@@ -63,6 +63,9 @@ class Dataset:
                       drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise)
         if test_entries:  # tests are smaller so quicker; no merging needed
             dataset.add_test_entries(test_entries)
+        if dev_did:
+            dev_entry = cls.resolve_entries([dev_did])[0]
+            dataset.add_dev_entry(dev_entry)
 
         if train_entries:  # this might take some time
             dataset.add_train_entries(train_entries, merge_train=merge_train)
@@ -125,11 +128,45 @@ class Dataset:
 
     def add_test_entries(self, entries):
         self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise)
+        if len(entries) <= 4:
+            for i, entry in enumerate(entries, start=1):
+                self.link_to_part(entry, self.tests_dir, f"test{i}")
+
+    def link_to_part(self, entry, data_dir, link_name):
+        """Create link such as test, dev"""
+        l1_path, l2_path = self.get_paths(data_dir, entry)
+        l1_path, l2_path = l1_path.relative_to(self.dir), l2_path.relative_to(self.dir)
+        l1_link = self.dir / f'{link_name}.{self.langs[0]}'
+        l2_link = self.dir / f'{link_name}.{self.langs[1]}'
+        for lnk in [l1_link, l2_link]:
+            lnk.unlink(missing_ok=True)
+        if BCP47Tag.are_compatible(self.langs[0], entry.did.langs[0]):
+            assert not BCP47Tag.are_compatible(self.langs[0], entry.did.langs[1])
+            # cool! no swapping needed
+        elif BCP47Tag.are_compatible(self.langs[0], entry.did.langs[1]):
+            l1_path, l2_path = l2_path, l1_path  # swapped
+        else:
+            raise Exception("This should not be happening! :(")
+
+        l1_link.symlink_to(l1_path)
+        l2_link.symlink_to(l2_path)
+
+    def add_dev_entry(self, entry):
+        n_good, n_bad = self.add_part(self.tests_dir, entry, drop_noise=self.drop_test_noise)
+        log.info(f"{entry.did} : found {n_good:} segments and {n_bad:} errors")
+        # create a link
+        self.link_to_part(entry, self.tests_dir, "dev")
 
     def add_parts(self, dir_path, entries, drop_noise=False):
         for ent in entries:
             n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise)
             log.info(f"{ent.did} : found {n_good:} segments and {n_bad:} errors")
+
+    @classmethod
+    def get_paths(cls, dir_path: Path, entry: Entry) -> Tuple[Path, Path]:
+        l1 = (dir_path / f'{entry.did}').with_suffix(f'.{entry.did.langs[0]}')
+        l2 = (dir_path / f'{entry.did}').with_suffix(f'.{entry.did.langs[1]}')
+        return l1, l2
 
     def add_part(self, dir_path: Path, entry: Entry, drop_noise=False):
         path = self.cache.get_entry(entry)
@@ -137,8 +174,7 @@ class Dataset:
         parser = Parser(path, langs=self.langs, ext=entry.in_ext or None, ent=entry)
         # langs = '_'.join(str(lang) for lang in self.langs)
         # Check that files are written in correct order
-        l1 = (dir_path / f'{entry.did}').with_suffix(f'.{entry.did.langs[0]}')
-        l2 = (dir_path / f'{entry.did}').with_suffix(f'.{entry.did.langs[1]}')
+        l1, l2 = self.get_paths(dir_path, entry)
         mode = dict(mode='w', encoding='utf-8', errors='ignore')
         with l1.open(**mode) as f1, l2.open(**mode) as f2:
             count, skips, noise = 0, 0, 0

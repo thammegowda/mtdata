@@ -28,9 +28,9 @@ def list_data(langs, names, not_names=None, full=False):
 def get_data(args):
     from mtdata.data import Dataset
     assert args.train_dids or args.test_dids, 'Required --train or --test or both'
-    dataset = Dataset.prepare(args.langs, train_dids=args.train_dids,
-                              test_dids=args.test_dids, out_dir=args.out,
-                              cache_dir=CACHE_DIR, merge_train=args.merge)
+    dataset = Dataset.prepare(
+        args.langs, train_dids=args.train_dids, test_dids=args.test_dids, out_dir=args.out,
+        dev_did = args.dev_did, cache_dir=CACHE_DIR, merge_train=args.merge)
     cli_sig = f'-l {"-".join(str(l) for l in args.langs)}'
     cli_sig += f' -tr {" ".join(str(d)for d in args.train_dids)}' if args.train_dids else ''
     cli_sig += f' -ts {" ".join(str(d) for d in args.test_dids)}' if args.test_dids else ''
@@ -145,13 +145,16 @@ def parse_args():
                        required=True)
     get_p.add_argument('-tr', '--train', metavar='ID', dest='train_dids', nargs='*', type=dataset_id,
                        help='''R|Names of datasets separated by space, to be used for *training*.
-    e.g. -tr news_commentary_v14 europarl_v9 .
+    e.g. -tr Statmt-news_commentary-16-deu-eng europarl_v9 .
      To concatenate all these into a single train file, set --merge flag.''')
     get_p.add_argument('-ts', '--test', metavar='ID', dest='test_dids', nargs='*', type=dataset_id,
                        help='''R|Names of datasets separated by space, to be used for *testing*. 
-    e.g. "-tt newstest2018_deen newstest2019_deen".
+    e.g. "-ts Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng ".
     You may also use shell expansion if your shell supports it.
-    e.g. "-tt newstest201{8,9}_deen." ''')
+    e.g. "-ts Statmt-newstest_deen-20{19,20}-deu-eng" ''')
+    get_p.add_argument('-dev', '--dev', metavar='ID', dest='dev_did', type=dataset_id, required=False,
+                       help='''R|Dataset to be used for development (aka validation). 
+    e.g. "-dev Statmt-newstest_deen-2017-deu-eng"''')
     add_boolean_arg(get_p, 'merge', default=False, help='Merge train into a single file')
 
     get_p.add_argument('-o', '--out', type=Path, required=True, help='Output directory name')
