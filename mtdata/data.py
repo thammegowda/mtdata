@@ -4,7 +4,7 @@
 # Created: 4/5/20
 
 from pathlib import Path
-from mtdata import log, pbar_man
+from mtdata import log, pbar_man, cache_dir as CACHE_DIR
 from mtdata.cache import Cache
 from mtdata.index import INDEX, Entry, DatasetId, LangPair
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
@@ -47,9 +47,10 @@ class Dataset:
         return entries
 
     @classmethod
-    def prepare(cls, langs, train_dids: Optional[List[DatasetId]], test_dids: Optional[List[DatasetId]],
-                dev_did: Optional[DatasetId], out_dir: Path, cache_dir: Path, merge_train=False,
-                drop_noise: Tuple[bool, bool] = (True, False), compress=False):
+    def prepare(cls, langs, out_dir: Path, train_dids: Optional[List[DatasetId]] = None,
+                test_dids: Optional[List[DatasetId]] = None, dev_did: Optional[DatasetId] = None,
+                cache_dir: Path = CACHE_DIR, merge_train=False, drop_noise: Tuple[bool, bool] = (True, False),
+                compress=False):
         drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
         assert train_dids or test_dids, 'Either train_names or test_names should be given'
@@ -89,13 +90,13 @@ class Dataset:
             if path.name.startswith("."):
                 continue
             parts = path.name.split(".")
-            assert len(parts) >= 2,  f'Invalid file name {path.name}; Unable to merge parts'
+            assert len(parts) >= 2, f'Invalid file name {path.name}; Unable to merge parts'
             if compress:
                 assert parts[-1] == DEF_COMPRESS, f'compression {DEF_COMPRESS} expected but not found {parts[-1]}'
                 parts = parts[:-1]
-            *did, ext = parts    # did can have a dot e.g. version 7.1
+            *did, ext = parts  # did can have a dot e.g. version 7.1
             did = '.'.join(did)
-            #dids, ext = parts[:2]
+            # dids, ext = parts[:2]
             ext = bcp47(ext)
             if did not in paired_files:
                 paired_files[did] = [None, None]
@@ -194,7 +195,7 @@ class Dataset:
     def add_part(self, dir_path: Path, entry: Entry, drop_noise=False, compress=False):
         path = self.cache.get_entry(entry)
         #swap = entry.is_swap(self.langs)
-        parser = Parser(path, langs=self.langs, ext=entry.in_ext or None, ent=entry)
+        parser = Parser(path, ext=entry.in_ext or None, ent=entry)
         # langs = '_'.join(str(lang) for lang in self.langs)
         # Check that files are written in correct order
         l1, l2 = self.get_paths(dir_path, entry, compress=compress)

@@ -2,7 +2,12 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 5/13/20
+import io
 import gzip
+import tarfile
+import zipfile
+from dataclasses import dataclass
+
 from mtdata import log
 import shutil
 from datetime import datetime
@@ -13,16 +18,28 @@ class IO:
     """File opener and automatic closer
     Copied from my other project https://github.com/isi-nlp/rtg/blob/master/rtg/utils.py
     """
-    def __init__(self, path, mode='r', encoding=None, errors=None):
+    def __init__(self, path, mode='r', encoding=None, errors=None, smart_ext=True):
+        """
 
-        if hasattr(path, 'write'):
+        Parameters
+        ----------
+        path: path or pathlke object
+        mode: reader
+        encoding
+        errors
+        smart_ext : enable compression when extension .xz or .gz are detected
+        """
+        self.smart_ext = smart_ext
+        if hasattr(path, 'write') or hasattr(path, 'read'):
             self.path = None
             self.fd = path
+        if hasattr(path, 'open'):  # pathlib.Path and zipfile.Path has open
+            self.fd = None
+            self.path = path
         else:
             self.fd = None
-            self.path = path if type(path) is Path else Path(path)
+            self.path = Path(path)
         self.mode = mode
-
         self.encoding = encoding or 'utf-8' if 't' in mode else None
         self.errors = errors or 'replace'
 
@@ -31,17 +48,16 @@ class IO:
             # already opened
             return self.fd
 
-        if self.path.name.endswith(".gz"):   # gzip mode
+        if self.smart_ext and self.path.name.endswith(".gz"):   # gzip mode
             self.fd = gzip.open(self.path, self.mode, encoding=self.encoding, errors=self.errors)
-        elif self.path.name.endswith(".xz"):
+        elif self.smart_ext and self.path.name.endswith(".xz"):
             import lzma
             self.fd = lzma.open(self.path, self.mode, encoding=self.encoding, errors=self.errors)
         else:
             if 'b' in self.mode:  # binary mode doesnt take encoding or errors
                 self.fd = self.path.open(self.mode)
             else:
-                self.fd = self.path.open(self.mode, encoding=self.encoding, errors=self.errors,
-                                         newline='\n')
+                self.fd = self.path.open(self.mode, encoding=self.encoding, errors=self.errors, newline='\n')
         return self.fd
 
     def __exit__(self, _type, value, traceback):
@@ -60,7 +76,7 @@ class IO:
     def get_lines(cls, path, col=0, delim='\t', line_mapper=None, newline_fix=True):
         with cls.reader(path) as inp:
             if newline_fix and delim != '\r':
-                inp = (line.replace('\r', '') for line in inp)
+                inp = (line.replace(b'\r', b'') for line in inp)
             if col >= 0:
                 inp = (line.split(delim)[col].strip() for line in inp)
             if line_mapper:
@@ -95,3 +111,68 @@ class IO:
             dest = file.with_suffix(f'.{time}')
             log.info(f"Backup {file} → {dest}")
             file.rename(dest)
+
+
+@dataclass
+class ArchivedPath:
+
+    root: Path
+    name: str
+    fd = None
+
+    def __post_init__(self):
+        assert self.root.exists()
+        assert self.name
+
+    def open(self, mode='r', **kwargs):
+        raise NotImplemented
+
+
+@dataclass
+class ZipPath (ArchivedPath):
+    # there is a bug in stdlib's zipfile.Path https://bugs.python.org/issue40564, so this is a workaround
+
+    def __post_init__(self):
+        assert zipfile.is_zipfile(self.root)
+
+    def exists(self):
+        with zipfile.ZipFile(self.root) as root:
+            return zipfile.Path(root, at=self.name).exists()
+
+    def open(self, mode='r', **kwargs):
+        assert mode in ('r', 'rt'), f'only "r" is supported, given: {mode}'
+        log.debug(f"Reading from zip file : {self.root} // {self.name}")
+        container = zipfile.ZipFile(self.root, mode='r')
+        stream = container.open(self.name, 'r')
+        reader = io.TextIOWrapper(stream, **kwargs)
+        reader_close = reader.close  # original close
+
+        def close(*args, **kwargs):
+            reader_close()
+            stream.close()
+            container.close()
+        reader.close = close   # hijack
+        return reader
+
+
+@dataclass
+class TarPath(ArchivedPath):
+
+    def exists(self):
+        with tarfile.open(self.root, encoding='utf-8') as root:
+            return self.name in root.getnames()
+
+    def open(self, mode='r', **kwargs):
+        assert mode in ('r', 'rt'), f'only "r" is supported, given: {mode}'
+        log.info(f"Reading from tar file : {self.root} // {self.name}")
+        container = tarfile.open(self.root, mode='r', encoding='utf-8')
+        stream = container.extractfile(self.name)
+        reader = io.TextIOWrapper(stream, **kwargs)
+        reader_close = reader.close   # original close
+
+        def close(*args, **kwargs):
+            reader_close()
+            stream.close()
+            container.close()
+        reader.close = close   # hijack
+        return reader
