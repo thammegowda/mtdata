@@ -328,7 +328,13 @@ python -m mtdata.iso.bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin
 |kan-in	|kan_IN	|kan	|None	|IN
 |kn-knda-in	|kan_IN	|kan	|None	|IN
 
-
+**Python API for BCP47 Mapping**
+```python
+from mtdata.iso.bcp47 import bcp47
+tag = bcp47("en_US")
+print(*tag)  # tag is a tuple
+print(f"{tag}")  # str(tag) gets standardized string
+```
 
 ## How Contribute:
 * Please help grow the datasets by adding any missing and new datasets to [`index`](mtdata/index/__init__.py) module.
