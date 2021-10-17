@@ -137,7 +137,8 @@ class ZipPath (ArchivedPath):
 
     def exists(self):
         with zipfile.ZipFile(self.root) as root:
-            return zipfile.Path(root, at=self.name).exists()
+            #  zipfile.Path is available in 3.8+
+            return self.name in root.namelist()
 
     def open(self, mode='r', **kwargs):
         assert mode in ('r', 'rt'), f'only "r" is supported, given: {mode}'
