@@ -201,8 +201,10 @@ Get these datasets and store under dir `deu-eng`
 To reproduce this dataset again in the future or by others, please refer to `<out-dir>>/mtdata.signature.txt`:
 ```bash
 $ cat deu-eng/mtdata.signature.txt
-mtdat get -l deu-eng -tr europarl_v10 wmt13_commoncrawl news_commentary_v14 -ts newstest2014_deen newstest2015_deen newstest2016_deen newstest2017_deen newstest2018_deen newstest2019_deen -o <out-dir>
-mtdata version 0.1.1
+mtdata get -l deu-eng -tr Statmt-europarl-10-deu-eng Statmt-news_commentary-16-deu-eng \
+   -ts Statmt-newstest_deen-2018-deu-eng Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng \
+   -dev Statmt-newstest_deen-2017-deu-eng --merge -o <out-dir>
+mtdata version 0.3.0-dev
 ```
 
 See what the above command has accomplished:
