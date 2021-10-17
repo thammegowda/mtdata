@@ -54,7 +54,7 @@ def generate_report(langs, names, not_names=None, format='plain'):
     name_stats = defaultdict(int)
     group_stats = defaultdict(int)
     for ent in entries:
-        lang_stats['_'.join(ent.did.langs)] += 1
+        lang_stats[ent.lang_str] += 1
         name_stats[ent.did.name] += 1
         group_stats[ent.did.group] += 1
 

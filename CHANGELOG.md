@@ -21,7 +21,7 @@
 - Force unicode encoding; make it work on windows (Issue #71)
 - JW300 -> JW300_v1 (tokenized); Added JW300_v1c (raw)  (Issue #70)
 - Add all Wikititle datasets from lingual tool (Issue #63) 
-- progressbar : 1englighten` is used
+- progressbar : `englighten` is used
 - `wget` is replaced with `requests`. _User-Agent_ header along with mtdata version is sent in HTTP request headers
 - Paracrawl v9 added
 

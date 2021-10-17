@@ -2,6 +2,7 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
+import collections
 import pickle
 from pathlib import Path
 from typing import List, Dict
@@ -57,8 +58,6 @@ class Index:
             statmt, paracrawl, tilde, joshua_indian, unitednations, wikimatrix, other, neulab_tedtalks,
             elrc_share, ai4bharat, eu, linguatools)
         from mtdata.index.opus import opus_index, jw300, opus100
-
-        counts = {}
         subsets = [
             ('Statmt.org', statmt.load),
             ('Paracrawl', paracrawl.load),
@@ -77,13 +76,15 @@ class Index:
             ('LinguaTools', linguatools.load_all)
         ]
         for name, loader in subsets:
-            n = len(self)
             loader(self)
-            counts[name] = len(self) - n
+
+        counts = collections.defaultdict(int)
+        for e in self.entries.values():
+            counts[e.did.group] += 1
         items = list(sorted(counts.items(), key=lambda x: x[1], reverse=True))
         items += [('Total', len(self))]
-        counts = '  '.join([f'{n}:{c:,}' for n, c in items])
-        log.info(f"Index status: {counts}")
+        counts = '\n'.join([f'| {n} | {c:,}|' for n, c in items])
+        log.info(f"Index status:\n{counts}")
 
     @property
     def n_entries(self) -> int:
