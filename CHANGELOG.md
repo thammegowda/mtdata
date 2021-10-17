@@ -23,6 +23,7 @@
 - Add all Wikititle datasets from lingual tool (Issue #63) 
 - progressbar : 1englighten` is used
 - `wget` is replaced with `requests`. _User-Agent_ header along with mtdata version is sent in HTTP request headers
+- Paracrawl v9 added
 
 ---
 ## v0.2.10 - 20210503 

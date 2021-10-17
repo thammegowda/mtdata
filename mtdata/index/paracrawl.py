@@ -9,7 +9,7 @@ from mtdata.index import Entry, Index, DatasetId
 def load(index: Index):
     cite = index.ref_db.get_bibtex('espla-etal-2019-paracrawl')
     cite += '\n' + index.ref_db.get_bibtex('banon-etal-2020-paracrawl')
-    group_id = 'Paracrawl'
+    group_id = 'ParaCrawl'
     # === Para crawl corpus
     PARACRAWL_v3 = 'https://s3.amazonaws.com/web-language-models/paracrawl/release3/%s-%s.bicleaner07.tmx.gz'
     for pair in ['en cs', 'en de', 'en fi', 'en lt']:
@@ -63,8 +63,22 @@ def load(index: Index):
                     url=url, cite=cite, ext='tsv.gz')
         index.add_entry(ent)
 
+    PARACRAWL_V9 = 'https://s3.amazonaws.com/web-language-models/paracrawl/release9/{l1}-{l2}/{l1}-{l2}.txt.gz'
+    for pair in ('en-bg en-cs en-da en-de en-el en-es en-et en-fi en-fr en-ga en-hr en-hu en-is en-it en-lt en-lv'
+                 ' en-mt en-nb en-nl en-nn en-pl en-pt en-ro en-sk en-sl en-sv es-ca es-eu es-gl').split():
+        l1, l2 = pair.split('-')
+        url = PARACRAWL_V9.format(l1=l1, l2=l2)
+        ent = Entry(did=DatasetId(group=group_id, name=f'paracrawl', version='9', langs=(l1, l2)),
+                    url=url, cite=cite, ext='tsv.gz')
+        index.add_entry(ent)
+    # this is a new addition in Sept 2021
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name=f'paracrawl', version='1_bonus', langs=('en', 'zh')),
+        url='http://web-language-models.s3-website-us-east-1.amazonaws.com/paracrawl/bonus/en-zh-v1.txt.gz',
+        cite=cite, ext='tsv.gz'))
+
     # Japanese-English paracrawl (5.1) used by WMT20 and WMT21
-    ent = Entry(did=DatasetId(group='kecl', name=f'jparacrawl', version='2.0', langs=('eng', 'jpn')),
+    ent = Entry(did=DatasetId(group='KECL', name=f'paracrawl', version='2', langs=('eng', 'jpn')),
                 in_paths=['en-ja/en-ja.bicleaner05.txt'], in_ext='tsv', cols=(2, 3), cite='',
                 url='http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/2.0/bitext/en-ja.tar.gz')
     index.add_entry(ent)
