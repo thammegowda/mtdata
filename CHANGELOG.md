@@ -1,16 +1,28 @@
 # Change Log
 
-## v0.2.11-dev - WIP
+## v0.3.0 - WIP
+
+> Big Changes: BCP-47, data compression 
+
+- BCP47: (Language, Script, Region)
+  - Our implementation is strictly not BCP-47. We differ on the following
+    - We use ISO 639-3 codes (i.e three letters) for all languages, where as BCP47 uses two letters for some (e.g. `en`) and three letters for many.
+    - We use `_` (underscore)  to join language, script, region whereas BCP-47 uses `-` (hyphen)
+- Dataset IDs (aka `did` in short) are standardized `<group>-<name>-<version>-<lang1>-<lang2>`
+  - `<group>` can have mixed case, `<name>` has to be lowercase
+- CLI interface now accept `did`s. 
+
+- `mtdata get --dev <did>` now accepts a single dataset ID; creates `dev.{xxx,yyy}` links at the root of out dir
+- `mtdata get --test <did1> ... <did3>` creates `test{1..4}.{xxx,yyy}` links at the root of out dir  
+- `--compress` option to store compressed datasets under output dir
+- `zip` and `tar` files are no longer extracted. we read directly from compressed files without extracting them
+- `._lock` files are removed after download job is done
 - Add JESC, jpn paracrawl, news commentary 15 and 16
 - Force unicode encoding; make it work on windows (Issue #71)
 - JW300 -> JW300_v1 (tokenized); Added JW300_v1c (raw)  (Issue #70)
 - Add all Wikititle datasets from lingual tool (Issue #63) 
 - progressbar : 1englighten` is used
 - `wget` is replaced with `requests`. _User-Agent_ header along with mtdata version is sent in HTTP request headers
-- `--compress` option to store compressed datasets under output dir
-- `zip` and `tar` files are no longer extracted. we read directly from compressed files without extracting them
-- `._lock` files are removed after download job is done
-
 
 ---
 ## v0.2.10 - 20210503 
