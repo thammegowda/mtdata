@@ -56,7 +56,7 @@ We have added some commonly used datasets - you are welcome to add more!
 | ParaCrawl | 126|
 | AI4Bharath | 66|
 | Lindat | 56|
-| UN<sup>$2</sup> | 30|
+| UN<sup>$3</sup> | 30|
 | JoshuaDec | 29|
 | Phontron | 4|
 | NRC_CA | 4|
@@ -66,7 +66,6 @@ We have added some commonly used datasets - you are welcome to add more!
 | KECL | 1|
 | ----|----|
 | Total | 182.5K|
-
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format. It has two versions: `v1` (tokenized) and `v1c` (raw)
@@ -125,7 +124,17 @@ mtdata list -n europarl news_commentary
 mtdata list -l deu-eng -n newstest_deen --full
 ```
 
-## `mtdata get`
+### Dataset ID
+Dataset IDs are standardized to this format:  
+`<Group>-<name>-<version>-<lang1>-<lang2>`
+
+* `Group`: source or the website where we are obtaining this dataset
+* `name`: name of the dataset
+* `version`: version name
+* `lang1` and `lang2` are BCP47-like codes. In simple case, they are ISO-639-3 codes, however, they might have script and language tags separated by underscores (`_`). 
+
+
+### `mtdata get`
 This command downloads datasets specified by names for languages to a directory.
 You will have to make definite choice for `--train` and `--test` arguments 
 
@@ -156,7 +165,7 @@ optional arguments:
                         Output directory name (default: None)
 ```
 
-# Example  
+## Quickstart / Example  
 See what datasets are available for `deu-eng`
 ```bash
 $ mtdata list -l deu-eng | cut -f1  # see available datasets
@@ -228,8 +237,8 @@ $ tree  data/deu-eng/
 └── train.stats.json
 ```
 
-# Language Name Standardization
-## ISO 639 3 
+## Language Name Standardization
+### ISO 639 3 
 Internally, all language codes are mapped to ISO-639 3 codes.
 The mapping can be inspected with `python -m mtdata.iso ` or `mtdata-iso`
 ```bash
@@ -274,7 +283,7 @@ print(iso3_code('en', fail_error=True))
 print(iso3_code('eNgLIsH', fail_error=True))  # case doesnt matter
 ```
 
-## BCP-47 
+### BCP-47 
 We used ISO 639-3 from the beginning, however, we soon faced the limitation that ISO 639-3 cannot distinguish script and region variants of language. So we have upgraded to BCP-47 like language tags in `v0.3.0`.
 
 * BCP47 uses two-letter codes to some and three-letter codes to the rest, we use three-letter codes to all languages.
@@ -296,7 +305,7 @@ Notes:
 ** The information about whats default script is obtained from IANA language code registry 
 
   
-### Example:
+#### Example:
 To inspect parsing/mapping, use `python -m mtdata.iso.bcp47 <args>` 
 
 ```bash
@@ -319,7 +328,7 @@ python -m mtdata.iso.bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin
 
 
 
-# How Contribute:
+## How Contribute:
 * Please help grow the datasets by adding any missing and new datasets to [`index`](mtdata/index/__init__.py) module.
 * Please create issues and/or pull requests at https://github.com/thammegowda/mtdata/ 
 
@@ -373,7 +382,7 @@ https://aclanthology.org/2021.acl-demo.37/
 ```
 
 --- 
-# Disclaimer on Datasets
+## Disclaimer on Datasets
 
 This tools downloads and prepares public datasets. We do not host or distribute these datasets, vouch for their quality or fairness, or make any claims regarding license to use these datasets. It is your responsibility to determine whether you have permission to use the dataset under the dataset's license.
 We request all the users of this tool to cite the original creators of the datsets, which maybe obtained from  `mtdata list -n <NAME> -l <L1-L2> -full`.
