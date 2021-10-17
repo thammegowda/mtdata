@@ -4,7 +4,7 @@
 # Created: 4/5/20
 
 from pathlib import Path
-from mtdata import log
+from mtdata import log, pbar_man, cache_dir as CACHE_DIR
 from mtdata.cache import Cache
 from mtdata.index import INDEX, Entry, DatasetId, LangPair
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
@@ -14,6 +14,8 @@ from typing import Optional, List, Tuple
 from itertools import zip_longest
 import collections as coll
 import json
+
+DEF_COMPRESS = 'gz'
 
 
 class Dataset:
@@ -45,9 +47,10 @@ class Dataset:
         return entries
 
     @classmethod
-    def prepare(cls, langs, train_dids: Optional[List[DatasetId]], test_dids: Optional[List[DatasetId]],
-                dev_did: Optional[DatasetId], out_dir: Path, cache_dir: Path, merge_train=False,
-                drop_noise: Tuple[bool, bool] = (True, False)):
+    def prepare(cls, langs, out_dir: Path, train_dids: Optional[List[DatasetId]] = None,
+                test_dids: Optional[List[DatasetId]] = None, dev_did: Optional[DatasetId] = None,
+                cache_dir: Path = CACHE_DIR, merge_train=False, drop_noise: Tuple[bool, bool] = (True, False),
+                compress=False):
         drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
         assert train_dids or test_dids, 'Either train_names or test_names should be given'
@@ -68,11 +71,14 @@ class Dataset:
             dataset.add_dev_entry(dev_entry)
 
         if train_entries:  # this might take some time
-            dataset.add_train_entries(train_entries, merge_train=merge_train)
+            dataset.add_train_entries(train_entries, merge_train=merge_train, compress=compress)
+
         return dataset
 
-    def add_train_entries(self, entries, merge_train=False):
-        self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise)
+    def add_train_entries(self, entries, merge_train=False, compress=False):
+
+        self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise,
+                       compress=compress, desc='Training sets')
         if not merge_train:
             return
         # merge
@@ -84,8 +90,13 @@ class Dataset:
             if path.name.startswith("."):
                 continue
             parts = path.name.split(".")
-            assert len(parts) == 2, f'Invalid file name {path.name}; Unable to merge parts'
-            did, ext = path.name.split(".")
+            assert len(parts) >= 2, f'Invalid file name {path.name}; Unable to merge parts'
+            if compress:
+                assert parts[-1] == DEF_COMPRESS, f'compression {DEF_COMPRESS} expected but not found {parts[-1]}'
+                parts = parts[:-1]
+            *did, ext = parts  # did can have a dot e.g. version 7.1
+            did = '.'.join(did)
+            # dids, ext = parts[:2]
             ext = bcp47(ext)
             if did not in paired_files:
                 paired_files[did] = [None, None]
@@ -101,9 +112,13 @@ class Dataset:
 
         log.info(f"Going to merge {len(paired_files)} files as one train file")
         counts = coll.defaultdict(int)
-        of1 = self.dir / f'train.{lang1}'
-        of2 = self.dir / f'train.{lang2}'
-        of3 = self.dir / f'train.meta.gz'
+        compress_ext = f'.{DEF_COMPRESS}' if compress else ''
+        l1_ext = f'{lang1}{compress_ext}'
+        l2_ext = f'{lang2}{compress_ext}'
+        of1 = self.dir / f'train.{l1_ext}'
+        of2 = self.dir / f'train.{l2_ext}'
+        of3 = self.dir / f'train.meta.{DEF_COMPRESS}'
+
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
             for name, (if1, if2) in paired_files.items():
                 for seg1, seg2 in self.read_parallel(if1, if2):
@@ -127,7 +142,7 @@ class Dataset:
                 yield seg1.strip(), seg2.strip()
 
     def add_test_entries(self, entries):
-        self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise)
+        self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise, desc='Held-out sets')
         if len(entries) <= 4:
             for i, entry in enumerate(entries, start=1):
                 self.link_to_part(entry, self.tests_dir, f"test{i}")
@@ -157,26 +172,35 @@ class Dataset:
         # create a link
         self.link_to_part(entry, self.tests_dir, "dev")
 
-    def add_parts(self, dir_path, entries, drop_noise=False):
-        for ent in entries:
-            n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise)
-            log.info(f"{ent.did} : found {n_good:} segments and {n_bad:} errors")
+    def add_parts(self, dir_path, entries, drop_noise=False, compress=False, desc=None):
+        with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
+                              autorefresh=True) as pbar:
+            for ent in entries:
+                n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
+                                              compress=compress)
+                log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
+                pbar.update(force=True)
 
     @classmethod
-    def get_paths(cls, dir_path: Path, entry: Entry) -> Tuple[Path, Path]:
-        l1 = (dir_path / f'{entry.did}').with_suffix(f'.{entry.did.langs[0]}')
-        l2 = (dir_path / f'{entry.did}').with_suffix(f'.{entry.did.langs[1]}')
+    def get_paths(cls, dir_path: Path, entry: Entry, compress=False) -> Tuple[Path, Path]:
+        l1_ext = str(entry.did.langs[0])
+        l2_ext = str(entry.did.langs[1])
+        if compress:
+            l1_ext += f'.{DEF_COMPRESS}'
+            l2_ext += f'.{DEF_COMPRESS}'
+        l1 = dir_path / f'{entry.did}.{l1_ext}'
+        l2 = dir_path / f'{entry.did}.{l2_ext}'
         return l1, l2
 
-    def add_part(self, dir_path: Path, entry: Entry, drop_noise=False):
+    def add_part(self, dir_path: Path, entry: Entry, drop_noise=False, compress=False):
         path = self.cache.get_entry(entry)
         #swap = entry.is_swap(self.langs)
-        parser = Parser(path, langs=self.langs, ext=entry.in_ext or None, ent=entry)
+        parser = Parser(path, ext=entry.in_ext or None, ent=entry)
         # langs = '_'.join(str(lang) for lang in self.langs)
         # Check that files are written in correct order
-        l1, l2 = self.get_paths(dir_path, entry)
-        mode = dict(mode='w', encoding='utf-8', errors='ignore')
-        with l1.open(**mode) as f1, l2.open(**mode) as f2:
+        l1, l2 = self.get_paths(dir_path, entry, compress=compress)
+        io_args = dict(encoding='utf-8', errors='ignore')
+        with IO.writer(l1, **io_args) as f1, IO.writer(l2, **io_args) as f2:
             count, skips, noise = 0, 0, 0
             for rec in parser.read_segs():
                 rec = rec[:2]  # get the first two recs
@@ -206,3 +230,11 @@ class Dataset:
                 log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100 * noise / count:.4f}%")
             log.info(f"wrote {count} lines to {l1} == {l2}")
         return count, skips
+
+
+def rreplace(text: str, cut: str, place: str):
+    """ right replace: https://stackoverflow.com/a/9943875/1506477
+        >>> 'XXX'.join('mississippi'.rsplit('iss', 1))
+        'missXXXippi'
+    """
+    return place.join(text.split(cut, 1))

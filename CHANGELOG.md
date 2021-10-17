@@ -5,7 +5,12 @@
 - Force unicode encoding; make it work on windows (Issue #71)
 - JW300 -> JW300_v1 (tokenized); Added JW300_v1c (raw)  (Issue #70)
 - Add all Wikititle datasets from lingual tool (Issue #63) 
--
+- progressbar : 1englighten` is used
+- `wget` is replaced with `requests`. _User-Agent_ header along with mtdata version is sent in HTTP request headers
+- `--compress` option to store compressed datasets under output dir
+- `zip` and `tar` files are no longer extracted. we read directly from compressed files without extracting them
+- `._lock` files are removed after download job is done
+
 
 ---
 ## v0.2.10 - 20210503 

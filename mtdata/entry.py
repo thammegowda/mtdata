@@ -5,9 +5,9 @@
 
 from typing import Tuple, List, Optional, Set, Union
 from dataclasses import dataclass, field
-from mtdata.parser import detect_extension
 from mtdata.iso.bcp47 import BCP47Tag, bcp47
 
+DID_DELIM = '-'  # I  wanted to use ":", but Windows, they dont like ":" in path! :(
 
 LangPair = Tuple[BCP47Tag, BCP47Tag]
 
@@ -31,17 +31,27 @@ class DatasetId:
         assert isinstance(self.langs, tuple), f'Expected tuple (l1, l2); given={self.langs}'
         langs = tuple(lang if isinstance(lang, BCP47Tag) else bcp47(lang) for lang in self.langs)
         if langs != self.langs:
-            object.__setattr__(self, 'langs', langs)      # bypass frozen=True
+            object.__setattr__(self, 'langs', langs)  # bypass frozen=True
 
     @property
     def lang_str(self):
-        return '-'.join(str(lang) for lang in self.langs)
+        return DID_DELIM.join(str(lang) for lang in self.langs)
 
-    def format(self, delim='-'):
-        return f'{self.group}{delim}{self.name}{delim}{self.version}{delim}{self.lang_str}'
+    def format(self, delim=DID_DELIM):
+        return delim.join([self.group, self.name, self.version, self.lang_str])
 
     def __str__(self):
         return self.format()
+
+    @classmethod
+    def parse(cls, string, delim=DID_DELIM) -> 'DatasetId':
+        expected_format = f"<group>{delim}<name>{delim}<version>{delim}<l1>{delim}<l2>"
+        parts = string.strip().split(delim)
+        if len(parts) != 5:
+            raise Exception(f'Dataset ID expected in format: {expected_format}; but given {string}.'
+                            f' If you are unsure, run "mtdata list | cut -f1 | grep -i <name>" and copy its id.')
+        group, name, version, lang1, lang2 = parts
+        return cls(group=group, name=name, version=version, langs=(lang1, lang2))
 
 
 class Entry:
@@ -61,7 +71,10 @@ class Entry:
         self.url = url
         self.filename = filename
         orig_name = self.url.split('/')[-1]
-        self.ext = ext or detect_extension(filename or orig_name)
+        self.ext = ext
+        if not self.ext:
+            from mtdata.parser import detect_extension
+            self.ext = detect_extension(filename or orig_name)
         self.filename = self.filename or f'{self.did.name}.{self.ext}'
 
         self.in_paths = in_paths

@@ -7,6 +7,7 @@ from typing import Optional, Union, Tuple, List
 from dataclasses import dataclass
 from pathlib import Path
 from mtdata import log
+from mtdata.entry import Entry
 from itertools import zip_longest
 
 from mtdata.utils import IO
@@ -32,7 +33,6 @@ def detect_extension(name: Union[str, Path]):
 @dataclass
 class Parser:
     paths: Union[Path, List[Path]]
-    langs: Tuple[str, str]
     ext: Optional[str] = None
     ent: Optional['Entry'] = None
 
@@ -44,7 +44,7 @@ class Parser:
 
         if not self.ext:
             exts = [detect_extension(p.name) for p in self.paths]
-            if len(exts) == 2 and set(exts) == set(self.langs):
+            if len(exts) == 2:
                 log.warning(f"Treating {' .'.join(exts)} as plain text. To override: in_ext=<ext>")
                 exts = ['txt']  # treat that as plain text
             assert len(set(exts)) == 1, f'Expected a type of exts, but found: {exts}'

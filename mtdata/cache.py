@@ -2,17 +2,26 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/4/20
+import zipfile
+import tarfile
+import fnmatch
 from dataclasses import dataclass
 from pathlib import Path
 from mtdata.index import Entry
-from mtdata import log
-import wget
+from mtdata import log, __version__, pbar_man
+from mtdata.utils import ZipPath, TarPath
+from typing import List, Union
+
 import portalocker
 from hashlib import md5
 from urllib.parse import urlparse
 from .parser import detect_extension
+import requests
+import math
 
-MAX_TIMEOUT = 12 * 60 * 60  # 12 hours
+MAX_TIMEOUT = 2 * 60 * 60  # 2 hours
+
+headers = {'User-Agent': f'mtdata downloader {__version__}; cURL and wget like.'}
 
 
 @dataclass
@@ -24,11 +33,14 @@ class Cache:
             self.root = Path(self.root)
         log.info(f"Local cache is at {self.root}")
 
-    def get_entry(self, entry: Entry, fix_missing=True) -> Path:
-        if entry.is_archive or entry.in_ext == 'opus_xces':
-            local = self.get_local_in_paths(entry, fix_missing=fix_missing)
-        else:
-            local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing)
+    def get_entry(self, entry: Entry, fix_missing=True) -> Union[Path, List[Path]]:
+        if entry.in_ext == 'opus_xces':
+            return self.opus_xces_format(entry=entry, fix_missing=fix_missing)
+
+        local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing)
+        if zipfile.is_zipfile(local) or tarfile.is_tarfile(local):
+            # look inside the archives and get the desired files
+            local = self.get_local_in_paths(path=local, entry=entry)
         return local
 
     def get_flag_file(self, file: Path):
@@ -44,45 +56,35 @@ class Cache:
             self.download(url, local)
         return local
 
-    def get_local_in_paths(self, entry: Entry, fix_missing=True):
-        if entry.in_ext == 'opus_xces':     # this is special case
-            l1_url, l2_url = entry.in_paths
-            align_file = self.get_local_path(entry.url, fix_missing=fix_missing)
-            l1_path = self.get_local_path(l1_url, fix_missing=True)
-            l2_path = self.get_local_path(l2_url, fix_missing=True)
-            #l1_dir = self._get_extracted_path(l1_url, ext='', fix_missing=fix_missing)
-            #l2_dir = self._get_extracted_path(l2_url, ext='', fix_missing=fix_missing)
-            #return [align_file, l1_dir, l2_dir]
-            return [align_file, l1_path, l2_path]
+    @classmethod
+    def match_globs(cls, names, globs, meta=''):
+        result = []
+        for pat in globs:
+            matches = fnmatch.filter(names, pat)
+            assert len(matches) == 1, f'{meta} {pat} matched {matches}; expected one file'
+            result.append(matches[0])
+        return result
 
-        x_dir = self.get_extracted_path(entry, fix_missing=fix_missing)
-        local_x_path = []
-        for p in entry.in_paths:
-            if '*' in p: # glob
-                paths = list(x_dir.glob(p))
-                if not paths:
-                    raise Exception(f"{entry} with in path {p} did not find a match")
-                local_x_path.extend(paths)
-            else:
-                local_x_path.append(x_dir / p)
-        return local_x_path
+    def opus_xces_format(self, entry, fix_missing=True) -> List[Path]:
+        assert entry.in_ext == 'opus_xces'
+        l1_url, l2_url = entry.in_paths
+        align_file = self.get_local_path(entry.url, fix_missing=fix_missing)
+        l1_path = self.get_local_path(l1_url, fix_missing=fix_missing)
+        l2_path = self.get_local_path(l2_url, fix_missing=fix_missing)
+        return [align_file, l1_path, l2_path]
 
-    def get_extracted_path(self, entry: Entry, fix_missing=True):
-        assert entry.is_archive
-        return self._get_extracted_path(url=entry.url, ext=entry.ext, filename=entry.filename,
-                                        fix_missing=fix_missing)
-
-    def _get_extracted_path(self, url: str, ext=None, filename=None, fix_missing=True):
-        ext = ext or detect_extension(url)
-        # path of archive file, local
-        local = self.get_local_path(url, filename=filename, fix_missing=fix_missing)
-        # path of extract dir:  remove extension from dir name
-        local_xdir = local.with_name(right_replace(local.name, f'.{ext}', ''))
-        if fix_missing:
-            if not local_xdir.exists() or not self.get_flag_file(local_xdir).exists():
-                self.extract(local, ext, local_xdir)
-                self.get_flag_file(local_xdir).touch()
-        return local_xdir
+    def get_local_in_paths(self, path:Path, entry: Entry,):
+        in_paths = entry.in_paths
+        if zipfile.is_zipfile(path):
+            with zipfile.ZipFile(path) as root:
+                in_paths = self.match_globs(names=root.namelist(), globs=in_paths)
+            return [ZipPath(path, p) for p in in_paths]   # stdlib is buggy, so I made a workaround
+        elif tarfile.is_tarfile(path):
+            with tarfile.open(path, encoding='utf-8') as root:
+                in_paths = self.match_globs(names=root.getnames(), globs=in_paths)
+            return [TarPath(path, p) for p in in_paths]
+        else:
+            raise Exception(f'Unable to read {entry.did}; the file is neither zip nor tar')
 
     def download(self, url: str, save_at: Path):
         valid_flag = self.get_flag_file(save_at)
@@ -96,40 +98,22 @@ class Cache:
             # check if downloaded by  other parallel process
             if valid_flag.exists() and save_at.exists():
                 return save_at
-            log.info(f"Got the lock. Downloading {url} --> {save_at}")
-            out_file = wget.download(url, out=str(save_at))
-            log.info(" Done.")
-            assert Path(out_file).resolve() == save_at.resolve()  # saved where we asked it to save
-
+            log.info(f"Downloading {url} --> {save_at}")
+            resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True)
+            assert resp.status_code == 200, resp.status_code
+            buf_size = 2 ** 10
+            n_buffers = math.ceil(int(resp.headers.get('Content-Length', '0')) / buf_size) or None
+            desc = url
+            if len(desc) > 40:
+                desc = desc[:30] + '...' + desc[-10:]
+            with pbar_man.counter(color='green', total=n_buffers, unit='KiB', leave=True,
+                                  desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
+                for chunk in resp.iter_content(chunk_size=buf_size):
+                    out.write(chunk)
+                    pbar.update()
             valid_flag.touch()
+            lock_file.unlink()
             return save_at
-
-    def extract(self, archive_file: Path, ext: str, x_dir: Path):
-        assert archive_file.exists(), f'{archive_file} not found'
-        valid_file = self.get_flag_file(x_dir)
-        lock_file = valid_file.with_suffix('._lock')
-        if x_dir.exists() and valid_file.exists():
-            return  # already extracted
-
-        x_dir.mkdir(parents=True, exist_ok=True)
-        log.info(f"Acquiring lock on {lock_file}")
-        with portalocker.Lock(lock_file, 'w', timeout=MAX_TIMEOUT) as fh:
-            if valid_file.exists() and x_dir.exists():
-                return
-            if ext in {'tar', 'tgz', 'tar.gz', 'tar.bz2', 'tbz2', 'tar.xz', 'txz'}:
-                log.info(f"Going to extract tar {archive_file} --> {x_dir}")
-                import tarfile
-                with tarfile.open(archive_file) as tar:
-                    tar.extractall(path=x_dir)
-            elif ext == 'zip':
-                log.info(f"Going to extract zip {archive_file} --> {x_dir}")
-                from zipfile import ZipFile
-                with ZipFile(archive_file) as zip:
-                    zip.extractall(path=x_dir)
-            else:
-                raise Exception(f'"{ext}" type extraction not supported')
-
-            valid_file.touch()
 
 
 def right_replace(string, old, new):

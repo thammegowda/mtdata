@@ -3,9 +3,12 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 1/26/21
 
-from mtdata.main import get_data, dataset_id, lang_pair
+from mtdata.main import get_data, lang_pair, DatasetId
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+
+dataset_id = DatasetId.parse
 
 
 def test_rapid1019():
