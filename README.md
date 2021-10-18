@@ -141,7 +141,7 @@ You will have to make definite choice for `--train` and `--test` arguments
 ```
 mtdata get -h
 python -m mtdata get -h
-usage: __main__.py get [-h] -l L1-L2 [-tr [ID ...]] [-ts [ID ...]] [-dev ID] [--merge | --no-merge] [--compress] -o OUT_DIR
+usage: __main__.py get [-h] -l L1-L2 [-tr [ID ...]] [-ts [ID ...]] [-dv ID] [--merge | --no-merge] [--compress] -o OUT_DIR
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -156,8 +156,8 @@ optional arguments:
                             e.g. "-ts Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng ".
                             You may also use shell expansion if your shell supports it.
                             e.g. "-ts Statmt-newstest_deen-20{19,20}-deu-eng"  (default: None)
-  -dev ID, --dev ID     Dataset to be used for development (aka validation).
-                            e.g. "-dev Statmt-newstest_deen-2017-deu-eng" (default: None)
+  -dv ID, --dev ID     Dataset to be used for development (aka validation).
+                            e.g. "-dv Statmt-newstest_deen-2017-deu-eng" (default: None)
   --merge               Merge train into a single file (default: False)
   --no-merge            Do not Merge train into a single file (default: True)
   --compress            Keep the files compressed (default: False)
@@ -203,7 +203,7 @@ To reproduce this dataset again in the future or by others, please refer to `<ou
 $ cat deu-eng/mtdata.signature.txt
 mtdata get -l deu-eng -tr Statmt-europarl-10-deu-eng Statmt-news_commentary-16-deu-eng \
    -ts Statmt-newstest_deen-2018-deu-eng Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng \
-   -dev Statmt-newstest_deen-2017-deu-eng --merge -o <out-dir>
+   -dv Statmt-newstest_deen-2017-deu-eng --merge -o <out-dir>
 mtdata version 0.3.0-dev
 ```
 

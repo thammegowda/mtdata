@@ -2,7 +2,7 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu]
 # Created: 4/5/20
-
+import hashlib
 from pathlib import Path
 from mtdata import log, pbar_man, cache_dir as CACHE_DIR, MTDataException
 from mtdata.cache import Cache
@@ -21,7 +21,7 @@ DEF_COMPRESS = 'gz'
 class Dataset:
 
     def __init__(self, dir: Path, langs: LangPair, cache_dir: Path, drop_train_noise=True,
-                 drop_test_noise=False):
+                 drop_test_noise=False, drop_dupes=False, drop_tests=False, compress=False):
         self.dir = dir
         self.langs = langs
         assert len(langs) == 2, 'Only parallel datasets are supported for now and expect two langs'
@@ -33,6 +33,8 @@ class Dataset:
         self.tests_dir.mkdir(parents=True, exist_ok=True)
         self.drop_train_noise = drop_train_noise
         self.drop_test_noise = drop_test_noise
+        self.drop_dupes = drop_dupes  # in training only
+        self.drop_tests = drop_tests  # in training only
 
     @classmethod
     def resolve_entries(cls, dids: List[DatasetId]):
@@ -50,7 +52,7 @@ class Dataset:
     def prepare(cls, langs, out_dir: Path, train_dids: Optional[List[DatasetId]] = None,
                 test_dids: Optional[List[DatasetId]] = None, dev_did: Optional[DatasetId] = None,
                 cache_dir: Path = CACHE_DIR, merge_train=False, drop_noise: Tuple[bool, bool] = (True, False),
-                compress=False):
+                compress=False, drop_dupes=False, drop_tests=False):
         drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
         assert train_dids or test_dids, 'Either train_names or test_names should be given'
@@ -63,7 +65,8 @@ class Dataset:
             train_entries = cls.resolve_entries(train_dids)
 
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir,
-                      drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise)
+                      drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise,
+                      drop_dupes=drop_dupes, drop_tests=drop_tests)
         if test_entries:  # tests are smaller so quicker; no merging needed
             dataset.add_test_entries(test_entries)
         if dev_did:
@@ -72,27 +75,84 @@ class Dataset:
 
         if train_entries:  # this might take some time
             dataset.add_train_entries(train_entries, merge_train=merge_train, compress=compress)
-
         return dataset
 
-    def add_train_entries(self, entries, merge_train=False, compress=False):
+    def hash_all_held_outs(self):
+        lang1, lang2 = self.langs
+        paired_files = self.find_bitext_pairs(self.tests_dir, lang1, lang2)
+        paired_hashes = set()
+        seg_hashes = set()
+        for name, (if1, if2) in paired_files.items():
+            for seg1, seg2 in self.read_parallel(if1, if2):
+                paired_hashes.add(hash((seg1, seg2)))
+                paired_hashes.add(hash((seg2, seg1)))
+                seg_hashes.add(hash(seg1))
+                seg_hashes.add(hash(seg2))
+        return paired_hashes, seg_hashes
 
+    def add_train_entries(self, entries, merge_train=False, compress=False):
         self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise,
                        compress=compress, desc='Training sets')
         if not merge_train:
             return
-        # merge
         lang1, lang2 = self.langs
+        paired_files = self.find_bitext_pairs(self.train_parts_dir, lang1, lang2)
+
+        log.info(f"Going to merge {len(paired_files)} files as one train file")
+
+        compress_ext = f'.{DEF_COMPRESS}' if compress else ''
+        l1_ext = f'{lang1}{compress_ext}'
+        l2_ext = f'{lang2}{compress_ext}'
+        of1 = self.dir / f'train.{l1_ext}'
+        of2 = self.dir / f'train.{l2_ext}'
+        of3 = self.dir / f'train.meta.{DEF_COMPRESS}'
+
+        counts = dict(total=coll.defaultdict(int),
+                      dupes_skips=coll.defaultdict(int),
+                      test_overlap_skips=coll.defaultdict(int),
+                      in_merge=coll.defaultdict(int))
+        train_hashes = set()
+        tests_pair_hashes, tests_seg_hashes = set(), set()
+        if self.drop_tests:
+            tests_pair_hashes, tests_seg_hashes = self.hash_all_held_outs()
+
+        with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
+            for name, (if1, if2) in paired_files.items():
+                for seg1, seg2 in self.read_parallel(if1, if2):
+                    if self.drop_dupes or self.drop_tests:
+                        hash_val = hash((seg1, seg2))
+                        if self.drop_tests and (hash_val in tests_pair_hashes
+                                                or hash(seg1) in tests_seg_hashes
+                                                or hash(seg2) in tests_seg_hashes):
+                            counts['test_overlap_skips'][name] += 1
+                            continue
+                        if self.drop_dupes:
+                            if hash_val in train_hashes:
+                                counts['dupes_skips'][name] += 1
+                                continue
+                            train_hashes.add(hash_val)
+                    w1.write(seg1 + '\n')
+                    w2.write(seg2 + '\n')
+                    w3.write(name + '\n')
+                    counts['in_merge'][name] += 1
+        total = sum(counts.values())
+        counts = {'total': total, 'counts': counts}
+        counts_msg = json.dumps(counts, indent=2)
+        log.info('Train stats:\n' + counts_msg)
+        IO.write_lines(self.dir / 'train.stats.json', counts_msg)
+        return counts
+
+    @classmethod
+    def find_bitext_pairs(cls, dir_path: Path, lang1: BCP47Tag, lang2: BCP47Tag):
         if lang1.is_compatible(lang2):
             raise Exception(f"Unable to merge for {lang1}-{lang2}; it can result in unpredictable behavior.")
         paired_files = {}
-        for path in self.train_parts_dir.glob("*.*"):
+        for path in dir_path.glob("*.*"):
             if path.name.startswith("."):
                 continue
             parts = path.name.split(".")
             assert len(parts) >= 2, f'Invalid file name {path.name}; Unable to merge parts'
-            if compress:
-                assert parts[-1] == DEF_COMPRESS, f'compression {DEF_COMPRESS} expected but not found {parts[-1]}'
+            if parts[-1] == DEF_COMPRESS:
                 parts = parts[:-1]
             *did, ext = parts  # did can have a dot e.g. version 7.1
             did = '.'.join(did)
@@ -109,36 +169,14 @@ class Dataset:
                 raise Exception(f"Unable to decide the side of train-part {path}; ext={ext}: we have {lang1}-{lang2}")
         for did, (f1, f2) in paired_files.items():
             assert f1 and f1.exists(), f'Invalid state: part {did} does not have pair, or pair is are removed'
-
-        log.info(f"Going to merge {len(paired_files)} files as one train file")
-        counts = coll.defaultdict(int)
-        compress_ext = f'.{DEF_COMPRESS}' if compress else ''
-        l1_ext = f'{lang1}{compress_ext}'
-        l2_ext = f'{lang2}{compress_ext}'
-        of1 = self.dir / f'train.{l1_ext}'
-        of2 = self.dir / f'train.{l2_ext}'
-        of3 = self.dir / f'train.meta.{DEF_COMPRESS}'
-
-        with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
-            for name, (if1, if2) in paired_files.items():
-                for seg1, seg2 in self.read_parallel(if1, if2):
-                    w1.write(seg1 + '\n')
-                    w2.write(seg2 + '\n')
-                    w3.write(name + '\n')
-                    counts[name] += 1
-        total = sum(counts.values())
-        counts = {'total': total, 'parts': counts}
-        counts_msg = json.dumps(counts, indent=2)
-        log.info('Train stats:\n' + counts_msg)
-        IO.write_lines(self.dir / 'train.stats.json', counts_msg)
-        return counts
+        return paired_files
 
     @classmethod
     def read_parallel(cls, file1: Path, file2: Path):
         with IO.reader(file1) as r1, IO.reader(file2) as r2:
             for seg1, seg2 in zip_longest(r1, r2):
                 if seg1 is None or seg2 is None:
-                    raise Exception(f'{file1} {file2} have unequal num of lines. Thats an error')
+                    raise Exception(f'{file1} {file2} have unequal num of lines. This is an error.')
                 yield seg1.strip(), seg2.strip()
 
     def add_test_entries(self, entries):

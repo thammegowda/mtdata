@@ -25,21 +25,25 @@ def list_data(langs, names, not_names=None, full=False):
 
 
 def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_did=None, merge_train=False, compress=False,
-             **kwargs):
+             drop_dupes=False, drop_tests=False, **kwargs):
+    if kwargs:
+        log.warning(f"Args are ignored: {kwargs}")
     from mtdata.data import Dataset
     assert train_dids or test_dids, 'Required --train or --test or both'
     dataset = Dataset.prepare(
         langs, train_dids=train_dids, test_dids=test_dids, out_dir=out_dir,
-        dev_did=dev_did, cache_dir=CACHE_DIR, merge_train=merge_train, compress=compress)
+        dev_did=dev_did, cache_dir=CACHE_DIR, merge_train=merge_train, compress=compress,
+        drop_dupes=drop_dupes, drop_tests=drop_tests)
     cli_sig = f'-l {"-".join(str(l) for l in langs)}'
     if train_dids:
         cli_sig += f' -tr {" ".join(str(d) for d in train_dids)}'
     if test_dids:
         cli_sig += f' -ts {" ".join(str(d) for d in test_dids)}'
     if dev_did:
-        cli_sig += f' -dev {dev_did}'
-    if merge_train:
-        cli_sig += f' --merge'
+        cli_sig += f' -dv {dev_did}'
+    for flag, val in [('--merge', merge_train), ('--compress', compress), ('-dd', drop_dupes), ('-dt', drop_tests)]:
+        if val:
+            cli_sig += ' ' + flag
     sig = f'mtdata get {cli_sig} -o <out-dir>\nmtdata version {mtdata.__version__}\n'
     log.info(f'Dataset is ready at {dataset.dir}')
     log.info(f'mtdata args for reproducing this dataset:\n {sig}')
@@ -96,7 +100,6 @@ def lang_pair(string) -> LangPair:
     return std_codes
 
 
-
 def add_boolean_arg(parser: argparse.ArgumentParser, name, dest=None, default=False, help=''):
     group = parser.add_mutually_exclusive_group()
     dest = dest or name
@@ -134,8 +137,7 @@ def parse_args():
 
     get_p = sub_ps.add_parser('get', formatter_class=MyFormatter)
     get_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
-                       help='Language pairs; e.g.: deu-eng',
-                       required=True)
+                       help='Language pairs; e.g.: deu-eng', required=True)
     get_p.add_argument('-tr', '--train', metavar='ID', dest='train_dids', nargs='*', type=DatasetId.parse,
                        help='''R|Names of datasets separated by space, to be used for *training*.
     e.g. -tr Statmt-news_commentary-16-deu-eng europarl_v9 .
@@ -145,12 +147,16 @@ def parse_args():
     e.g. "-ts Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng ".
     You may also use shell expansion if your shell supports it.
     e.g. "-ts Statmt-newstest_deen-20{19,20}-deu-eng" ''')
-    get_p.add_argument('-dev', '--dev', metavar='ID', dest='dev_did', type=DatasetId.parse, required=False,
+    get_p.add_argument('-dv', '--dev', metavar='ID', dest='dev_did', type=DatasetId.parse, required=False,
                        help='''R|Dataset to be used for development (aka validation). 
     e.g. "-dev Statmt-newstest_deen-2017-deu-eng"''')
     add_boolean_arg(get_p, 'merge', dest='merge_train', default=False, help='Merge train into a single file')
     get_p.add_argument(f'--compress', action='store_true', default=False, help="Keep the files compressed")
-
+    get_p.add_argument('-dd', f'--dedupe', '--drop-dupes', dest='drop_dupes', action='store_true', default=False,
+                       help="Remove duplicate (src, tgt) pairs in training (if any); valid when --merge. "
+                            "Not recommended for large datasets. ")
+    get_p.add_argument('-dt', f'--drop-tests', dest='drop_tests', action='store_true', default=False,
+                       help="Remove dev/test sentences from training sets (if any); valid when --merge")
     get_p.add_argument('-o', '--out', dest='out_dir', type=Path, required=True, help='Output directory name')
 
     report_p = sub_ps.add_parser('report', formatter_class=MyFormatter)
