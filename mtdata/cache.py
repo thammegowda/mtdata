@@ -8,7 +8,7 @@ import fnmatch
 from dataclasses import dataclass
 from pathlib import Path
 from mtdata.index import Entry
-from mtdata import log, __version__, pbar_man
+from mtdata import log, __version__, pbar_man, MTDataException
 from mtdata.utils import ZipPath, TarPath
 from typing import List, Union
 
@@ -61,7 +61,8 @@ class Cache:
         result = []
         for pat in globs:
             matches = fnmatch.filter(names, pat)
-            assert len(matches) == 1, f'{meta} {pat} matched {matches}; expected one file'
+            if len(matches) != 1:
+                raise MTDataException(f'{meta} {pat} matched {matches}; expected one file')
             result.append(matches[0])
         return result
 
@@ -106,7 +107,7 @@ class Cache:
             desc = url
             if len(desc) > 40:
                 desc = desc[:30] + '...' + desc[-10:]
-            with pbar_man.counter(color='green', total=n_buffers, unit='KiB', leave=True,
+            with pbar_man.counter(color='green', total=n_buffers, unit='KiB', leave=False,
                                   desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):
                     out.write(chunk)

@@ -5,7 +5,7 @@
 import collections
 import pickle
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Union
 
 import portalocker
 from pybtex.database import parse_file as parse_bib_file
@@ -163,7 +163,9 @@ class ReferenceDb:
         return self.db.entries.keys()
 
 
-def is_compatible(lang1: BCP47Tag, lang2: BCP47Tag):
+def is_compatible(lang1: Union[str, BCP47Tag], lang2: Union[str, BCP47Tag]):
+    lang1 = lang1 if isinstance(lang1, BCP47Tag) else bcp47(lang1)
+    lang2 = lang2 if isinstance(lang2, BCP47Tag) else bcp47(lang2)
     return lang1.is_compatible(lang2)
 
 

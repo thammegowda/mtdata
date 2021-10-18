@@ -24,3 +24,7 @@ try:
 except ImportError as e:
     log.warning("enlighten package maybe required. please run 'pip install englighten'")
     log.warning(e)
+
+
+class MTDataException(Exception):
+    pass

@@ -4,7 +4,7 @@
 # Created: 4/5/20
 
 from pathlib import Path
-from mtdata import log, pbar_man, cache_dir as CACHE_DIR
+from mtdata import log, pbar_man, cache_dir as CACHE_DIR, MTDataException
 from mtdata.cache import Cache
 from mtdata.index import INDEX, Entry, DatasetId, LangPair
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
@@ -172,14 +172,21 @@ class Dataset:
         # create a link
         self.link_to_part(entry, self.tests_dir, "dev")
 
-    def add_parts(self, dir_path, entries, drop_noise=False, compress=False, desc=None):
+    def add_parts(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
         with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
                               autorefresh=True) as pbar:
             for ent in entries:
-                n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
-                                              compress=compress)
-                log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
-                pbar.update(force=True)
+                try:
+                    n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
+                                                  compress=compress)
+                    log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
+                    pbar.update(force=True)
+                except MTDataException as e:
+                    log.error(f"Unable to add {ent.did}: {e}")
+                    if fail_on_error:
+                        raise e
+                    else:
+                        log.warning(e)
 
     @classmethod
     def get_paths(cls, dir_path: Path, entry: Entry, compress=False) -> Tuple[Path, Path]:
