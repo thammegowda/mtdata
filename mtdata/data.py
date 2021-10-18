@@ -110,36 +110,43 @@ class Dataset:
         counts = dict(total=coll.defaultdict(int),
                       dupes_skips=coll.defaultdict(int),
                       test_overlap_skips=coll.defaultdict(int),
-                      in_merge=coll.defaultdict(int))
+                      selected=coll.defaultdict(int))
         train_hashes = set()
         tests_pair_hashes, tests_seg_hashes = set(), set()
         if self.drop_tests:
             tests_pair_hashes, tests_seg_hashes = self.hash_all_held_outs()
 
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
-            for name, (if1, if2) in paired_files.items():
-                for seg1, seg2 in self.read_parallel(if1, if2):
-                    if self.drop_dupes or self.drop_tests:
-                        hash_val = hash((seg1, seg2))
-                        if self.drop_tests and (hash_val in tests_pair_hashes
-                                                or hash(seg1) in tests_seg_hashes
-                                                or hash(seg2) in tests_seg_hashes):
-                            counts['test_overlap_skips'][name] += 1
-                            continue
-                        if self.drop_dupes:
-                            if hash_val in train_hashes:
-                                counts['dupes_skips'][name] += 1
+            with pbar_man.counter(color='green', total=len(paired_files), unit='it', desc="Merging",
+                                  autorefresh=True) as pbar:
+                for name, (if1, if2) in paired_files.items():
+                    for seg1, seg2 in self.read_parallel(if1, if2):
+                        counts['total'][name] += 1
+                        if self.drop_dupes or self.drop_tests:
+                            hash_val = hash((seg1, seg2))
+                            if self.drop_tests and (hash_val in tests_pair_hashes
+                                                    or hash(seg1) in tests_seg_hashes
+                                                    or hash(seg2) in tests_seg_hashes):
+                                counts['test_overlap_skips'][name] += 1
                                 continue
-                            train_hashes.add(hash_val)
-                    w1.write(seg1 + '\n')
-                    w2.write(seg2 + '\n')
-                    w3.write(name + '\n')
-                    counts['in_merge'][name] += 1
-        total = sum(counts.values())
-        counts = {'total': total, 'counts': counts}
-        counts_msg = json.dumps(counts, indent=2)
-        log.info('Train stats:\n' + counts_msg)
-        IO.write_lines(self.dir / 'train.stats.json', counts_msg)
+                            if self.drop_dupes:
+                                if hash_val in train_hashes:
+                                    counts['dupes_skips'][name] += 1
+                                    continue
+                                train_hashes.add(hash_val)
+                        w1.write(seg1 + '\n')
+                        w2.write(seg2 + '\n')
+                        w3.write(name + '\n')
+                        counts['selected'][name] += 1
+                    pbar.update()
+
+        stats = dict(selected=sum(counts['selected'].values()),
+                     total=sum(counts['total'].values()),
+                     counts=counts)
+
+        stats_msg = json.dumps(stats, indent=2)
+        log.info('Train stats:\n' + stats_msg)
+        IO.write_lines(self.dir / 'train.stats.json', stats_msg)
         return counts
 
     @classmethod
@@ -239,7 +246,7 @@ class Dataset:
 
     def add_part(self, dir_path: Path, entry: Entry, drop_noise=False, compress=False):
         path = self.cache.get_entry(entry)
-        #swap = entry.is_swap(self.langs)
+        # swap = entry.is_swap(self.langs)
         parser = Parser(path, ext=entry.in_ext or None, ent=entry)
         # langs = '_'.join(str(lang) for lang in self.langs)
         # Check that files are written in correct order
