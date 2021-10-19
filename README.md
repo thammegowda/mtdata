@@ -53,8 +53,8 @@ We have added some commonly used datasets - you are welcome to add more!
 | Statmt | 699|
 | Tilde | 519|
 | LinguaTools | 253|
+| AI4Bharath | 192|
 | ParaCrawl | 126|
-| AI4Bharath | 66|
 | Lindat | 56|
 | UN<sup>$3</sup> | 30|
 | JoshuaDec | 29|
