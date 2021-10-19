@@ -86,6 +86,8 @@ class Entry:
         self.is_archive = self.ext in ('zip', 'tar', 'tar.gz', 'tgz')
         if self.is_archive:
             assert self.in_paths and len(self.in_paths) > 0, 'Archive entries must have in_paths'
+            if not self.in_ext:
+                raise Exception('in_ext is required for archive files')
         else:
             if self.in_ext != 'opus_xces':
                 assert not self.in_paths, f"in_paths is not applicable for non archive format {self.ext}"

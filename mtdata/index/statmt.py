@@ -61,10 +61,10 @@ def load(index: Index):
 
     # === Digital Corpus of European Parliament
     index.add_entry(Entry(did=DatasetId(group=group_id, name='dcep_wmt17', version='1', langs=(l1, l2)),
-                          in_paths=['*/*.lv', f'*/*.en'], cite=cite,
+                          in_paths=['*/*.lv', f'*/*.en'], cite=cite, in_ext='txt',
                           url='http://data.statmt.org/wmt17/translation-task/dcep.lv-en.v1.tgz'))
     index.add_entry(Entry(did=DatasetId(group=group_id, name='books_wmt17', version='1', langs=(l1, l2)),
-                          in_paths=['*/*.lv', f'*/*.en'], cite=cite,
+                          in_paths=['*/*.lv', f'*/*.en'], cite=cite, in_ext='txt',
                           url='http://data.statmt.org/wmt17/translation-task/books.lv-en.v1.tgz'))
 
     # === News Commentary v14
@@ -155,7 +155,7 @@ def load(index: Index):
             ref = f'dev/{set_name}-{l1}{l2}-ref.{l2}.sgm'
             name = f'{sub_name}_{l1}{l2}'
             index.add_entry(Entry(did=DatasetId(group=group_id, name=name, version=year, langs=(l1, l2)),
-                                  filename='wmt20dev.tgz', in_paths=[src, ref],
+                                  filename='wmt20dev.tgz', in_paths=[src, ref], in_ext='sgm',
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
                                   cite=cite))
 
