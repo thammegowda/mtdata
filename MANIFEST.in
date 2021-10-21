@@ -1,4 +1,5 @@
 include README.md
 include mtdata/index/refs.bib
 include mtdata/index/elrc_share.tsv
+include mtdata/iso/bcp47.json
 global-exclude *.pyc

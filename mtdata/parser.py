@@ -7,6 +7,7 @@ from typing import Optional, Union, Tuple, List
 from dataclasses import dataclass
 from pathlib import Path
 from mtdata import log
+from mtdata.entry import Entry
 from itertools import zip_longest
 
 from mtdata.utils import IO
@@ -32,7 +33,6 @@ def detect_extension(name: Union[str, Path]):
 @dataclass
 class Parser:
     paths: Union[Path, List[Path]]
-    langs: Tuple[str, str]
     ext: Optional[str] = None
     ent: Optional['Entry'] = None
 
@@ -44,7 +44,7 @@ class Parser:
 
         if not self.ext:
             exts = [detect_extension(p.name) for p in self.paths]
-            if len(exts) == 2 and set(exts) == set(self.langs):
+            if len(exts) == 2:
                 log.warning(f"Treating {' .'.join(exts)} as plain text. To override: in_ext=<ext>")
                 exts = ['txt']  # treat that as plain text
             assert len(set(exts)) == 1, f'Expected a type of exts, but found: {exts}'
@@ -56,9 +56,12 @@ class Parser:
     def read_segs(self):
         readers = []
         if self.ext == 'opus_xces':
+            preprocessing = 'xml'
+            if "/raw/" in self.ent.in_paths[0]:
+                preprocessing = 'raw'
             align, lang1_dir, lang2_dir = self.paths
             from mtdata.opus_xces import OpusXcesParser
-            reader = OpusXcesParser.read(align, lang1_dir, lang2_dir)
+            reader = OpusXcesParser.read(align, lang1_dir, lang2_dir, preprocessing=preprocessing)
             readers.append(reader)
         else:
             for p in self.paths:
@@ -71,7 +74,7 @@ class Parser:
                     readers.append(self.read_plain(p))
                 elif 'tmx' in self.ext:
                     from mtdata.tmx import read_tmx
-                    readers.append(read_tmx(path=p, langs=self.langs))
+                    readers.append(read_tmx(path=p, langs=self.ent.did.langs))
                 elif 'sgm' in self.ext:
                     from mtdata.sgm import read_sgm
                     readers.append(read_sgm(p))

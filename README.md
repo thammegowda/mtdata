@@ -13,6 +13,7 @@ This tool knows:
 - Whether data is compressed in gz, xz or none at all.
 - Whether the source-target is in the same order or is it swapped as target-source order.
 - How to map code to ISO language codes! Using ISO 639_3 that has space for 7000+ languages of our planet.
+  - New in v0.3: BCP-47 like language ID: (language, script, region)
 - Download only once and keep the files in local cache.
 - (And more of such tiny details over the time.)
 
@@ -26,42 +27,48 @@ Limitations (as of now):
 
 # Installation
 ```bash
+# from pypi 
+pip install mtdata  
+
 # from the source code on github 
 git clone https://github.com/thammegowda/mtdata 
 cd mtdata
 pip install --editable .
-
-# from pypi 
-pip install mtdata  
 ```
 
 # Current Status:
 
-These are the summary of datasets from various sources (Updated: May 10 2020). 
+These are the summary of datasets from various sources (Updated: Oct 2021). 
 The list is incomplete and meant to see as start. 
 We have added some commonly used datasets - you are welcome to add more! 
  
-| Source | # of datasets |
+| Source | Dataset Count |
 |---: | ---:|
-| OPUS<sup>$1</sup> | 69,415 |
-| JW300<sup>$2</sup> | 45,548 |
-| Neulab_TEDTalksv1 | 4,455 |
-| WikiMatrix | 1,617 |
-| ELRC-SHARE | 1,297 |
-| EU | 925 |
-| Tilde | 519 |
-| Statmt | 493 |
-| OPUS100v1 | 302 |
-| Paracrawl | 96 |
-| AI4Bharath | 66 |
-| UnitedNations<sup>$3</sup> | 30 |
-| Joshua Indian Corpus | 29 |
-| Other | 70 |
+| OPUS<sup>$1</sup> | 80,830|
+| OPUS_JW300<sup>$2</sup> | 91,248|
+| Neulab | 4,455|
+| Facebook | 1,617|
+| ELRC | 1,341|
+| EU | 1,178|
+| Statmt | 699|
+| Tilde | 519|
+| LinguaTools | 253|
+| AI4Bharath | 192|
+| ParaCrawl | 126|
+| Lindat | 56|
+| UN<sup>$3</sup> | 30|
+| JoshuaDec | 29|
+| Phontron | 4|
+| NRC_CA | 4|
+| IITB | 3|
+| WAT | 3|
+| StanfordNLP | 3|
+| KECL | 1|
 | ----|----|
-| Total | 124,844 |
+| Total | 182.5K|
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
-- <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format.
+- <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format. It has two versions: `v1` (tokenized) and `v1c` (raw)
 - <sup>$3</sup> - Only test sets are included
 
 # CLI Usage
@@ -72,89 +79,121 @@ We have added some commonly used datasets - you are welcome to add more!
 Lists datasets that are known to this tool.
 ```bash
 mtdata list -h
-usage: mtdata list [-h] [-l L1-L2] [-n [NAME [NAME ...]]]
-                   [-nn [NAME [NAME ...]]] [-f]
+usage: __main__.py list [-h] [-l L1-L2] [-n [NAME ...]] [-nn [NAME ...]] [-f] [-o OUT]
 
 optional arguments:
   -h, --help            show this help message and exit
   -l L1-L2, --langs L1-L2
                         Language pairs; e.g.: deu-eng (default: None)
-  -n [NAME [NAME ...]], --names [NAME [NAME ...]]
+  -n [NAME ...], --names [NAME ...]
                         Name of dataset set; eg europarl_v9. (default: None)
-  -nn [NAME [NAME ...]], --not-names [NAME [NAME ...]]
+  -nn [NAME ...], --not-names [NAME ...]
                         Exclude these names (default: None)
   -f, --full            Show Full Citation (default: False)
 ``` 
 
 ```bash
-# List everything
-mtdata list
+# List everything ; add | cut -f1  to see ID column only
+mtdata list | cut -f1
 
 # List a lang pair 
-mtdata list -l deu-eng
+mtdata list -l deu-eng 
 
 # List a dataset by name(s)
-mtdata list -n europarl_v9
-mtdata list -n europarl_v9 news_commentary_v14
+mtdata list -n europarl
+mtdata list -n europarl news_commentary
 
 # list by both language pair and dataset name
-mtdata list -l deu-eng -n europarl_v9 news_commentary_v14 newstest201{4,5,6,7,8,9}_deen
+ mtdata list -l deu-eng -n europarl news_commentary newstest_deen  | cut -f1
+    Statmt-europarl-9-deu-eng
+    Statmt-europarl-7-deu-eng
+    Statmt-news_commentary-14-deu-eng
+    Statmt-news_commentary-15-deu-eng
+    Statmt-news_commentary-16-deu-eng
+    Statmt-newstest_deen-2014-deu-eng
+    Statmt-newstest_deen-2015-deu-eng
+    Statmt-newstest_deen-2016-deu-eng
+    Statmt-newstest_deen-2017-deu-eng
+    Statmt-newstest_deen-2018-deu-eng
+    Statmt-newstest_deen-2019-deu-eng
+    Statmt-newstest_deen-2020-deu-eng
+    Statmt-europarl-10-deu-eng
+    OPUS-europarl-8-deu-eng
 
 # get citation of a dataset (if available in index.py)
-mtdata list -l deu-eng -n newstest2019_deen --full
+mtdata list -l deu-eng -n newstest_deen --full
 ```
 
-## `mtdata get`
+### Dataset ID
+Dataset IDs are standardized to this format:  
+`<Group>-<name>-<version>-<lang1>-<lang2>`
+
+* `Group`: source or the website where we are obtaining this dataset
+* `name`: name of the dataset
+* `version`: version name
+* `lang1` and `lang2` are BCP47-like codes. In simple case, they are ISO-639-3 codes, however, they might have script and language tags separated by underscores (`_`). 
+
+
+### `mtdata get`
 This command downloads datasets specified by names for languages to a directory.
 You will have to make definite choice for `--train` and `--test` arguments 
-```bash
+
+```
 mtdata get -h
-usage: mtdata get [-h] -l L1-L2 [-tr [NAME [NAME ...]]]
-                  [-tt [NAME [NAME ...]]] -o OUT
+python -m mtdata get -h
+usage: __main__.py get [-h] -l L1-L2 [-tr [ID ...]] [-ts [ID ...]] [-dv ID] [--merge | --no-merge] [--compress] -o OUT_DIR
 
 optional arguments:
   -h, --help            show this help message and exit
   -l L1-L2, --langs L1-L2
-                        Language pairs; e.g.: deu-eng 
-  -tr [NAME [NAME ...]], --train [NAME [NAME ...]]
+                        Language pairs; e.g.: deu-eng (default: None)
+  -tr [ID ...], --train [ID ...]
                         Names of datasets separated by space, to be used for *training*.
-                          e.g. -tr news_commentary_v14 europarl_v9 .
-                          To concatenate all these into a single train file, set --merge flag.
-  -tt [NAME [NAME ...]], --test [NAME [NAME ...]]
+                            e.g. -tr Statmt-news_commentary-16-deu-eng europarl_v9 .
+                             To concatenate all these into a single train file, set --merge flag. (default: None)
+  -ts [ID ...], --test [ID ...]
                         Names of datasets separated by space, to be used for *testing*.
-                          e.g. "-tt newstest2018_deen newstest2019_deen".
-                        You may also use shell expansion if your shell supports it.
-                          e.g. "-tt newstest201{8,9}_deen."
+                            e.g. "-ts Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng ".
+                            You may also use shell expansion if your shell supports it.
+                            e.g. "-ts Statmt-newstest_deen-20{19,20}-deu-eng"  (default: None)
+  -dv ID, --dev ID     Dataset to be used for development (aka validation).
+                            e.g. "-dv Statmt-newstest_deen-2017-deu-eng" (default: None)
   --merge               Merge train into a single file (default: False)
   --no-merge            Do not Merge train into a single file (default: True)
-                          
-  -o OUT, --out OUT     Output directory name
+  --compress            Keep the files compressed (default: False)
+  -o OUT_DIR, --out OUT_DIR
+                        Output directory name (default: None)
 ```
 
-# Example  
+## Quickstart / Example  
 See what datasets are available for `deu-eng`
 ```bash
-$ mtdata list -l deu-eng  # see available datasets
-    europarl_v9	deu-eng	http://www.statmt.org/europarl/v9/training/europarl-v9.deu-eng.tsv.gz
-    news_commentary_v14	deu-eng	http://data.statmt.org/news-commentary/v14/training/news-commentary-v14.deu-eng.tsv.gz
-    wiki_titles_v1	deu-eng	http://data.statmt.org/wikititles/v1/wikititles-v1.deu-eng.tsv.gz
-    wiki_titles_v2	deu-eng	http://data.statmt.org/wikititles/v2/wikititles-v2.deu-eng.tsv.gz
-    newstest2014_deen	deu-eng	http://data.statmt.org/wmt20/translation-task/dev.tgz	dev/newstest2014-deen-src.de.sgm,dev/newstest2014-deen-ref.en.sgm
-    newstest2015_ende	en-de	http://data.statmt.org/wmt20/translation-task/dev.tgz	dev/newstest2015-ende-src.en.sgm,dev/newstest2015-ende-ref.de.sgm
-    newstest2015_deen	deu-eng	http://data.statmt.org/wmt20/translation-task/dev.tgz	dev/newstest2015-deen-src.de.sgm,dev/newstest2015-deen-ref.en.sgm
-    ...[truncated]
+$ mtdata list -l deu-eng | cut -f1  # see available datasets
+    Statmt-commoncrawl_wmt13-1-deu-eng
+    Statmt-europarl_wmt13-7-deu-eng
+    Statmt-news_commentary_wmt18-13-deu-eng
+    Statmt-europarl-9-deu-eng
+    Statmt-europarl-7-deu-eng
+    Statmt-news_commentary-14-deu-eng
+    Statmt-news_commentary-15-deu-eng
+    Statmt-news_commentary-16-deu-eng
+    Statmt-wiki_titles-1-deu-eng
+    Statmt-wiki_titles-2-deu-eng
+    Statmt-newstest_deen-2014-deu-eng
+    ....[truncated]
 ```
 Get these datasets and store under dir `deu-eng`
 ```bash
-$ mtdata get --langs deu-eng --merge --train europarl_v10 wmt13_commoncrawl news_commentary_v14 --test newstest201{4,5,6,7,8,9}_deen --out deu-eng
+ $ mtdata get -l deu-eng --out data/deu-eng --merge \
+     --train Statmt-europarl-10-deu-eng Statmt-news_commentary-16-deu-eng \
+     --dev Statmt-newstest_deen-2017-deu-eng  --test Statmt-newstest_deen-20{18,19,20}-deu-eng
     # ...[truncated]   
     INFO:root:Train stats:
     {
-      "total": 4565929,
+      "total": 2206240,
       "parts": {
-        "wmt13_commoncrawl": 2399123,
-        "news_commentary_v14": 338285,
-        "europarl_v10": 1828521
+        "Statmt-news_commentary-16-deu-eng": 388482,
+        "Statmt-europarl-10-deu-eng": 1817758
       }
     }
     INFO:root:Dataset is ready at deu-eng
@@ -162,37 +201,47 @@ $ mtdata get --langs deu-eng --merge --train europarl_v10 wmt13_commoncrawl news
 To reproduce this dataset again in the future or by others, please refer to `<out-dir>>/mtdata.signature.txt`:
 ```bash
 $ cat deu-eng/mtdata.signature.txt
-mtdat get -l deu-eng -tr europarl_v10 wmt13_commoncrawl news_commentary_v14 -ts newstest2014_deen newstest2015_deen newstest2016_deen newstest2017_deen newstest2018_deen newstest2019_deen -o <out-dir>
-mtdata version 0.1.1
+mtdata get -l deu-eng -tr Statmt-europarl-10-deu-eng Statmt-news_commentary-16-deu-eng \
+   -ts Statmt-newstest_deen-2018-deu-eng Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng \
+   -dv Statmt-newstest_deen-2017-deu-eng --merge -o <out-dir>
+mtdata version 0.3.0-dev
 ```
 
 See what the above command has accomplished:
 ```bash 
-$ find  deu-eng -type f | sort  | xargs wc -l
-    3003 deu-eng/tests/newstest2014_deen.deu
-    3003 deu-eng/tests/newstest2014_deen.eng
-    2169 deu-eng/tests/newstest2015_deen.deu
-    2169 deu-eng/tests/newstest2015_deen.eng
-    2999 deu-eng/tests/newstest2016_deen.deu
-    2999 deu-eng/tests/newstest2016_deen.eng
-    3004 deu-eng/tests/newstest2017_deen.deu
-    3004 deu-eng/tests/newstest2017_deen.eng
-    2998 deu-eng/tests/newstest2018_deen.deu
-    2998 deu-eng/tests/newstest2018_deen.eng
-    2000 deu-eng/tests/newstest2019_deen.deu
-    2000 deu-eng/tests/newstest2019_deen.eng
- 1828521 deu-eng/train-parts/europarl_v10.deu
- 1828521 deu-eng/train-parts/europarl_v10.eng
-  338285 deu-eng/train-parts/news_commentary_v14.deu
-  338285 deu-eng/train-parts/news_commentary_v14.eng
- 2399123 deu-eng/train-parts/wmt13_commoncrawl.deu
- 2399123 deu-eng/train-parts/wmt13_commoncrawl.eng
- 4565929 deu-eng/train.deu
- 4565929 deu-eng/train.eng
+$ tree  data/deu-eng/
+├── dev.deu -> tests/Statmt-newstest_deen-2017-deu-eng.deu
+├── dev.eng -> tests/Statmt-newstest_deen-2017-deu-eng.eng
+├── mtdata.signature.txt
+├── test1.deu -> tests/Statmt-newstest_deen-2020-deu-eng.deu
+├── test1.eng -> tests/Statmt-newstest_deen-2020-deu-eng.eng
+├── test2.deu -> tests/Statmt-newstest_deen-2018-deu-eng.deu
+├── test2.eng -> tests/Statmt-newstest_deen-2018-deu-eng.eng
+├── test3.deu -> tests/Statmt-newstest_deen-2019-deu-eng.deu
+├── test3.eng -> tests/Statmt-newstest_deen-2019-deu-eng.eng
+├── tests
+│   ├── Statmt-newstest_deen-2017-deu-eng.deu
+│   ├── Statmt-newstest_deen-2017-deu-eng.eng
+│   ├── Statmt-newstest_deen-2018-deu-eng.deu
+│   ├── Statmt-newstest_deen-2018-deu-eng.eng
+│   ├── Statmt-newstest_deen-2019-deu-eng.deu
+│   ├── Statmt-newstest_deen-2019-deu-eng.eng
+│   ├── Statmt-newstest_deen-2020-deu-eng.deu
+│   └── Statmt-newstest_deen-2020-deu-eng.eng
+├── train-parts
+│   ├── Statmt-europarl-10-deu-eng.deu
+│   ├── Statmt-europarl-10-deu-eng.eng
+│   ├── Statmt-news_commentary-16-deu-eng.deu
+│   └── Statmt-news_commentary-16-deu-eng.eng
+├── train.deu
+├── train.eng
+├── train.meta.gz
+└── train.stats.json
 ```
 
-# ISO 639 3 
-Internally all language codes are mapped to ISO-639 3 codes.
+## Language Name Standardization
+### ISO 639 3 
+Internally, all language codes are mapped to ISO-639 3 codes.
 The mapping can be inspected with `python -m mtdata.iso ` or `mtdata-iso`
 ```bash
 $  mtdata-iso -h
@@ -236,58 +285,74 @@ print(iso3_code('en', fail_error=True))
 print(iso3_code('eNgLIsH', fail_error=True))  # case doesnt matter
 ```
 
-# How to extend, modify, or contribute:
-Please help grow the datasets by adding any missing and new datasets to [`index`](mtdata/index/__init__.py) module.
-Here is an example listing europarl-v9 corpus.
-Note: the language codes such as `de` `en` etc will be mapped to 3 letter ISO codes `deu` `eng` internally
-```python
-from mtdata.index import INDEX as index, Entry
-EUROPARL_v9 = 'http://www.statmt.org/europarl/v9/training/europarl-v9.%s-%s.tsv.gz'
-for pair in ['de en', 'cs en', 'cs pl', 'es pt', 'fi en', 'lt en']:
-    l1, l2 = pair.split()
-    index.add_entry(Entry(langs=(l1, l2), name='europarl_v9', url=EUROPARL_v9 % (l1, l2)))
-```
-If a datset is inside an archive such as `zip` or `tar`
-```python
-from mtdata.index import INDEX as index, Entry
-wmt_sets = {
-    'newstest2014': [('de', 'en'), ('cs', 'en'), ('fr', 'en'), ('ru', 'en'), ('hi', 'en')],
-    'newsdev2015': [('fi', 'en'), ('en', 'fi')]
-}
-for set_name, pairs in wmt_sets.items():
-    for l1, l2 in pairs:
-        src = f'dev/{set_name}-{l1}{l2}-src.{l1}.sgm'
-        ref = f'dev/{set_name}-{l1}{l2}-ref.{l2}.sgm'
-        name = f'{set_name}_{l1}{l2}'
-        index.add_entry(Entry((l1, l2), name=name, filename='wmt20dev.tgz', in_paths=[src, ref],
-                             url='http://data.statmt.org/wmt20/translation-task/dev.tgz'))
-# filename='wmt20dev.tgz' -- is manually set, because url has dev.gz that can be confusing
-# in_paths=[src, ref]  -- listing two sgm files inside the tarball
-# in_ext='sgm' will be auto detected fropm path. set in_ext='txt' to explicitly set format as plain text 
-```
-Refer to [paracrawl](mtdata/index/paracrawl.py), [tilde](mtdata/index/tilde.py), or
- [statmt](mtdata/index/statmt.py) for examples.
+### BCP-47 
+We used ISO 639-3 from the beginning, however, we soon faced the limitation that ISO 639-3 cannot distinguish script and region variants of language. So we have upgraded to BCP-47 like language tags in `v0.3.0`.
+
+* BCP47 uses two-letter codes to some and three-letter codes to the rest, we use three-letter codes to all languages.
+* BCP47 uses `-` hyphens we use `_` underscores, since hyphens are used by MT community to separate bitext pairs (e.g. en-de or eng-deu)
+
+
+Our tags are of form `xxx-Yyyy-ZZ` where 
  
-If citation is available for a dataset, please add BibTeX entry to [mtdata/index/refs.bib](mtdata/index/refs.bib) 
+| Pattern | Purpose | Standard | Length | Case | Required | 
+|---|---|---|---|---|---|
+| `xxx` | Language  | ISO 639-3 | three-letters | lowercase | mandatory |
+|`Yyyy`| Script | ISO 15924 | four-letters|  Titlecase | optional |
+|`ZZ` | Region |  ISO 3166-1 | two-letters | CAPITALS | optional |
 
-```python
-from mtdata.index import INDEX as index, Entry
 
-cite = index.ref_db.get_bibtex('author-etal')
-Entry(..., cite=cite)
+Notes:
+* Region is preserved when available and left blank when unavailable
+* Script `Yyyy` is forcibly suppressed in obvious cases. E.g. `eng` is written using `Latn` script, writing `eng-Latn` is just awkward to read as `Latn` is default we suppress `Latn` script for English. On the other hand a language like `Kannada` is written using `Knda` script (`kan-Knda` -> `kan`), but occasionally written using `Latn` script, so `kan-Latn` is not suppressed. 
+** The information about whats default script is obtained from IANA language code registry 
+
+  
+#### Example:
+To inspect parsing/mapping, use `python -m mtdata.iso.bcp47 <args>` 
+
+```bash
+python -m mtdata.iso.bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin-Deva kan-Latn
 ```
 
-When index is modified without incrementing version number, you will have to force refresh cache of index. The following command with `-ri` or `--reindex` flag helps reindex datasets. 
+| INPUT	| STD	|LANG	|SCRIPT	|REGION
+|---|---|---|---|---|
+|eng	|eng	|eng	|None	|None
+|English	|eng	|eng	|None	|None
+|en-US	|eng_US	|eng	|None	|US
+|en-GB	|eng_GB	|eng	|None	|GB
+|eng-Latn	|eng	|eng	|None	|None
+|kan	|kan	|kan	|None	|None
+|Kannada-Deva	|kan_Deva	|kan	|Deva	|None
+|hin-Deva	|hin	|hin	|None	|None
+|kan-Latn	|kan_Latn	|kan	|Latn	|None
+|kan-in	|kan_IN	|kan	|None	|IN
+|kn-knda-in	|kan_IN	|kan	|None	|IN
 
-`python -m mtdata -ri list ` or `python -m mtdata --reindex list ` to refresh cache of index.  
+**Python API for BCP47 Mapping**
+```python
+from mtdata.iso.bcp47 import bcp47
+tag = bcp47("en_US")
+print(*tag)  # tag is a tuple
+print(f"{tag}")  # str(tag) gets standardized string
+```
 
-For adding a custom parser, or file handler look into [`parser.read_segs()`](mtdata/parser.py) 
-and [`cache`](mtdata/cache.py) for dealing with a new archive/file type that is not already supported.
+## How Contribute:
+* Please help grow the datasets by adding any missing and new datasets to [`index`](mtdata/index/__init__.py) module.
+* Please create issues and/or pull requests at https://github.com/thammegowda/mtdata/ 
 
 ## Change Cache Directory:
 
-The default cache directory is `$HOME/.mtdata`. To change it, set the following environment variable
+The default cache directory is `$HOME/.mtdata`.
+It can grow to a large size when you download a lot of datasets using this command.
+
+To change it: 
+*  set the following environment variable
 `export MTDATA=/path/to/new-cache-dir`
+* Alternatively, move `$HOME/.mtdata` to the desired place and create a symbolic link 
+```bash
+mv $HOME/.mtdata /path/to/new/place
+ln -s /path/to/new/place $HOME/.mtdata
+```
 
 
  
@@ -303,29 +368,29 @@ See - https://github.com/thammegowda/mtdata/graphs/contributors
 
 ## Citation
 
-To appear at ACL 2021 Demos
+https://aclanthology.org/2021.acl-demo.37/ 
+
 
 ```
-@article{DBLP:journals/corr/abs-2104-00290,
-  author    = {Thamme Gowda and
-               Zhao Zhang and
-               Chris A. Mattmann and
-               Jonathan May},
-  title     = {Many-to-English Machine Translation Tools, Data, and Pretrained Models},
-  journal   = {CoRR},
-  volume    = {abs/2104.00290},
-  year      = {2021},
-  url       = {https://arxiv.org/abs/2104.00290},
-  archivePrefix = {arXiv},
-  eprint    = {2104.00290},
-  timestamp = {Mon, 12 Apr 2021 16:14:56 +0200},
-  biburl    = {https://dblp.org/rec/journals/corr/abs-2104-00290.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+@inproceedings{gowda-etal-2021-many,
+    title = "Many-to-{E}nglish Machine Translation Tools, Data, and Pretrained Models",
+    author = "Gowda, Thamme  and
+      Zhang, Zhao  and
+      Mattmann, Chris  and
+      May, Jonathan",
+    booktitle = "Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing: System Demonstrations",
+    month = aug,
+    year = "2021",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2021.acl-demo.37",
+    doi = "10.18653/v1/2021.acl-demo.37",
+    pages = "306--316",
 }
 ```
 
 --- 
-# Disclaimer on Datasets
+## Disclaimer on Datasets
 
 This tools downloads and prepares public datasets. We do not host or distribute these datasets, vouch for their quality or fairness, or make any claims regarding license to use these datasets. It is your responsibility to determine whether you have permission to use the dataset under the dataset's license.
 We request all the users of this tool to cite the original creators of the datsets, which maybe obtained from  `mtdata list -n <NAME> -l <L1-L2> -full`.

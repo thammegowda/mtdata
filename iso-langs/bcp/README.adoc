@@ -1,0 +1,28 @@
+= BCP 47
+
+RFC: https://www.rfc-editor.org/info/bcp47
+
+
+* Country codes: (they did not give a download link; I scraped it)
+  - https://www.iso.org/iso-3166-country-codes.html
+* Script codes:
+   - https://www.unicode.org/iso15924/codelists.html
+   - Here is a nice download link: https://www.unicode.org/iso15924/iso15924.txt
+* Lang code ISO 639:
+
+== BCP 47 Convention
+
+https://datatracker.ietf.org/doc/html/rfc5646#section-2.1.1
+
+These conventions include:
+
+* [ISO639-1] recommends that language codes be written in lowercase ('mn' Mongolian).
+* [ISO15924] recommends that script codes use lowercase with the initial letter capitalized ('Cyrl' Cyrillic).
+* [ISO3166-1] recommends that country codes be capitalized ('MN' Mongolia).
+
+
+== BCP47 (minimal data)
+
+
+    python bcp47_data.py > ../../mtdata/iso/bcp47.json
+

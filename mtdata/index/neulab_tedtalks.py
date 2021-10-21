@@ -4,13 +4,13 @@
 # Created: 8/27/20
 
 
-from mtdata.index import Index, Entry
+from mtdata.index import Index, Entry, DatasetId
 
 
 class NoisyEntry(Entry):
 
     def is_NULL(self, seg):
-        return  '__NULL__' in seg or '_ _ NULL _ _' in seg
+        return '__NULL__' in seg or '_ _ NULL _ _' in seg
 
     def is_noisy(self, seg1, seg2) -> bool:
         noise = super().is_noisy(seg1, seg2) or self.is_NULL(seg1) or self.is_NULL(seg2)
@@ -33,9 +33,7 @@ def load_all(index: Index):
             col1 = col_idx[lang1]
             for lang2 in langs[idx1 + 1:]:
                 col2 = col_idx[lang2]
-                ent = NoisyEntry(langs=(lang1, lang2),
-                                 name=f"neulab_tedtalksv1_{split}",
-                                 filename='neulab_ted_talksv1.tar.gz',
-                                 url=url, in_paths=[f"all_talks_{split}.tsv"],
-                                 cols=(col1, col2), cite=cite)
+                ent = NoisyEntry(did=DatasetId(group='Neulab', name=f'tedtalks_{split}', version='1', langs=(lang1, lang2)),
+                                 filename='neulab_ted_talksv1.tar.gz', url=url, in_paths=[f"all_talks_{split}.tsv"],
+                                 in_ext='tsv', cols=(col1, col2), cite=cite,)
                 index.add_entry(ent)
