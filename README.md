@@ -1,4 +1,6 @@
 # MTData
+[![image](http://img.shields.io/pypi/v/mtdata.svg)](https://pypi.python.org/pypi/mtdata/)
+![Travis (.com)](https://img.shields.io/travis/com/thammegowda/mtdata?style=plastic)
 
 MTData tool automates collection and preparation of machine translation datasets.
 It provides CLI and python APIs, so it can be either used as a standalone tool or embedded into
