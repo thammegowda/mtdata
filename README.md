@@ -66,8 +66,7 @@ We have added some commonly used datasets - you are welcome to add more!
 | WAT | 3|
 | StanfordNLP | 3|
 | KECL | 1|
-| ----|----|
-| Total | 182.5K|
+| *Total* | *182.5K*|
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format. It has two versions: `v1` (tokenized) and `v1c` (raw)
