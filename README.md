@@ -184,7 +184,7 @@ $ mtdata list -l deu-eng | cut -f1  # see available datasets
     Statmt-newstest_deen-2014-deu-eng
     ....[truncated]
 ```
-Get these datasets and store under dir `deu-eng`
+Get these datasets and store under dir `data/deu-eng`
 ```bash
  $ mtdata get -l deu-eng --out data/deu-eng --merge \
      --train Statmt-europarl-10-deu-eng Statmt-news_commentary-16-deu-eng \
@@ -200,7 +200,7 @@ Get these datasets and store under dir `deu-eng`
     }
     INFO:root:Dataset is ready at deu-eng
 ```
-To reproduce this dataset again in the future or by others, please refer to `<out-dir>>/mtdata.signature.txt`:
+To reproduce this dataset again in the future or by others, please refer to `<out-dir>/mtdata.signature.txt`:
 ```bash
 $ cat deu-eng/mtdata.signature.txt
 mtdata get -l deu-eng -tr Statmt-europarl-10-deu-eng Statmt-news_commentary-16-deu-eng \
@@ -306,7 +306,7 @@ Our tags are of form `xxx-Yyyy-ZZ` where
 Notes:
 * Region is preserved when available and left blank when unavailable
 * Script `Yyyy` is forcibly suppressed in obvious cases. E.g. `eng` is written using `Latn` script, writing `eng-Latn` is just awkward to read as `Latn` is default we suppress `Latn` script for English. On the other hand a language like `Kannada` is written using `Knda` script (`kan-Knda` -> `kan`), but occasionally written using `Latn` script, so `kan-Latn` is not suppressed. 
-** The information about whats default script is obtained from IANA language code registry 
+* The information about whats default script is obtained from IANA language code registry 
 
   
 #### Example:
@@ -338,7 +338,7 @@ print(*tag)  # tag is a tuple
 print(f"{tag}")  # str(tag) gets standardized string
 ```
 
-## How Contribute:
+## How to Contribute:
 * Please help grow the datasets by adding any missing and new datasets to [`index`](mtdata/index/__init__.py) module.
 * Please create issues and/or pull requests at https://github.com/thammegowda/mtdata/ 
 
@@ -355,7 +355,6 @@ To change it:
 mv $HOME/.mtdata /path/to/new/place
 ln -s /path/to/new/place $HOME/.mtdata
 ```
-
 
  
 ## Run tests
