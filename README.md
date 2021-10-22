@@ -294,7 +294,7 @@ We used ISO 639-3 from the beginning, however, we soon faced the limitation that
 * BCP47 uses `-` hyphens we use `_` underscores, since hyphens are used by MT community to separate bitext pairs (e.g. en-de or eng-deu)
 
 
-Our tags are of form `xxx-Yyyy-ZZ` where 
+Our tags are of form `xxx_Yyyy_ZZ` where 
  
 | Pattern | Purpose | Standard | Length | Case | Required | 
 |---|---|---|---|---|---|
