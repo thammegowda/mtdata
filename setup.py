@@ -40,7 +40,7 @@ setup(
                                                         'computational linguistics'],
     entry_points={
         'console_scripts': [
-            'mtdata=mtdata.main:main',
+            'mtdata=mtdata.__main__:main',
             'mtdata-iso=mtdata.iso.__main__:main',
                             ],
     },
@@ -49,6 +49,7 @@ setup(
         'enlighten==1.10.1',
         'portalocker==2.3.0',
         'pybtex==0.24.0',
+        'ruamel.yaml >= 0.17.10',
     ],
     include_package_data=True,
     zip_safe=False,
