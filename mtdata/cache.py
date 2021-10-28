@@ -8,7 +8,7 @@ import fnmatch
 from dataclasses import dataclass
 from pathlib import Path
 from mtdata.index import Entry
-from mtdata import log, __version__, pbar_man, MTDataException
+from mtdata import log, __version__, pbar_man, MTDataException, MAX_TIMEOUT
 from mtdata.utils import ZipPath, TarPath
 from mtdata.parser import Parser
 from typing import List, Union
@@ -20,7 +20,6 @@ from .parser import detect_extension
 import requests
 import math
 
-MAX_TIMEOUT = 2 * 60 * 60  # 2 hours
 
 headers = {'User-Agent': f'mtdata downloader {__version__}; cURL and wget like.'}
 
@@ -115,15 +114,13 @@ class Cache:
         l2_path = self.get_local_path(l2_url, fix_missing=fix_missing)
         return [align_file, l1_path, l2_path]
 
-    def get_local_in_paths(self, path:Path, entry: Entry,):
+    def get_local_in_paths(self, path: Path, entry: Entry,):
         in_paths = entry.in_paths
         if zipfile.is_zipfile(path):
             with zipfile.ZipFile(path) as root:
                 in_paths = self.match_globs(names=root.namelist(), globs=in_paths)
             return [ZipPath(path, p) for p in in_paths]   # stdlib is buggy, so I made a workaround
         elif tarfile.is_tarfile(path):
-            with tarfile.open(path, encoding='utf-8') as root:
-                in_paths = self.match_globs(names=root.getnames(), globs=in_paths)
             return [TarPath(path, p) for p in in_paths]
         else:
             raise Exception(f'Unable to read {entry.did}; the file is neither zip nor tar')

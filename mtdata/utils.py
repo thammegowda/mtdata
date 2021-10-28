@@ -7,8 +7,10 @@ import gzip
 import tarfile
 import zipfile
 from dataclasses import dataclass
+import portalocker
 
-from mtdata import log
+
+from mtdata import log, MAX_TIMEOUT
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -159,11 +161,17 @@ class ZipPath (ArchivedPath):
 @dataclass
 class TarPath(ArchivedPath):
 
-    def exists(self):
-        with tarfile.open(self.root, encoding='utf-8') as root:
-            return self.name in root.getnames()
+    def __post_init__(self):
+        self.ext_dir = self.extract()
+        matches = list(self.ext_dir.glob(self.name))
+        assert len(matches) == 1
+        self.child = matches[0]
+        self.open = self.child.open
 
-    def open(self, mode='r', **kwargs):
+    def exists(self):
+        return self.child.exists()
+
+    def open_old(self, mode='r', **kwargs):
         assert mode in ('r', 'rt'), f'only "r" is supported, given: {mode}'
         log.info(f"Reading tar: {self.root}?{self.name}")
         container = tarfile.open(self.root, mode='r', encoding='utf-8')
@@ -174,6 +182,31 @@ class TarPath(ArchivedPath):
         def close(*args, **kwargs):
             reader_close()
             stream.close()
-            container.close()
+            container and container.close()
         reader.close = close   # hijack
         return reader
+
+    def extract(self):
+        dir_name = self.extracted_name()
+        out_path = self.root.parent / dir_name
+        valid_path = self.root.parent / (dir_name + '.valid')
+        lock_path = self.root.parent / (dir_name + '.lock')
+        if not valid_path.exists():
+            with portalocker.Lock(lock_path, 'w', timeout=MAX_TIMEOUT) as _:
+                if valid_path.exists():
+                    return   # extracted by parallel process
+                log.info(f"extracting {self.root}")
+                with tarfile.open(self.root) as tar:
+                    tar.extractall(out_path)
+                valid_path.touch()
+        return out_path
+
+    def extracted_name(self):
+        exts = ['.tar', '.tar.gz', '.tar.bz2', '.tar.xz']
+        name = self.root.name
+        dir_name = name + '-extracted'
+        for ext in exts:
+            if self.root.name.endswith(ext):
+                dir_name = name[:-len(ext)]
+                break
+        return dir_name
