@@ -1,6 +1,6 @@
 # Change Log
 
-## v0.3.1 - WIP
+## v0.3.1 - 20211028
 
 - Add support for recipes; list-recipe get-recipe subcommands added
 - add support for viewing stats of dataset; words, chars, segs
