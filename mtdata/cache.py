@@ -47,11 +47,15 @@ class Cache:
     def get_stats(self, entry: Entry):
         path = self.get_entry(entry)
         parser = Parser(path, ext=entry.in_ext or None, ent=entry)
-        count, skips = 0, 0
+        count, skips, noise = 0, 0, 0
         toks = [0, 0]
         chars = [0, 0]
         for rec in parser.read_segs():
             if len(rec) < 2 or not rec[0] or not rec[1]:
+                skips += 1
+                continue
+            if entry.is_noisy(seg1=rec[0], seg2=rec[1]):
+                noise += 1
                 skips += 1
                 continue
             count += 1
@@ -73,6 +77,7 @@ class Cache:
             'id': str(entry.did),
             'segs': count,
             'segs_err': skips,
+            'segs_noise': noise,
             f'{l1}_toks': toks[0],
             f'{l2}_toks': toks[1],
             f'{l1}_chars': chars[0],
@@ -135,14 +140,14 @@ class Cache:
             # check if downloaded by  other parallel process
             if valid_flag.exists() and save_at.exists():
                 return save_at
-            log.info(f"Downloading {url} --> {save_at}")
+            log.info(f"GET {url} → {save_at}")
             resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True, timeout=timeout)
             assert resp.status_code == 200, resp.status_code
             buf_size = 2 ** 10
             n_buffers = math.ceil(int(resp.headers.get('Content-Length', '0')) / buf_size) or None
             desc = url
-            if len(desc) > 40:
-                desc = desc[:30] + '...' + desc[-10:]
+            if len(desc) > 60:
+                desc = desc[:30] + '...' + desc[-28:]
             with pbar_man.counter(color='green', total=n_buffers, unit='KiB', leave=False,
                                   desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):

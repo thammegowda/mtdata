@@ -1,6 +1,16 @@
 # Change Log
 
-## v0.3.0 - WIP
+## v0.3.1 - WIP
+
+- Add support for recipes; list-recipe get-recipe subcommands added
+- add support for viewing stats of dataset; words, chars, segs
+- FIX url for UN dev and test sets (source was updated so we updated too)
+- Multilingual experiment support; ISO 639-3 code `mul` implies multilingual; e.g. mul-eng or eng-mul
+- `--dev` accepts multiple datasets, and merges it (useful for multilingual experiments) 
+
+---
+
+## v0.3.0 - 20211021
 
 > Big Changes: BCP-47, data compression 
 

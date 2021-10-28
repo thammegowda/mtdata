@@ -25,7 +25,7 @@ class Dataset:
                  drop_test_noise=False, drop_dupes=False, drop_tests=False, compress=False):
         self.dir = dir
         self.langs = langs
-        assert len(langs) == 2, 'Only parallel datasets are supported for now and expect two langs'
+        assert len(langs) == 2, f'Only parallel datasets are supported for now and expected two langs; {langs}'
         self.cache = Cache(cache_dir)
 
         self.train_parts_dir = dir / 'train-parts'  # will be merged later
@@ -51,7 +51,7 @@ class Dataset:
 
     @classmethod
     def prepare(cls, langs, out_dir: Path, train_dids: Optional[List[DatasetId]] = None,
-                test_dids: Optional[List[DatasetId]] = None, dev_did: Optional[DatasetId] = None,
+                test_dids: Optional[List[DatasetId]] = None, dev_dids: Optional[List[DatasetId]] = None,
                 cache_dir: Path = CACHE_DIR, merge_train=False, drop_noise: Tuple[bool, bool] = (True, False),
                 compress=False, drop_dupes=False, drop_tests=False):
         drop_train_noise, drop_test_noise = drop_noise
@@ -59,31 +59,40 @@ class Dataset:
         assert train_dids or test_dids, 'Either train_names or test_names should be given'
         # First, resolve and check if they exist before going to process them.
         # Fail early for typos in name
-        train_entries, test_entries = None, None
-        if test_dids:
-            test_entries = cls.resolve_entries(test_dids)
-        if train_dids:
-            train_entries = cls.resolve_entries(train_dids)
+        all_dids = (train_dids or []) + (dev_dids or []) + (test_dids or [])
+        cls.resolve_entries(all_dids)
 
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir,
                       drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise,
                       drop_dupes=drop_dupes, drop_tests=drop_tests)
-        if test_entries:  # tests are smaller so quicker; no merging needed
-            dataset.add_test_entries(test_entries)
-        if dev_did:
-            dev_entry = cls.resolve_entries([dev_did])[0]
-            dataset.add_dev_entry(dev_entry)
 
-        if train_entries:  # this might take some time
-            dataset.add_train_entries(train_entries, merge_train=merge_train, compress=compress)
+        dev_entries, test_entries = [], []
+        if test_dids:  # tests are smaller so quicker; no merging needed
+            test_entries = cls.resolve_entries(test_dids)
+            dataset.add_test_entries(test_entries)
+        if dev_dids:
+            dev_entries = cls.resolve_entries(dev_dids)
+            dataset.add_dev_entries(dev_entries)
+        if train_dids:  # this might take some time
+            train_entries = cls.resolve_entries(train_dids)
+            drop_hashes = None
+            if drop_tests:
+                pair_files = []
+                for ent in dev_entries + test_entries:
+                    p1, p2 = dataset.get_paths(dataset.tests_dir, ent)
+                    if BCP47Tag.check_compat_swap(langs, ent.did.langs, fail_on_incompat=True)[1]:
+                        p1, p2 = p2, p1  # swap
+                    pair_files.append((p1, p2))
+                test_pair_hash, test_seg_hash = dataset.hash_all_bitexts(pair_files)
+                drop_hashes = test_pair_hash | test_seg_hash   # set union
+            dataset.add_train_entries(train_entries, merge_train=merge_train, compress=compress,
+                                      drop_hashes=drop_hashes)
         return dataset
 
-    def hash_all_held_outs(self):
-        lang1, lang2 = self.langs
-        paired_files = self.find_bitext_pairs(self.tests_dir, lang1, lang2)
+    def hash_all_bitexts(self, paired_files):
         paired_hashes = set()
         seg_hashes = set()
-        for name, (if1, if2) in paired_files.items():
+        for if1, if2 in paired_files:
             for seg1, seg2 in self.read_parallel(if1, if2):
                 paired_hashes.add(hash((seg1, seg2)))
                 paired_hashes.add(hash((seg2, seg1)))
@@ -91,16 +100,22 @@ class Dataset:
                 seg_hashes.add(hash(seg2))
         return paired_hashes, seg_hashes
 
-    def add_train_entries(self, entries, merge_train=False, compress=False):
+    def add_train_entries(self, entries, merge_train=False, compress=False, drop_hashes=None):
         self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise,
                        compress=compress, desc='Training sets')
         if not merge_train:
             return
         lang1, lang2 = self.langs
-        paired_files = self.find_bitext_pairs(self.train_parts_dir, lang1, lang2)
+        # paired_files = self.find_bitext_pairs(self.train_parts_dir, lang1, lang2)
+        paired_files = {}
+        for ent in entries:
+            e1, e2 = self.get_paths(self.train_parts_dir, ent)
+            _, swapped = BCP47Tag.check_compat_swap(self.langs, ent.did.langs, fail_on_incompat=True)
+            if swapped:
+                e1, e2 = e2, e1
+            paired_files[str(ent.did)] = e1, e2
 
         log.info(f"Going to merge {len(paired_files)} files as one train file")
-
         compress_ext = f'.{DEF_COMPRESS}' if compress else ''
         l1_ext = f'{lang1}{compress_ext}'
         l2_ext = f'{lang2}{compress_ext}'
@@ -113,9 +128,6 @@ class Dataset:
                       test_overlap_skips=coll.defaultdict(int),
                       selected=coll.defaultdict(int))
         train_hashes = set()
-        tests_pair_hashes, tests_seg_hashes = set(), set()
-        if self.drop_tests:
-            tests_pair_hashes, tests_seg_hashes = self.hash_all_held_outs()
 
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
             with pbar_man.counter(color='green', total=len(paired_files), unit='it', desc="Merging",
@@ -125,9 +137,8 @@ class Dataset:
                         counts['total'][name] += 1
                         if self.drop_dupes or self.drop_tests:
                             hash_val = hash((seg1, seg2))
-                            if self.drop_tests and (hash_val in tests_pair_hashes
-                                                    or hash(seg1) in tests_seg_hashes
-                                                    or hash(seg2) in tests_seg_hashes):
+                            if drop_hashes and (hash_val in drop_hashes or hash(seg1) in drop_hashes
+                                                or hash(seg2) in drop_hashes):
                                 counts['test_overlap_skips'][name] += 1
                                 continue
                             if self.drop_dupes:
@@ -189,34 +200,62 @@ class Dataset:
 
     def add_test_entries(self, entries):
         self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise, desc='Held-out sets')
-        if len(entries) <= 4:
+        if len(entries) <= 20:
             for i, entry in enumerate(entries, start=1):
                 self.link_to_part(entry, self.tests_dir, f"test{i}")
 
     def link_to_part(self, entry, data_dir, link_name):
         """Create link such as test, dev"""
+        l1, l2 = self.langs
         l1_path, l2_path = self.get_paths(data_dir, entry)
         l1_path, l2_path = l1_path.relative_to(self.dir), l2_path.relative_to(self.dir)
-        l1_link = self.dir / f'{link_name}.{self.langs[0]}'
-        l2_link = self.dir / f'{link_name}.{self.langs[1]}'
+        l1_link = self.dir / f'{link_name}.{l1.lang}'
+        l2_link = self.dir / f'{link_name}.{l2.lang}'
         for lnk in [l1_link, l2_link]:
             lnk.unlink(missing_ok=True)
-        if BCP47Tag.are_compatible(self.langs[0], entry.did.langs[0]):
-            assert not BCP47Tag.are_compatible(self.langs[0], entry.did.langs[1])
-            # cool! no swapping needed
-        elif BCP47Tag.are_compatible(self.langs[0], entry.did.langs[1]):
-            l1_path, l2_path = l2_path, l1_path  # swapped
-        else:
-            raise Exception("This should not be happening! :(")
-
+        compat, swapped = BCP47Tag.check_compat_swap(self.langs, entry.did.langs)
+        if not compat:
+            raise Exception(f"Unable to unify language IDs: {self.langs} x {entry.did.langs}")
+        if swapped:
+            l1_path, l2_path = l2_path, l1_path
         l1_link.symlink_to(l1_path)
         l2_link.symlink_to(l2_path)
 
-    def add_dev_entry(self, entry):
-        n_good, n_bad = self.add_part(self.tests_dir, entry, drop_noise=self.drop_test_noise)
-        log.info(f"{entry.did} : found {n_good:} segments and {n_bad:} errors")
-        # create a link
-        self.link_to_part(entry, self.tests_dir, "dev")
+    def add_dev_entries(self, entries):
+        assert entries
+        for entry in entries:
+            n_good, n_bad = self.add_part(self.tests_dir, entry, drop_noise=self.drop_test_noise)
+            log.info(f"{entry.did} : found {n_good:} segments and {n_bad:} errors")
+        if len(entries) == 1:
+            # create a link to the only one
+            self.link_to_part(entries[0], self.tests_dir, "dev")
+        else:
+            l1, l2 = self.langs
+            out_paths = (self.dir / f'dev.{l1.lang}', self.dir / f'dev.{l2.lang}')
+            in_paths = []
+            for ent in entries:
+                e1, e2 = self.get_paths(self.tests_dir, ent)
+                compat, swapped = BCP47Tag.check_compat_swap(self.langs, ent.did.langs)
+                if not compat:
+                    raise Exception(f"Unable to unify language IDs {self.langs} x {ent.did.langs}")
+                if swapped:
+                    e1, e2 = e2, e1
+                in_paths.append((e1, e2))
+            self.cat_bitexts(in_paths=in_paths, out_paths=out_paths)
+
+    def cat_bitexts(self, in_paths:List[Tuple[Path, Path]], out_paths: Tuple[Path, Path]):
+        of1, of2 = out_paths
+        of1.parent.mkdir(exist_ok=True)
+        of2.parent.mkdir(exist_ok=True)
+        with pbar_man.counter(color='green', total=len(in_paths), unit='it', desc="Merging") as pbar,\
+                IO.writer(of1) as w1, IO.writer(of2) as w2:
+            for if1, if2 in in_paths:
+                assert if1.exists()
+                assert if2.exists()
+                for seg1, seg2 in self.read_parallel(if1, if2):
+                    w1.write(seg1 + '\n')
+                    w2.write(seg2 + '\n')
+                pbar.update()
 
     def add_parts(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
         with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
@@ -268,8 +307,6 @@ class Dataset:
                 if not sent1 or not sent2:
                     skips += 1
                     continue
-                # if swap:
-                #    sent2, sent1 = sent1, sent2
                 sent1 = sent1.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
                 sent2 = sent2.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
                 f1.write(f'{sent1}\n')

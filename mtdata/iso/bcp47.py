@@ -12,9 +12,11 @@
 import json
 from collections import namedtuple
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 from functools import lru_cache
 from mtdata.iso import iso3_code
+
+MULTI_LANG = 'mul'  # multilang
 
 
 def load_json(path: Path):
@@ -64,6 +66,40 @@ class BCP47Tag(namedtuple('BCP47Tag', ('lang', 'script', 'region', 'tag'))):
     def are_compatible(cls, tag1, tag2):
         tag1 = tag1 if isinstance(tag1, cls) else bcp47(tag1)
         return tag1.is_compatible(tag2)
+
+    @classmethod
+    def check_compat_swap(cls, pair1: Tuple['BCP47Tag', 'BCP47Tag'], pair2:  Tuple['BCP47Tag', 'BCP47Tag'],
+                          fail_on_incompat=False) -> Tuple[bool, bool]:
+        a, b = pair1
+        aa, bb = pair2
+        # we cant support multiling on both sides
+        assert not (a.lang == MULTI_LANG and b.lang == MULTI_LANG), f'Multilingual on both side is not supported'
+        assert not (aa.lang == MULTI_LANG and bb.lang == MULTI_LANG), f'Multilingual on both side is not supported'
+        compat = False
+        swap = False
+        if a.is_compatible(aa):
+            if b.is_compatible(bb) or b.lang == MULTI_LANG:
+                assert not a.is_compatible(bb), f'{pair1} x {pair2} is ambiguous'
+                assert not b.is_compatible(aa), f'{pair1} x {pair2} is ambiguous'
+                compat = True
+                swap = False
+        elif a.is_compatible(bb):
+            if b.is_compatible(aa) or b.lang == MULTI_LANG:
+                assert not a.is_compatible(aa)  # it wont be as already checked in prior case if
+                assert not b.is_compatible(bb), f'{pair1} x {pair2} is ambiguous'
+                compat = True
+                swap = True
+        elif a.lang == MULTI_LANG:
+            if b.is_compatible(bb):
+                compat = True
+                swap = False
+            elif b.is_compatible(aa):
+                compat = True,
+                swap = True
+        if not compat and fail_on_incompat:
+            raise Exception(f'Unable to match langs : {pair1} x {pair2}')
+        # else False, False
+        return compat, swap
 
 
 class BCP47Parser:

@@ -24,7 +24,7 @@ def list_data(langs, names, not_names=None, full=False):
     print(f"Total {len(entries)} entries")
 
 
-def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_did=None, merge_train=False, compress=False,
+def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, merge_train=False, compress=False,
              drop_dupes=False, drop_tests=False, **kwargs):
     if kwargs:
         log.warning(f"Args are ignored: {kwargs}")
@@ -32,15 +32,12 @@ def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_did=None, merg
     assert train_dids or test_dids, 'Required --train or --test or both'
     dataset = Dataset.prepare(
         langs, train_dids=train_dids, test_dids=test_dids, out_dir=out_dir,
-        dev_did=dev_did, cache_dir=CACHE_DIR, merge_train=merge_train, compress=compress,
+        dev_dids=dev_dids, cache_dir=CACHE_DIR, merge_train=merge_train, compress=compress,
         drop_dupes=drop_dupes, drop_tests=drop_tests)
     cli_sig = f'-l {"-".join(str(l) for l in langs)}'
-    if train_dids:
-        cli_sig += f' -tr {" ".join(str(d) for d in train_dids)}'
-    if test_dids:
-        cli_sig += f' -ts {" ".join(str(d) for d in test_dids)}'
-    if dev_did:
-        cli_sig += f' -dv {dev_did}'
+    for flag, dids in [('-tr', train_dids), ('-ts', test_dids), ('-dv', dev_dids)]:
+        if dids:
+            cli_sig += f' {flag} {" ".join(map(str, dids))}'
     for flag, val in [('--merge', merge_train), ('--compress', compress), ('-dd', drop_dupes), ('-dt', drop_tests)]:
         if val:
             cli_sig += ' ' + flag
@@ -89,8 +86,7 @@ def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_
     if not recipe:
         raise ValueError(f'recipe {recipe_id} not found. See "mtdata list-recipe"')
 
-    assert len(recipe.langs) == 1, f'Multi lingual recipes are not supported yet'
-    get_data(langs=recipe.langs[0], train_dids=recipe.train, dev_did=recipe.dev, test_dids=recipe.test,
+    get_data(langs=recipe.langs, train_dids=recipe.train, dev_dids=recipe.dev, test_dids=recipe.test,
              merge_train=True, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes, drop_tests=drop_tests)
 
 
@@ -160,8 +156,8 @@ def parse_args():
     e.g. "-ts Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng ".
     You may also use shell expansion if your shell supports it.
     e.g. "-ts Statmt-newstest_deen-20{19,20}-deu-eng" ''')
-    get_p.add_argument('-dv', '--dev', metavar='ID', dest='dev_did', type=DatasetId.parse, required=False,
-                       help='''R|Dataset to be used for development (aka validation). 
+    get_p.add_argument('-dv', '--dev', metavar='ID', dest='dev_dids', type=DatasetId.parse, nargs='*',
+                       help='''R|Dataset to be used for development (aka validation).
     e.g. "-dev Statmt-newstest_deen-2017-deu-eng"''')
     add_boolean_arg(get_p, 'merge', dest='merge_train', default=False, help='Merge train into a single file')
 

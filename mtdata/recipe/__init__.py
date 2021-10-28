@@ -10,7 +10,7 @@ from typing import List, Union, Dict, Optional
 
 
 from mtdata import yaml, cache_dir, log
-from mtdata.entry import lang_pair, LangPair, DatasetId
+from mtdata.entry import lang_pair, LangPair, DatasetId, BCP47Tag, bcp47
 
 
 _def_recipes: Path = Path(__file__).parent / 'recipes.yml'
@@ -22,36 +22,29 @@ _home_recipes: Path = cache_dir / 'mtdata.recipes.yml'
 class Recipe:
 
     id: str
-    langs: Union[LangPair, List[LangPair]]
+    langs: LangPair
     train: List[DatasetId]
-    test: List[DatasetId]
-    dev: Optional[DatasetId] = ''
+    test: Optional[List[DatasetId]] = None
+    dev: Optional[List[DatasetId]] = None
     desc: Optional[str] = ''
     url: str = ''
 
     @classmethod
-    def parse(cls, langs, train, test, dev='', **kwargs):
-        if isinstance(langs, str):
-            langs = langs.split(',')
-        if isinstance(train, str):
-            train = train.split(',')
-        if isinstance(test, str):
-            test = test.split(',')
-        assert isinstance(langs, list)
-        assert isinstance(train, list)
-        assert isinstance(test, list)
-        langs = [lang_pair(lang) for lang in langs]
-        train = [DatasetId.parse(i) for i in train]
-        test = [DatasetId.parse(i) for i in test]
-        dev = dev and DatasetId.parse(dev)
+    def parse(cls, langs, train, test, dev, **kwargs):
+        train, dev, test = [None if not x else
+                            isinstance(x, list) and x or x.split(',') for x in (train, dev, test)]
+        langs = lang_pair(langs)
+        train = train and [DatasetId.parse(i) for i in train]
+        test = test and [DatasetId.parse(i) for i in test]
+        dev = dev and [DatasetId.parse(i) for i in dev]
         return cls(langs=langs, train=train, test=test, dev=dev, **kwargs)
 
     def format(self):
         rec = vars(self)
-        rec['langs'] = ','.join(f'{pair[0]}-{pair[1]}' for pair in self.langs)
-        rec['train'] = ','.join(str(did) for did in self.train)
-        rec['test'] = ','.join(str(did) for did in self.test)
-        rec['dev'] = str(self.dev)
+        rec['langs'] = '-'.join(map(str, self.langs))
+        rec['train'] = self.train and ','.join(str(did) for did in self.train)
+        rec['test'] = self.test and ','.join(str(did) for did in self.test)
+        rec['dev'] = self.dev and ','.join(str(did) for did in self.dev)
         return rec
 
     @classmethod
@@ -84,8 +77,8 @@ def print_all(recipes: List[Recipe], delim='\t', out=sys.stdout):
     for i, val in enumerate(recipes):
         kvs = val.format().items()
         if i == 0:
-            out.write(delim.join([kv[0] for kv in kvs]) + '\n')
-        out.write(delim.join([kv[1] for kv in kvs]) + '\n')
+            out.write(delim.join([kv[0] or '' for kv in kvs]) + '\n')
+        out.write(delim.join([kv[1] or '' for kv in kvs]) + '\n')
 
 
 RECIPES = Recipe.load_all()
