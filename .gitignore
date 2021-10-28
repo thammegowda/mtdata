@@ -1,3 +1,6 @@
+*.egg-info
+*.pytest_cache
+
 # Byte-compiled / optimized / DLL files
 /tmp
 __pycache__/

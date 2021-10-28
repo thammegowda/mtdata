@@ -1,0 +1,68 @@
+#- id: template1
+#  langs: xxx-yyy
+#  desc: desc1
+#  url: https://example.com
+#  train:
+#    - did1
+#    - did2
+#  dev: did3
+#  test:
+#    - did4
+#    - did5
+
+- id: vaswani_etal_2017_ende
+  langs: eng-deu
+  desc: Transformer - Attention is all you need
+  url: https://arxiv.org/abs/1706.03762
+  train:
+  - Statmt-commoncrawl_wmt13-1-deu-eng
+  - Statmt-europarl_wmt13-7-deu-eng
+  - Statmt-news_commentary_wmt18-13-deu-eng
+  dev: Statmt-newstest-2013-eng-deu
+  test: Statmt-newstest_deen-2014-deu-eng
+
+- id: tg01_deen_10M
+  langs: deu-eng
+  desc: 10M sentence corpus for Deu-Eng
+  url:
+  train:
+    - Statmt-commoncrawl_wmt13-1-deu-eng
+    - Statmt-europarl_wmt13-7-deu-eng
+    - Statmt-news_commentary_wmt18-13-deu-eng
+    #- Statmt-ccaligned-1-deu_DE-eng
+    - Tilde-eesc-2017-deu-eng
+    - Tilde-rapid-2016-deu-eng
+    - Tilde-ema-2016-deu-eng
+  dev: Statmt-newstest_deen-2019-deu-eng
+  test: Statmt-newstest_deen-2020-deu-eng
+
+- id: tg01_fren_10M
+  langs: fra-eng
+  desc: 10M sentence corpus for Fra-Eng
+  train:
+    - Statmt-commoncrawl_wmt13-1-fra-eng
+    - Statmt-europarl_wmt13-7-fra-eng
+    #- OPUS-unpc-1.0-eng-fra   # oops! 30M sentences
+  dev: Statmt-newstest-2013-eng-fra
+  test: Statmt-newstest_fren-2014-fra-eng
+
+- id: tg01_aren_16M
+  langs: ara-eng
+  desc: 16M sentence corpus for ara-eng
+  train: OPUS-unpc-1.0-ara-eng
+  dev: OPUS-opus100_dev-1-ara-eng # UN-un_dev-1-eng-ara
+  test: OPUS-opus100_test-1-ara-eng #UN-un_test-1-eng-ara
+
+- id: tg01_hien_1M
+  langs: hin-eng
+  desc: 1M sentence corpus for hin-eng  # its 1.3M lines, but okay to me on log scale
+  train: IITB-hien_train-1.5-hin-eng
+  dev: IITB-hien_dev-1.5-hin-eng
+  test: IITB-hien_test-1.5-hin-eng
+
+- id: tg01_knen_200K
+  langs: kan-eng
+  desc: 100K sentence Kan-Eng corpus
+  train: Statmt-pmindia-1-eng-kan,Statmt-ccaligned-1-eng-kan_IN
+  dev: AI4Bharath-wat_dev-2021-eng-kan
+  test: AI4Bharath-wat_test-2021-eng-kan

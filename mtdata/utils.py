@@ -142,7 +142,7 @@ class ZipPath (ArchivedPath):
 
     def open(self, mode='r', **kwargs):
         assert mode in ('r', 'rt'), f'only "r" is supported, given: {mode}'
-        log.debug(f"Reading from zip file : {self.root} // {self.name}")
+        log.debug(f"Reading zip: {self.root}?{self.name}")
         container = zipfile.ZipFile(self.root, mode='r')
         stream = container.open(self.name, 'r')
         reader = io.TextIOWrapper(stream, **kwargs)
@@ -165,7 +165,7 @@ class TarPath(ArchivedPath):
 
     def open(self, mode='r', **kwargs):
         assert mode in ('r', 'rt'), f'only "r" is supported, given: {mode}'
-        log.info(f"Reading from tar file : {self.root} // {self.name}")
+        log.info(f"Reading tar: {self.root}?{self.name}")
         container = tarfile.open(self.root, mode='r', encoding='utf-8')
         stream = container.extractfile(self.name)
         reader = io.TextIOWrapper(stream, **kwargs)

@@ -6,7 +6,8 @@ import hashlib
 from pathlib import Path
 from mtdata import log, pbar_man, cache_dir as CACHE_DIR, MTDataException
 from mtdata.cache import Cache
-from mtdata.index import INDEX, Entry, DatasetId, LangPair
+from mtdata.index import INDEX
+from mtdata.entry import Entry, DatasetId, LangPair
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
 from mtdata.parser import Parser
 from mtdata.utils import IO
