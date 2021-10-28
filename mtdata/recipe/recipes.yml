@@ -94,7 +94,7 @@
   desc: "5K uzb-eng"
   train: OPUS-wikimedia-20210402-eng-uzb
   dev: OPUS-opus100_dev-1-eng-uzb
-  test: OPUS-opus100_dev-1-eng-uzb
+  test: OPUS-opus100_test-1-eng-uzb
 
 - id: tg01_10toeng
   langs: mul-eng  #  mul is multiple languages
