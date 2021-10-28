@@ -212,7 +212,8 @@ class Dataset:
         l1_link = self.dir / f'{link_name}.{l1.lang}'
         l2_link = self.dir / f'{link_name}.{l2.lang}'
         for lnk in [l1_link, l2_link]:
-            lnk.unlink(missing_ok=True)
+            if lnk.exists():
+                lnk.unlink()
         compat, swapped = BCP47Tag.check_compat_swap(self.langs, entry.did.langs)
         if not compat:
             raise Exception(f"Unable to unify language IDs: {self.langs} x {entry.did.langs}")

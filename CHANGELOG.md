@@ -7,6 +7,8 @@
 - FIX url for UN dev and test sets (source was updated so we updated too)
 - Multilingual experiment support; ISO 639-3 code `mul` implies multilingual; e.g. mul-eng or eng-mul
 - `--dev` accepts multiple datasets, and merges it (useful for multilingual experiments) 
+- tar files are extracted before read (performance improvements)
+- setup.py: version and descriptions accessed via regex 
 
 ---
 
