@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import portalocker
 
 
-from mtdata import log, MAX_TIMEOUT
+from mtdata import log, FILE_LOCK_TIMEOUT
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -192,7 +192,7 @@ class TarPath(ArchivedPath):
         valid_path = self.root.parent / (dir_name + '.valid')
         lock_path = self.root.parent / (dir_name + '.lock')
         if not valid_path.exists():
-            with portalocker.Lock(lock_path, 'w', timeout=MAX_TIMEOUT) as _:
+            with portalocker.Lock(lock_path, 'w', timeout=FILE_LOCK_TIMEOUT) as _:
                 if valid_path.exists():
                     return   # extracted by parallel process
                 log.info(f"extracting {self.root}")

@@ -8,7 +8,7 @@ import fnmatch
 from dataclasses import dataclass
 from pathlib import Path
 from mtdata.index import Entry
-from mtdata import log, __version__, pbar_man, MTDataException, MAX_TIMEOUT
+from mtdata import log, __version__, pbar_man, MTDataException, FILE_LOCK_TIMEOUT
 from mtdata.utils import ZipPath, TarPath
 from mtdata.parser import Parser
 from typing import List, Union
@@ -133,7 +133,7 @@ class Cache:
         save_at.parent.mkdir(parents=True, exist_ok=True)
 
         log.info(f"Acquiring lock on {lock_file}")
-        with portalocker.Lock(lock_file, 'w', timeout=MAX_TIMEOUT) as fh:
+        with portalocker.Lock(lock_file, 'w', timeout=FILE_LOCK_TIMEOUT) as fh:
             # check if downloaded by  other parallel process
             if valid_flag.exists() and save_at.exists():
                 return save_at
