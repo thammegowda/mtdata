@@ -270,8 +270,7 @@ class Dataset:
                     log.error(f"Unable to add {ent.did}: {e}")
                     if fail_on_error:
                         raise e
-                    else:
-                        log.warning(e)
+                    log.warning(e)
 
     @classmethod
     def get_paths(cls, dir_path: Path, entry: Entry, compress=False) -> Tuple[Path, Path]:
@@ -285,6 +284,9 @@ class Dataset:
         return l1, l2
 
     def add_part(self, dir_path: Path, entry: Entry, drop_noise=False, compress=False):
+        flag_file = dir_path / f'.valid.{entry.did}'
+        if flag_file.exists():
+            return -1, -1
         path = self.cache.get_entry(entry)
         # swap = entry.is_swap(self.langs)
         parser = Parser(path, ext=entry.in_ext or None, ent=entry)
@@ -319,6 +321,7 @@ class Dataset:
             if noise > 0:
                 log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100 * noise / count:.4f}%")
             log.info(f"wrote {count} lines to {l1} == {l2}")
+        flag_file.touch()
         return count, skips
 
 
