@@ -3,7 +3,7 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/6/20
 
-import mtdata
+import re
 from pathlib import Path
 
 from setuptools import setup, find_namespace_packages
@@ -22,10 +22,20 @@ classifiers = [  # copied from https://pypi.org/classifiers/
     'Programming Language :: Python :: 3 :: Only',
 ]
 
+init_file = Path(__file__).parent / 'mtdata' / '__init__.py'
+init_txt = init_file.read_text()
+version_re = re.compile(r'''__version__ = ['"]([0-9.]+(-dev)?)['"]''')
+__version__ = version_re.search(init_txt).group(1)
+desc_re = re.compile(r'''__description__ = ['"](.*)['"]''')
+__description__ = desc_re.search(init_txt).group(1)
+assert __version__
+assert __description__
+
+
 setup(
     name='mtdata',
-    version=mtdata.__version__,
-    description=mtdata.__description__,
+    version=__version__,
+    description=__description__,
     long_description=long_description,
     long_description_content_type='text/markdown',
     classifiers=classifiers,
@@ -40,7 +50,7 @@ setup(
                                                         'computational linguistics'],
     entry_points={
         'console_scripts': [
-            'mtdata=mtdata.main:main',
+            'mtdata=mtdata.__main__:main',
             'mtdata-iso=mtdata.iso.__main__:main',
                             ],
     },
@@ -49,6 +59,7 @@ setup(
         'enlighten==1.10.1',
         'portalocker==2.3.0',
         'pybtex==0.24.0',
+        'ruamel.yaml >= 0.17.10',
     ],
     include_package_data=True,
     zip_safe=False,

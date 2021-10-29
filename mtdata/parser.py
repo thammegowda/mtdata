@@ -6,7 +6,7 @@
 from typing import Optional, Union, Tuple, List
 from dataclasses import dataclass
 from pathlib import Path
-from mtdata import log
+from mtdata import log, pbar_man
 from mtdata.entry import Entry
 from itertools import zip_longest
 
@@ -85,17 +85,22 @@ class Parser:
                     raise Exception(f'Not supported {self.ext} : {p}')
 
         if len(readers) == 1:
-            yield from readers[0]
+            data = readers[0]
         elif self.ext == 'tmx' or self.ext == 'tsv':
-            for reader in readers:
-                yield from reader
+            data = (rec for reader in readers for rec in reader)  # flatten all readers
         elif len(readers) == 2:
-            for seg1, seg2 in zip_longest(*readers):
-                if seg1 is None or seg2 is None:
-                    raise Exception(f'{self.paths} have unequal number of segments')
-                yield seg1, seg2
+            def _zip_n_check():
+                for seg1, seg2 in zip_longest(*readers):
+                    if seg1 is None or seg2 is None:
+                        raise Exception(f'{self.paths} have unequal number of segments')
+                    yield seg1, seg2
+            data = _zip_n_check()
         else:
             raise Exception("This is an error")
+        with pbar_man.counter(color='green', unit='seg', leave=False, desc=f"Reading {self.ent.did}") as pbar:
+            for rec in data:
+                yield rec
+                pbar.update()
 
     def read_plain(self, path):
         with IO.reader(path) as stream:

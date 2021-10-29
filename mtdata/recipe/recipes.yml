@@ -1,0 +1,156 @@
+#- id: template1
+#  langs: xxx-yyy
+#  desc: desc1
+#  url: https://example.com
+#  train:
+#    - did1
+#    - did2
+#  dev: did3
+#  test:
+#    - did4
+#    - did5
+
+- id: vaswani_etal_2017_ende
+  langs: eng-deu
+  desc: Transformer - Attention is all you need
+  url: https://arxiv.org/abs/1706.03762
+  train:
+  - Statmt-commoncrawl_wmt13-1-deu-eng
+  - Statmt-europarl_wmt13-7-deu-eng
+  - Statmt-news_commentary_wmt18-13-deu-eng
+  dev: Statmt-newstest-2013-eng-deu
+  test: Statmt-newstest_deen-2014-deu-eng
+
+- id: tg01_deen_10M
+  langs: deu-eng
+  desc: 10M sentence corpus for Deu-Eng
+  url:
+  train:
+    - Statmt-commoncrawl_wmt13-1-deu-eng
+    - Statmt-europarl_wmt13-7-deu-eng
+    - Statmt-news_commentary_wmt18-13-deu-eng
+    - EU-dcep-1-deu-eng
+    - Tilde-eesc-2017-deu-eng
+    - Tilde-ema-2016-deu-eng
+  dev: Statmt-newstest_deen-2019-deu-eng
+  test: Statmt-newstest_deen-2020-deu-eng
+
+- id: tg01_aren_16M
+  langs: ara-eng
+  desc: 16M sentence corpus for ara-eng
+  train: OPUS-unpc-1.0-ara-eng
+  dev: UN-un_dev-1-eng-ara
+  test: UN-un_test-1-eng-ara
+
+- id: tg01_hien_1M
+  langs: hin-eng
+  desc: 1M sentence corpus for hin-eng  # its 1.3M lines, but okay to me on log scale
+  train: IITB-hien_train-1.5-hin-eng
+  dev: IITB-hien_dev-1.5-hin-eng
+  test: IITB-hien_test-1.5-hin-eng
+
+- id: tg01_ruen_1M
+  langs: rus-eng
+  desc: 1M sentence corpus for hin-eng
+  train: Statmt-commoncrawl_wmt13-1-rus-eng,Statmt-wiki_titles-2-rus-eng
+  dev: Statmt-newstest_ruen-2019-rus-eng
+  test: Statmt-newstest_ruen-2020-rus-eng
+
+- id: tg01_knen_100K
+  langs: kan-eng
+  desc: 160K sentence Kan-Eng corpus
+  train: Statmt-ccaligned-1-eng-kan_IN
+  dev: AI4Bharath-wat_dev-2021-eng-kan
+  test: AI4Bharath-wat_test-2021-eng-kan
+
+- id: tg01_teen_100k
+  langs: tel-eng
+  train: OPUS-ted2020-1-eng-tel,Statmt-pmindia-1-eng-tel,JoshuaDec-indian_training-1-tel-eng
+  dev: AI4Bharath-wat_dev-2021-eng-tel
+  test: AI4Bharath-wat_test-2021-eng-tel
+
+- id: tg01_smeeng_40K
+  langs: sme-eng
+  train: OPUS-kde4-2-eng-sme
+  dev: OPUS-opus100_dev-1-eng-sme
+  test: OPUS-opus100_test-1-eng-sme
+
+- id: tg01_myaeng_18k
+  langs: mya-eng
+  desc: "18K mya-eng"
+  train: WAT-alt_train-2020-mya-eng
+  dev: WAT-alt_dev-2020-mya-eng
+  test: WAT-alt_test-2020-mya-eng
+
+- id: tg01_boseng_1k
+  langs: bos-eng
+  desc: "1K bos-eng"
+  train: OPUS-tatoeba-20210310-bos-eng,Neulab-tedtalks_test-1-eng-bos
+  dev: OPUS-opus100_dev-1-bos-eng
+  test: OPUS-opus100_test-1-bos-eng
+
+- id: tg01_uzbeng_5k
+  langs: uzb-eng
+  desc: "5K uzb-eng"
+  train: OPUS-wikimedia-20210402-eng-uzb
+  dev: OPUS-opus100_dev-1-eng-uzb
+  test: OPUS-opus100_test-1-eng-uzb
+
+- id: tg01_10toeng
+  langs: mul-eng  #  mul is multiple languages
+  desc: 10 languages to english, with various scales
+  train:
+    - Statmt-commoncrawl_wmt13-1-deu-eng # deu-eng : 10M
+    - Statmt-europarl_wmt13-7-deu-eng
+    - Statmt-news_commentary_wmt18-13-deu-eng
+    - EU-dcep-1-deu-eng
+    - Tilde-eesc-2017-deu-eng
+    - Tilde-ema-2016-deu-eng
+    - OPUS-unpc-1.0-ara-eng    #16M
+    - IITB-hien_train-1.5-hin-eng  # 1.3M
+    - Statmt-commoncrawl_wmt13-1-rus-eng  # rus-eng 1M
+    - Statmt-wiki_titles-2-rus-eng
+    - Statmt-ccaligned-1-eng-kan_IN  # kan-eng 400K
+    - OPUS-ted2020-1-eng-tel   # tel-eng 100K
+    - Statmt-pmindia-1-eng-tel
+    - JoshuaDec-indian_training-1-tel-eng
+    - OPUS-kde4-2-eng-sme  # 40K
+    - WAT-alt_train-2020-mya-eng   # 18k
+    - OPUS-tatoeba-20210310-bos-eng  # 500
+    - Neulab-tedtalks_test-1-eng-bos  # +500 = 1K
+    - OPUS-wikimedia-20210402-eng-uzb  # 5K
+  dev:
+    - Statmt-newstest_deen-2019-deu-eng
+    - UN-un_dev-1-eng-ara
+    - IITB-hien_dev-1.5-hin-eng
+    - Statmt-newstest_ruen-2019-rus-eng
+    - AI4Bharath-wat_dev-2021-eng-kan
+    - AI4Bharath-wat_dev-2021-eng-tel
+    - OPUS-opus100_dev-1-eng-sme
+    - WAT-alt_dev-2020-mya-eng
+    - OPUS-opus100_dev-1-bos-eng
+    - OPUS-opus100_dev-1-eng-uzb
+  test:
+    - Statmt-newstest_deen-2020-deu-eng
+    - UN-un_test-1-eng-ara
+    - IITB-hien_test-1.5-hin-eng
+    - Statmt-newstest_ruen-2020-rus-eng
+    - AI4Bharath-wat_test-2021-eng-kan
+    - AI4Bharath-wat_test-2021-eng-tel
+    - OPUS-opus100_test-1-eng-sme
+    - WAT-alt_test-2020-mya-eng
+    - OPUS-opus100_test-1-eng-uzb
+    - OPUS-opus100_test-1-bos-eng
+
+- id: tg01_2to1_test
+  desc: testing multilingual
+  langs: mul-eng       #  mul is multiple languages
+  train:
+    - WAT-alt_train-2020-mya-eng
+    - Statmt-pmindia-1-eng-tel
+  dev:
+    - AI4Bharath-wat_dev-2021-eng-tel
+    - WAT-alt_dev-2020-mya-eng
+  test:
+    - AI4Bharath-wat_test-2021-eng-tel
+    - WAT-alt_test-2020-mya-eng

@@ -8,8 +8,9 @@ import fnmatch
 from dataclasses import dataclass
 from pathlib import Path
 from mtdata.index import Entry
-from mtdata import log, __version__, pbar_man, MTDataException
+from mtdata import log, __version__, pbar_man, MTDataException, FILE_LOCK_TIMEOUT
 from mtdata.utils import ZipPath, TarPath
+from mtdata.parser import Parser
 from typing import List, Union
 
 import portalocker
@@ -19,7 +20,6 @@ from .parser import detect_extension
 import requests
 import math
 
-MAX_TIMEOUT = 2 * 60 * 60  # 2 hours
 
 headers = {'User-Agent': f'mtdata downloader {__version__}; cURL and wget like.'}
 
@@ -42,6 +42,46 @@ class Cache:
             # look inside the archives and get the desired files
             local = self.get_local_in_paths(path=local, entry=entry)
         return local
+
+    def get_stats(self, entry: Entry):
+        path = self.get_entry(entry)
+        parser = Parser(path, ext=entry.in_ext or None, ent=entry)
+        count, skips, noise = 0, 0, 0
+        toks = [0, 0]
+        chars = [0, 0]
+        for rec in parser.read_segs():
+            if len(rec) < 2 or not rec[0] or not rec[1]:
+                skips += 1
+                continue
+            if entry.is_noisy(seg1=rec[0], seg2=rec[1]):
+                noise += 1
+                skips += 1
+                continue
+            count += 1
+            s1, s2 = rec[:2]  # get the first two recs
+            chars[0] += len(s1)
+            chars[1] += len(s2)
+            s1_tok, s2_tok = s1.split(), s2.split()
+            toks[0] += len(s1_tok)
+            toks[1] += len(s2_tok)
+
+        l1, l2 = entry.did.langs
+        l1, l2 = l1.lang, l2.lang
+        assert count > 0, f'No valid records are found for {entry.did}'
+        if l2 < l1:
+            l1, l2 = l2, l1
+            toks = toks[1], toks[0]
+            chars = chars[1], chars[0]
+        return {
+            'id': str(entry.did),
+            'segs': count,
+            'segs_err': skips,
+            'segs_noise': noise,
+            f'{l1}_toks': toks[0],
+            f'{l2}_toks': toks[1],
+            f'{l1}_chars': chars[0],
+            f'{l2}_chars': chars[0]
+        }
 
     def get_flag_file(self, file: Path):
         return file.with_name(file.name + '._valid')
@@ -74,20 +114,18 @@ class Cache:
         l2_path = self.get_local_path(l2_url, fix_missing=fix_missing)
         return [align_file, l1_path, l2_path]
 
-    def get_local_in_paths(self, path:Path, entry: Entry,):
+    def get_local_in_paths(self, path: Path, entry: Entry,):
         in_paths = entry.in_paths
         if zipfile.is_zipfile(path):
             with zipfile.ZipFile(path) as root:
                 in_paths = self.match_globs(names=root.namelist(), globs=in_paths)
             return [ZipPath(path, p) for p in in_paths]   # stdlib is buggy, so I made a workaround
         elif tarfile.is_tarfile(path):
-            with tarfile.open(path, encoding='utf-8') as root:
-                in_paths = self.match_globs(names=root.getnames(), globs=in_paths)
             return [TarPath(path, p) for p in in_paths]
         else:
             raise Exception(f'Unable to read {entry.did}; the file is neither zip nor tar')
 
-    def download(self, url: str, save_at: Path):
+    def download(self, url: str, save_at: Path, timeout=(5, 10)):
         valid_flag = self.get_flag_file(save_at)
         lock_file = valid_flag.with_suffix("._lock")
         if valid_flag.exists() and save_at.exists():
@@ -95,18 +133,18 @@ class Cache:
         save_at.parent.mkdir(parents=True, exist_ok=True)
 
         log.info(f"Acquiring lock on {lock_file}")
-        with portalocker.Lock(lock_file, 'w', timeout=MAX_TIMEOUT) as fh:
+        with portalocker.Lock(lock_file, 'w', timeout=FILE_LOCK_TIMEOUT) as fh:
             # check if downloaded by  other parallel process
             if valid_flag.exists() and save_at.exists():
                 return save_at
-            log.info(f"Downloading {url} --> {save_at}")
-            resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True)
+            log.info(f"GET {url} → {save_at}")
+            resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True, timeout=timeout)
             assert resp.status_code == 200, resp.status_code
             buf_size = 2 ** 10
             n_buffers = math.ceil(int(resp.headers.get('Content-Length', '0')) / buf_size) or None
             desc = url
-            if len(desc) > 40:
-                desc = desc[:30] + '...' + desc[-10:]
+            if len(desc) > 60:
+                desc = desc[:30] + '...' + desc[-28:]
             with pbar_man.counter(color='green', total=n_buffers, unit='KiB', leave=False,
                                   desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):

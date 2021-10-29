@@ -5,11 +5,25 @@
 
 from typing import Tuple, List, Optional, Set, Union
 from dataclasses import dataclass, field
+from mtdata import log
 from mtdata.iso.bcp47 import BCP47Tag, bcp47
 
 DID_DELIM = '-'  # I  wanted to use ":", but Windows, they dont like ":" in path! :(
 
 LangPair = Tuple[BCP47Tag, BCP47Tag]
+
+
+def lang_pair(string) -> LangPair:
+    parts = string.strip().split('-')
+    if len(parts) != 2:
+        msg = f'expected value of form "xxx-yyz" eg "deu-eng"; given {string}'
+        raise Exception(msg)
+    std_codes = (bcp47(parts[0]), bcp47(parts[1]))
+    std_form = '-'.join(str(lang) for lang in std_codes)
+    if std_form != string:
+        log.info(f"Suggestion: Use codes {std_form} instead of {string}."
+                 f" Let's make a little space for all languages of our planet 😢.")
+    return std_codes
 
 
 @dataclass(frozen=True)
@@ -117,41 +131,3 @@ class Entry:
 class JW300Entry(Entry):
     url: Tuple[str, str, str]  # (align.xml, src.xml, tgt.xml)
 
-
-@dataclass
-class Experiment:
-    langs: Tuple[BCP47Tag, BCP47Tag]  # (lang1 , lang2)  lang1 -> lang2
-    train: List[Entry]  # training should be merged from all these
-    tests: List[Entry]  # multiple tests; one of them can be validation set
-    papers: Set['Paper'] = field(default_factory=set)
-
-    def __post_init__(self):
-        if any(not isinstance(lang, BCP47Tag) for lang in self.langs):
-            self.langs = tuple(bcp47(l) for l in self.langs)
-        for t in self.tests:
-            assert t
-        for t in self.train:
-            assert t
-
-    @classmethod
-    def make(cls, index, langs: Tuple[str, str], train: List[str], tests: List[str]):
-        train = [index.get_entry(name, langs) for name in train]
-        tests = [index.get_entry(name, langs) for name in tests]
-        return cls(langs, train=train, tests=tests)
-
-
-@dataclass(eq=False)  # see for hash related issues: https://stackoverflow.com/a/52390734/1506477
-class Paper:  # or Article
-
-    name: str  # author1-etal-year
-    title: str  # title
-    url: str  # Paper url to be sure
-    cite: str  # bibtex would be nice to display
-    experiments: List[Experiment]
-
-    langs: Set[Tuple[str, str]] = None
-
-    def __post_init__(self):
-        self.langs = self.langs or set(exp.langs for exp in self.experiments)
-        for exp in self.experiments:
-            exp.papers.add(self)

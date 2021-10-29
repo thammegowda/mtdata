@@ -240,6 +240,23 @@ $ tree  data/deu-eng/
 └── train.stats.json
 ```
 
+## Recipes
+
+> Since v0.3.1
+
+Recipe is a set of datasets nominated for train, dev, and tests, and are meant to improve reproducibility of experiments.
+Recipes are loaded from 
+1. Default:  [`mtdata/recipe/recipes.yml`](mtdata/recipe/recipes.yml) from source code
+2. Cache dir: `$MTDATA/mtdata.recipe.yml` where `$MTDATA` has default of `~/.mtdata`
+3. Current dir: `$PWD/mtdata.recipe.yml`
+
+See [`mtdata/recipe/recipes.yml`](mtdata/recipe/recipes.yml) for format and examples.
+
+```bash
+mtdata list-recipe  # see all recipes
+mtdata get-recipe -ri <recipe_id> -o <out_dir>  # get recipe, recreate dataset
+```
+
 ## Language Name Standardization
 ### ISO 639 3 
 Internally, all language codes are mapped to ISO-639 3 codes.
@@ -287,6 +304,9 @@ print(iso3_code('eNgLIsH', fail_error=True))  # case doesnt matter
 ```
 
 ### BCP-47 
+
+> Since v0.3.0
+
 We used ISO 639-3 from the beginning, however, we soon faced the limitation that ISO 639-3 cannot distinguish script and region variants of language. So we have upgraded to BCP-47 like language tags in `v0.3.0`.
 
 * BCP47 uses two-letter codes to some and three-letter codes to the rest, we use three-letter codes to all languages.
@@ -305,9 +325,9 @@ Our tags are of form `xxx_Yyyy_ZZ` where
 Notes:
 * Region is preserved when available and left blank when unavailable
 * Script `Yyyy` is forcibly suppressed in obvious cases. E.g. `eng` is written using `Latn` script, writing `eng-Latn` is just awkward to read as `Latn` is default we suppress `Latn` script for English. On the other hand a language like `Kannada` is written using `Knda` script (`kan-Knda` -> `kan`), but occasionally written using `Latn` script, so `kan-Latn` is not suppressed. 
-* The information about whats default script is obtained from IANA language code registry 
+* The information about what is default script is obtained from IANA language code registry 
+* Language code `mul` stands for _multiple languages, and is used as a placeholder for multilingual datasets (See `mul-eng` to represent many-to-English dataset recipes in [(mtdata/recipe/recipes.yml](mtdata/recipe/recipes.yml))
 
-  
 #### Example:
 To inspect parsing/mapping, use `python -m mtdata.iso.bcp47 <args>` 
 

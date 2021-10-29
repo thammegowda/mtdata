@@ -11,7 +11,7 @@ import portalocker
 from pybtex.database import parse_file as parse_bib_file
 
 from mtdata import log, cached_index_file, __version__
-from mtdata.entry import Entry, Paper, DatasetId, LangPair
+from mtdata.entry import Entry, DatasetId
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
 
 REFS_FILE = Path(__file__).parent / 'refs.bib'
@@ -95,11 +95,6 @@ class Index:
         key = entry.did
         assert key not in self.entries, f'{key} is a duplicate'
         self.entries[key] = entry
-
-    def add_paper(self, paper: Paper):
-        assert isinstance(paper, Paper)
-        assert paper.name not in self.papers, f'{paper.name} is a duplicate'
-        self.papers[paper.name] = paper
 
     def get_entries(self):
         return self.entries.values()
