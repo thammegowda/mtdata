@@ -2,12 +2,14 @@
 [![image](http://img.shields.io/pypi/v/mtdata.svg)](https://pypi.python.org/pypi/mtdata/)
 ![Travis (.com)](https://img.shields.io/travis/com/thammegowda/mtdata?style=plastic)
 
-MTData tool automates collection and preparation of machine translation datasets.
+MTData automates the collection and preparation of machine translation datasets.
 It provides CLI and python APIs, so it can be either used as a standalone tool or embedded into
- python apps for preparing MT experiments.
+ python apps for preparing MT experiments. 
+> 📣 Using MTData we've created a model that can translate from 500 languages to English.  
+> Free, and open-source; a demo and docker is at http://rtg.isi.edu/many-eng/ 
 
 This tool knows:
-- From where to download data sets: WMT tests and devs for \[2014, 2015, ... 2020], Paracrawl, 
+- From where to download data sets: WMT News Translation tests and devs for Paracrawl, 
   Europarl, News Commentary, WikiTitles, Tilde Model corpus, OPUS ... 
 - How to extract files : .tar, .tar.gz, .tgz, .zip, ... 
 - How to parse .tmx, .sgm and such XMLs, or .tsv ... Checks if they have same number of segments.  
@@ -23,9 +25,6 @@ This tool knows:
 - Automate the MT training data creation by taking out human intervention. Inspired by [SacreBLEU](https://github.com/mjpost/sacreBLEU) that takes out human intervention in evaluation stage.
 - A reusable tool instead of dozens of use-once shell scripts spread across multiple repos. 
 
-Limitations (as of now):
-- Only publicly available datasets that do not need login are supported. No LDC yet.
-- No tokenizers are integrated. (It should be fairly easy to get those integrated) 
 
 # Installation
 ```bash
@@ -37,6 +36,7 @@ git clone https://github.com/thammegowda/mtdata
 cd mtdata
 pip install --editable .
 ```
+
 
 # Current Status:
 
