@@ -22,7 +22,7 @@ DEF_COMPRESS = 'gz'
 class Dataset:
 
     def __init__(self, dir: Path, langs: LangPair, cache_dir: Path, drop_train_noise=True,
-                 drop_test_noise=False, drop_dupes=False, drop_tests=False, compress=False):
+                 drop_test_noise=False, drop_dupes=False, drop_tests=False, compress=False, fail_on_error=False):
         self.dir = dir
         self.langs = langs
         assert len(langs) == 2, f'Only parallel datasets are supported for now and expected two langs; {langs}'
@@ -36,6 +36,7 @@ class Dataset:
         self.drop_test_noise = drop_test_noise
         self.drop_dupes = drop_dupes  # in training only
         self.drop_tests = drop_tests  # in training only
+        self.fail_on_error = fail_on_error
 
     @classmethod
     def resolve_entries(cls, dids: List[DatasetId]):
@@ -53,7 +54,7 @@ class Dataset:
     def prepare(cls, langs, out_dir: Path, train_dids: Optional[List[DatasetId]] = None,
                 test_dids: Optional[List[DatasetId]] = None, dev_dids: Optional[List[DatasetId]] = None,
                 cache_dir: Path = CACHE_DIR, merge_train=False, drop_noise: Tuple[bool, bool] = (True, False),
-                compress=False, drop_dupes=False, drop_tests=False):
+                compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False):
         drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
         assert train_dids or test_dids, 'Either train_names or test_names should be given'
@@ -64,7 +65,7 @@ class Dataset:
 
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir,
                       drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise,
-                      drop_dupes=drop_dupes, drop_tests=drop_tests)
+                      drop_dupes=drop_dupes, drop_tests=drop_tests, fail_on_error=fail_on_error)
 
         dev_entries, test_entries = [], []
         if test_dids:  # tests are smaller so quicker; no merging needed
@@ -102,7 +103,7 @@ class Dataset:
 
     def add_train_entries(self, entries, merge_train=False, compress=False, drop_hashes=None):
         self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise,
-                       compress=compress, desc='Training sets')
+                       compress=compress, desc='Training sets', fail_on_error=self.fail_on_error)
         if not merge_train:
             return
         lang1, lang2 = self.langs
@@ -199,7 +200,8 @@ class Dataset:
                 yield seg1.strip(), seg2.strip()
 
     def add_test_entries(self, entries):
-        self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise, desc='Held-out sets')
+        self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise, desc='Held-out sets',
+                       fail_on_error=self.fail_on_error)
         if len(entries) <= 20:
             for i, entry in enumerate(entries, start=1):
                 self.link_to_part(entry, self.tests_dir, f"test{i}")

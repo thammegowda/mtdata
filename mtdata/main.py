@@ -25,7 +25,7 @@ def list_data(langs, names, not_names=None, full=False):
 
 
 def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, merge_train=False, compress=False,
-             drop_dupes=False, drop_tests=False, **kwargs):
+             drop_dupes=False, drop_tests=False, fail_on_error=False, **kwargs):
     if kwargs:
         log.warning(f"Args are ignored: {kwargs}")
     from mtdata.data import Dataset
@@ -33,7 +33,7 @@ def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, mer
     dataset = Dataset.prepare(
         langs, train_dids=train_dids, test_dids=test_dids, out_dir=out_dir,
         dev_dids=dev_dids, cache_dir=CACHE_DIR, merge_train=merge_train, compress=compress,
-        drop_dupes=drop_dupes, drop_tests=drop_tests)
+        drop_dupes=drop_dupes, drop_tests=drop_tests, fail_on_error=fail_on_error)
     cli_sig = f'-l {"-".join(str(l) for l in langs)}'
     for flag, dids in [('-tr', train_dids), ('-ts', test_dids), ('-dv', dev_dids)]:
         if dids:
@@ -78,7 +78,8 @@ def list_recipes():
     print_all(RECIPES.values())
 
 
-def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, **kwargs):
+def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False,
+               **kwargs):
     if kwargs:
         log.warning(f"Args are ignored: {kwargs}")
     from mtdata.recipe import RECIPES
@@ -87,7 +88,8 @@ def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_
         raise ValueError(f'recipe {recipe_id} not found. See "mtdata list-recipe"')
 
     get_data(langs=recipe.langs, train_dids=recipe.train, dev_dids=recipe.dev, test_dids=recipe.test,
-             merge_train=True, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes, drop_tests=drop_tests)
+             merge_train=True, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes, drop_tests=drop_tests,
+             fail_on_error=fail_on_error)
 
 
 def show_stats(*dids: DatasetId):
@@ -160,6 +162,8 @@ def parse_args():
                        help='''R|Dataset to be used for development (aka validation).
     e.g. "-dev Statmt-newstest_deen-2017-deu-eng"''')
     add_boolean_arg(get_p, 'merge', dest='merge_train', default=False, help='Merge train into a single file')
+    add_boolean_arg(get_p, 'fail', dest='fail_on_error', default=False,
+                    help='Fail if an error occurs on any one of dataset pars')
 
     def add_getter_args(parser):
         parser.add_argument(f'--compress', action='store_true', default=False, help="Keep the files compressed")
