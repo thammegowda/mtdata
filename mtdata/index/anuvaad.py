@@ -27,11 +27,9 @@ def load_all(index: Index):
         assert url.startswith('http') and url.endswith('.zip')
         file_name = url.split('/')[-1]
         file_name = file_name[:-4]  # .zip
-        # delim is either hyphen or underscore
         char_count = coll.Counter(list(file_name))
         n_hyps = char_count.get('-', 0)
         n_unders = char_count.get('_', 0)
-        #file_name.replace('-', '_')
         if n_hyps > n_unders:
             parts = file_name.split('-')
         else:
@@ -42,19 +40,20 @@ def load_all(index: Index):
         if parts[-2] == l1 and parts[-1] in langs:
             l2 = parts[-1]
             version = parts[-3]
-            name = '_'.join(parts[:-3])
-            f1 = f'{l1}-{l2}/*_train.{l1}'
-            f2 = f'{l1}-{l2}/*_train.{l2}'
         elif parts[-3] == l1 and parts[-2] in langs:
             l2 = parts[-2]
             version = parts[-1]
-            name = '_'.join(parts[:-3])
-            f1 = f'{l1}-{l2}/{l1}.txt'
-            f2 = f'{l1}-{l2}/{l2}.txt'
         else:
             log.warn(f"Unable to parse {file_name} :: {parts}")
             continue
+        name = '_'.join(parts[:-3])
         name = name.replace('-', '_')
-        ent = Entry(did=DatasetId(group=group_id, name=name, version=version, langs=(l2, l2)),
+        f1 = f'{l1}-{l2}/*.{l1}'
+        f2 = f'{l1}-{l2}/*.{l2}'
+        if name == 'wikipedia':
+            f1 = f'{l1}-{l2}/{l1}.txt'
+            f2 = f'{l1}-{l2}/{l2}.txt'
+
+        ent = Entry(did=DatasetId(group=group_id, name=name, version=version, langs=(l1, l2)),
               url=url, ext='zip', in_ext='txt', in_paths=[f1, f2], cite=cite_txt)
         index.add_entry(ent)
