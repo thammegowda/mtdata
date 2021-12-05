@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.3.2 - 20211205
+
+- Fix: recipes.yml is missing in the pip installed package
+- Add Project Anuvaad: 196 datasets belonging to Indian languages
+- add CLI `mtdata get` has `--fail / --no-fail` arguments to tell whether to crash or no-crash upon errors
+
+
 ## v0.3.1 - 20211028
 
 - Add support for recipes; list-recipe get-recipe subcommands added
