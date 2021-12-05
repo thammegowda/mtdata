@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.3.2 - WIP
+
+- Fix: recipes.yml is missing in the pip installed package
+- Add Project Anuvaad: 196 datasets belonging to Indian languages
+
+
 ## v0.3.1 - 20211028
 
 - Add support for recipes; list-recipe get-recipe subcommands added

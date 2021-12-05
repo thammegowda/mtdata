@@ -56,7 +56,7 @@ class Index:
     def load_all(self):
         from mtdata.index import (
             statmt, paracrawl, tilde, joshua_indian, unitednations, wikimatrix, other, neulab_tedtalks,
-            elrc_share, ai4bharat, eu, linguatools)
+            elrc_share, ai4bharat, eu, linguatools, anuvaad)
         from mtdata.index.opus import opus_index, jw300, opus100
         subsets = [
             ('Statmt.org', statmt.load),
@@ -73,7 +73,8 @@ class Index:
             ('ELRC-SHARE', elrc_share.load_all),
             ('AI4Bharat', ai4bharat.load_all),
             ('EU', eu.load_all),
-            ('LinguaTools', linguatools.load_all)
+            ('LinguaTools', linguatools.load_all),
+            ('Anuvaad', anuvaad.load_all),
         ]
         for name, loader in subsets:
             loader(self)
