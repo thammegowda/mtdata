@@ -248,8 +248,8 @@ $ tree  data/deu-eng/
 Recipe is a set of datasets nominated for train, dev, and tests, and are meant to improve reproducibility of experiments.
 Recipes are loaded from 
 1. Default:  [`mtdata/recipe/recipes.yml`](mtdata/recipe/recipes.yml) from source code
-2. Cache dir: `$MTDATA/mtdata.recipe.yml` where `$MTDATA` has default of `~/.mtdata`
-3. Current dir: `$PWD/mtdata.recipe.yml`
+2. Cache dir: `$MTDATA/mtdata.recipes.yml` where `$MTDATA` has default of `~/.mtdata`
+3. Current dir: `$PWD/mtdata.recipes.yml`
 
 See [`mtdata/recipe/recipes.yml`](mtdata/recipe/recipes.yml) for format and examples.
 
