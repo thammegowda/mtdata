@@ -7,12 +7,11 @@ from mtdata.index import Index, Entry, DatasetId
 
 
 def load_all(index: Index):
-
     # === IITB hin eng http://www.cfilt.iitb.ac.in/iitb_parallel/
     cite = index.ref_db.get_bibtex('Kunchukuttan-etal-iitb')
     l1, l2 = 'hi', 'en'
     for version, prefix in [
-        #('1.0', 'http://www.cfilt.iitb.ac.in/iitb_parallel/iitb_corpus_download'),
+        # ('1.0', 'http://www.cfilt.iitb.ac.in/iitb_parallel/iitb_corpus_download'),
         ('1.5', 'http://www.cfilt.iitb.ac.in/~moses/iitb_en_hi_parallel/iitb_corpus_download')]:
         # they also have v2, but the link is broken http://www.cfilt.iitb.ac.in/iitb_parallel/
         # version is not explicit, but guessed from file modification time and description
@@ -32,7 +31,6 @@ def load_all(index: Index):
                         url=url, filename=f'IITB{version}-hin_eng-dev_test.tar.gz',
                         in_ext='txt', in_paths=[f1, f2], cite=cite)
             index.add_entry(ent)
-
 
     # == Japanese ==
     cite = index.ref_db.get_bibtex('neubig11kftt')
@@ -70,7 +68,7 @@ def load_all(index: Index):
     cite = index.ref_db.get_bibtex('Khresmoi')
     langs = ["cs", "de", "en", "es", "fr", "hu", "pl", "sv"]
     for i, l1 in enumerate(langs):
-        for l2 in langs[i+1:]:
+        for l2 in langs[i + 1:]:
             ent = Entry(did=DatasetId(group='Lindat', name=f'khresmoi_summary_test', version='2', langs=(l1, l2)),
                         url=url, filename='khresmoi-summary-test-set-2.0.zip', cite=cite, in_ext='txt',
                         in_paths=[f"khresmoi-summary-test-set-2.0/khresmoi-summary-test.{l1}",
@@ -88,4 +86,25 @@ def load_all(index: Index):
         ent = Entry(did=DatasetId(group='StanfordNLP', name=f'jesc_{split}', version='1', langs=(l1, l2)),
                     url=jesc_url, filename='jesc-split.tar.gz', in_ext='tsv',
                     in_paths=[f"split/{split}"], cite=jesc_cite)
+        index.add_entry(ent)
+    prefix = 'https://nlp.stanford.edu/projects/nmt/data'
+    for name, subdir, src, tgt, cite_key in [
+        ("wmt15_train", "wmt15.en-cs", "train.en", "train.cs", "luong2016acl_hybrid"),
+        ("newstest2013", "wmt15.en-cs", "newstest2013.en", "newstest2013.cs", "luong2016acl_hybrid"),
+        ("newstest2014", "wmt15.en-cs", "newstest2014.en", "newstest2014.cs", "luong2016acl_hybrid"),
+        ("newstest2015", "wmt15.en-cs", "newstest2015.en", "newstest2015.cs", "luong2016acl_hybrid"),
+        ("wmt14_train", "wmt14.en-de", "train.en", "train.de", "luong-pham-manning:2015:EMNLP"),
+        ("newstest2012", "wmt14.en-de", "newstest2012.en", "newstest2012.de", "luong-pham-manning:2015:EMNLP"),
+        ("newstest2013", "wmt14.en-de", "newstest2013.en", "newstest2013.de", "luong-pham-manning:2015:EMNLP"),
+        ("newstest2014", "wmt14.en-de", "newstest2014.en", "newstest2014.de", "luong-pham-manning:2015:EMNLP"),
+        ("newstest2015", "wmt14.en-de", "newstest2015.en", "newstest2015.de", "luong-pham-manning:2015:EMNLP"),
+        ("iwslt15_train", "iwslt15.en-vi", "train.en", "train.vi", "Luong-Manning:iwslt15"),
+        ("test2012", "iwslt15.en-vi", "tst2012.en", "tst2012.vi", "Luong-Manning:iwslt15"),
+        ("test2013", "iwslt15.en-vi", "tst2013.en", "tst2013.vi", "Luong-Manning:iwslt15")]:
+        l1, l2 = src.split(".")[-1], tgt.split(".")[-1]
+        url1 = f"{prefix}/{subdir}/{src}"
+        url2 = f"{prefix}/{subdir}/{tgt}"
+        cite = index.ref_db.get_bibtex(cite_key)
+        ent = Entry(did=DatasetId(group='StanfordNLP', name=name, version='1', langs=(l1, l2)),
+                    ext='txt', url=(url1, url2), cite=cite)
         index.add_entry(ent)

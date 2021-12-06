@@ -72,7 +72,7 @@ class Entry:
     __slots__ = ('did', 'url', 'filename', 'ext', 'in_paths', 'in_ext', 'cite', 'cols', 'is_archive')
 
     def __init__(self, did: DatasetId,
-                 url: str,
+                 url: Union[str, Tuple[str,str]],
                  filename: Optional[str] = None,
                  ext: Optional[str] = None,
                  in_paths: Optional[List[str]] = None,
@@ -84,10 +84,11 @@ class Entry:
         self.did = did
         self.url = url
         self.filename = filename
-        orig_name = self.url.split('/')[-1]
         self.ext = ext
         if not self.ext:
             from mtdata.parser import detect_extension
+            assert isinstance(self.url, str), '"ext" attribute must be explicitely set for multi-URL entries'
+            orig_name = self.url.split('/')[-1]
             self.ext = detect_extension(filename or orig_name)
         self.filename = self.filename or f'{self.did.name}.{self.ext}'
 

@@ -24,8 +24,11 @@ class Dataset:
     def __init__(self, dir: Path, langs: LangPair, cache_dir: Path, drop_train_noise=True,
                  drop_test_noise=False, drop_dupes=False, drop_tests=False, compress=False, fail_on_error=False):
         self.dir = dir
-        self.langs = langs
+
         assert len(langs) == 2, f'Only parallel datasets are supported for now and expected two langs; {langs}'
+        assert isinstance(langs[0], BCP47Tag)
+        assert isinstance(langs[1], BCP47Tag)
+        self.langs = langs
         self.cache = Cache(cache_dir)
 
         self.train_parts_dir = dir / 'train-parts'  # will be merged later

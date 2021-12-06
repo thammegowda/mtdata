@@ -37,10 +37,15 @@ class Cache:
         if entry.in_ext == 'opus_xces':
             return self.opus_xces_format(entry=entry, fix_missing=fix_missing)
 
-        local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing)
-        if zipfile.is_zipfile(local) or tarfile.is_tarfile(local):
-            # look inside the archives and get the desired files
-            local = self.get_local_in_paths(path=local, entry=entry)
+        if isinstance(entry.url, (list, tuple)):
+            assert isinstance(entry.url[0], str)
+            local = [self.get_local_path(url, fix_missing=fix_missing) for url in entry.url]
+        else:
+            assert isinstance(entry.url, str)
+            local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing)
+            if zipfile.is_zipfile(local) or tarfile.is_tarfile(local):
+                # look inside the archives and get the desired files
+                local = self.get_local_in_paths(path=local, entry=entry)
         return local
 
     def get_stats(self, entry: Entry):
