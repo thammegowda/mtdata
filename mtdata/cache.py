@@ -126,7 +126,7 @@ class Cache:
                 in_paths = self.match_globs(names=root.namelist(), globs=in_paths)
             return [ZipPath(path, p) for p in in_paths]   # stdlib is buggy, so I made a workaround
         elif tarfile.is_tarfile(path):
-            return [TarPath(path, p) for p in in_paths]
+            return [TarPath(path, p).child for p in in_paths]
         else:
             raise Exception(f'Unable to read {entry.did}; the file is neither zip nor tar')
 
