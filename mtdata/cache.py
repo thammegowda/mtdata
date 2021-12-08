@@ -146,7 +146,8 @@ class Cache:
             resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True, timeout=timeout)
             assert resp.status_code == 200, resp.status_code
             buf_size = 2 ** 10
-            n_buffers = math.ceil(int(resp.headers.get('Content-Length', '0')) / buf_size) or None
+            tot_bytes = int(resp.headers.get('Content-Length', '0'))
+            n_buffers = math.ceil(tot_bytes / buf_size) or None
             desc = url
             if len(desc) > 60:
                 desc = desc[:30] + '...' + desc[-28:]
@@ -154,7 +155,7 @@ class Cache:
                                   desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):
                     out.write(chunk)
-                    pbar.update()
+                    pbar.update(incr=buf_size)
             valid_flag.touch()
             lock_file.unlink()
             return save_at
