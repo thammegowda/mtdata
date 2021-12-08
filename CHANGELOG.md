@@ -4,6 +4,7 @@
 
 - Add train and test sets from StanfordNLP NMT page (large: en-cs, medium: en-de, small: en-vi) 
   - Add support for two URLs for a single dataset (i.e. without zip/tar files)
+- `mtdata list` has `-g/--groups` and `-ng/--not-groups` as include exclude filters on group name  
 
 
 ## v0.3.2 - 20211205

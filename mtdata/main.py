@@ -13,9 +13,9 @@ from mtdata.entry import DatasetId, lang_pair
 from mtdata.utils import IO
 
 
-def list_data(langs, names, not_names=None, full=False):
+def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=None):
     from mtdata.index import get_entries
-    entries = get_entries(langs, names, not_names, fuzzy_match=True)
+    entries = get_entries(langs, names, not_names, groups=groups, not_groups=not_groups, fuzzy_match=True)
     log.info(f"Found {len(entries)}")
     for i, ent in enumerate(entries):
         print(ent.format(delim='\t'))
@@ -119,9 +119,10 @@ def add_boolean_arg(parser: argparse.ArgumentParser, name, dest=None, default=Fa
 
 
 def parse_args():
-    p = argparse.ArgumentParser(formatter_class=MyFormatter, epilog=f'Loaded from {__file__} (v{__version__})')
+    my_path = str(Path(__file__).parent)
+    p = argparse.ArgumentParser(formatter_class=MyFormatter, epilog=f'Loaded from {my_path} (v{__version__})')
     p.add_argument('-vv', '--verbose', action='store_true', help='verbose mode')
-    p.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__}')
+    p.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__} \n{my_path}')
     p.add_argument('-ri', '--reindex', action='store_true',
                    help=f"Invalidate index of entries and recreate it. This deletes"
                         f" {cached_index_file} only and not the downloaded files. "
@@ -142,9 +143,11 @@ def parse_args():
     list_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
                         help='Name of dataset set; eg europarl_v9.')
     list_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
+    list_p.add_argument('-g', '--groups', metavar='GROUP', nargs='*', help='Only select datasets from these groups')
+    list_p.add_argument('-ng', '--not-groups', metavar='GROUP', nargs='*', help='Exclude these groups')
     list_p.add_argument('-f', '--full', action='store_true', help='Show Full Citation')
-    list_p.add_argument('-o', '--out', type=Path, help='This arg is ignored. '
-                                                       'Only used in "get" subcommand.')
+    list_p.add_argument('-o', '--out', type=Path, help='This arg is ignored. Only used in "get" subcommand,'
+                                                       ' but added here for convenience of switching b/w get and list')
 
     get_p = sub_ps.add_parser('get', formatter_class=MyFormatter)
     get_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
@@ -203,7 +206,8 @@ def main():
         log.info(f"Invalidate index: {cached_index_file} -> {bak_file}")
         cached_index_file.rename(bak_file)
     if args.task == 'list':
-        list_data(args.langs, args.names, not_names=args.not_names, full=args.full)
+        list_data(args.langs, args.names, not_names=args.not_names, full=args.full,
+                  groups=args.groups, not_groups=args.not_groups)
     elif args.task == 'get':
         get_data(**vars(args))
     elif args.task == 'list-recipe':
