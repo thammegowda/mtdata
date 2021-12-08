@@ -13,15 +13,17 @@ from mtdata.entry import DatasetId, lang_pair
 from mtdata.utils import IO
 
 
-def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=None):
+def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=None, id_only=False):
     from mtdata.index import get_entries
     entries = get_entries(langs, names, not_names, groups=groups, not_groups=not_groups, fuzzy_match=True)
-    log.info(f"Found {len(entries)}")
     for i, ent in enumerate(entries):
-        print(ent.format(delim='\t'))
+        if id_only:
+            print(ent.did)
+        else:
+            print(ent.format(delim='\t'))
         if full:
             print(ent.cite or "CITATION_NOT_LISTED", end='\n\n')
-    print(f"Total {len(entries)} entries")
+    log.info(f"Total {len(entries)} entries")
 
 
 def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, merge_train=False, compress=False,
@@ -140,6 +142,7 @@ def parse_args():
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
     list_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
                         help='Language pairs; e.g.: deu-eng')
+    list_p.add_argument('-id', '--id', action='store_true', help="Show dataset ID only", default=False)
     list_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
                         help='Name of dataset set; eg europarl_v9.')
     list_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
@@ -207,7 +210,7 @@ def main():
         cached_index_file.rename(bak_file)
     if args.task == 'list':
         list_data(args.langs, args.names, not_names=args.not_names, full=args.full,
-                  groups=args.groups, not_groups=args.not_groups)
+                  groups=args.groups, not_groups=args.not_groups, id_only=args.id)
     elif args.task == 'get':
         get_data(**vars(args))
     elif args.task == 'list-recipe':

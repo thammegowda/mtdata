@@ -108,3 +108,18 @@ def load_all(index: Index):
         ent = Entry(did=DatasetId(group='StanfordNLP', name=name, version='1', langs=(l1, l2)),
                     ext='txt', url=(url1, url2), cite=cite)
         index.add_entry(ent)
+
+    _url = 'https://repository.clarin.is/repository/xmlui/bitstream/handle/20.500.12537/24/Parice_dev_test.20.05.zip'
+    cite = index.ref_db.get_bibtex('Barkarson-et-al-2020')
+    for sub in ['eea train dev test', 'ema train dev test', 'opensubtitles dev test']:
+        l1, l2 = 'en', 'is'
+        sub, *splits = sub.split()
+        for split in splits:
+            in_paths = [f'Parice_dev_test.20.05/csv/{sub}/{sub}_{split}_{l1}.csv',
+                        f'Parice_dev_test.20.05/csv/{sub}/{sub}_{split}_{l2}.csv']
+            if split == 'train' and sub == 'eea':
+                in_paths = [in_paths[1], in_paths[0]] # aha! they have swapped it
+            ent = Entry(did=DatasetId(group='ParIce', name=f'{sub}_{split}', version='20.05', langs=(l1, l2)),
+                        url=_url, ext='zip', in_ext='txt', in_paths=in_paths, cite=cite,
+                        filename='Parice_dev_test.20.05.zip')
+            index.add_entry(ent)

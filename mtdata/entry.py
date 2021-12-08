@@ -95,7 +95,7 @@ class Entry:
         self.in_paths = in_paths
         self.in_ext = in_ext
         self.cite = cite
-        self.cols = cols
+        self.cols = cols   # column index starts from zero
 
         assert not self.ext.startswith("."), f'ext {self.ext} should not start with a dot (.)'
         self.is_archive = self.ext in ('zip', 'tar', 'tar.gz', 'tgz')

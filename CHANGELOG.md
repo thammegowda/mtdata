@@ -2,11 +2,16 @@
 
 ## v0.3.3 - WIP
 
-- Add train and test sets from StanfordNLP NMT page (large: en-cs, medium: en-de, small: en-vi) 
+- `mtdata list` has `-g/--groups` and `-ng/--not-groups` as include exclude filters on group name (#91)
+- `mtdata list` has `-id/--id` flag to print only dataset IDs (#91) 
+- add WMT21 tests (#90)
+- add ccaligned datasets wmt21 (#89)
+- add ParIce datasets (#88)
+- add wmt21 en-ha (#87)
+- add wmt21 wikititles v3 (#86)
+- Add train and test sets from StanfordNLP NMT page (large: en-cs, medium: en-de, small: en-vi) (#84) 
   - Add support for two URLs for a single dataset (i.e. without zip/tar files)
-- `mtdata list` has `-g/--groups` and `-ng/--not-groups` as include exclude filters on group name  
-
-
+  - 
 ## v0.3.2 - 20211205
 
 - Fix: recipes.yml is missing in the pip installed package
