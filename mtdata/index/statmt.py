@@ -302,6 +302,14 @@ def load(index: Index):
     index.add_entry(Entry(
         did=DatasetId(group=group_id, name=f'opus', version='wmt21', langs=('ha', 'en')), cite=wmt21_cite,
         url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=[1, 0]))
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name=f'paracrawl', version='8.wmt21', langs=('en', 'ha')), cite=wmt21_cite,
+        url='http://data.statmt.org/wmt21/translation-task/paracrawl8/paracrawl-release8.en-ha.bifixed.dedup.laser.filter-0.9.xz',
+        ext='tsv.xz', cols=[1, 2]))
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name=f'paracrawl', version='8.wmt21', langs=('en', 'ru')), cite=wmt21_cite,
+        url='http://data.statmt.org/wmt21/translation-task/paracrawl8/paracrawl-release8.en-ru.bifixed.dedup.filter-1.1.xz',
+        ext='tsv.xz', cols=[0, 1]))
 
     for pair in ['bn-hi', 'xh-zu']:
         l1, l2 = pair.split('-')
