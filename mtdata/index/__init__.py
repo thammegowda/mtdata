@@ -171,7 +171,7 @@ def bitext_lang_match(pair1, pair2, fuzzy_match=False) -> bool:
     if fuzzy_match:
         return is_compatible(x1, x2) and is_compatible(y1, y2)
     else:
-        return x1 == x2 and y1 == y1
+        return x1 == x2 and y1 == y2
 
 
 def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False, groups=None, not_groups=None) -> List[Entry]:
