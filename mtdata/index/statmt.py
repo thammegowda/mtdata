@@ -121,6 +121,14 @@ def load(index: Index):
         index.add_entry(Entry(did=DatasetId(group=group_id, name='wiki_titles', version='2', langs=(l1, l2)),
                               url=WIKI_TITLES_v2 % (l1, l2), cite=cite))
 
+    WIKI_TITLES_v3 = 'http://data.statmt.org/wikititles/v3/wikititles-v3.{pair}.tsv'
+    langs = 'bn-hi ca-es ca-pt ca-ro cs-en de-en de-fr es-pt es-ro ha-en ig-en is-en ja-en ps-en pt-ro ru-en xh-zu zh-en'
+    for pair in langs.split():
+        l1, l2 = pair.split('-')
+        url = WIKI_TITLES_v3.format(pair=pair)
+        ent = Entry(did=DatasetId(group=group_id, name=f'wikititles', version='3', langs=(l1, l2)), url=url, cite=cite)
+        index.add_entry(ent)
+
     # ==== WMT  Dev and Tests
     wmt_sets = {
         'newstest2014': [('de', 'en'), ('cs', 'en'), ('fr', 'en'), ('ru', 'en'), ('hi', 'en')],
@@ -212,6 +220,17 @@ def load(index: Index):
                     filename='wmt21dev.tgz', in_paths=[in_path], in_ext='wmt21xml', cite=wmt20_cite, url=url)
         index.add_entry(ent)
 
+    url = "http://data.statmt.org/wmt21/translation-task/test.tgz"
+    pairs = 'bn-hi hi-bn xh-zu zu-xh cs-en de-en de-fr en-cs en-de en-ha en-is en-ja en-ru en-zh fr-de ha-en is-en ja-en ru-en zh-en'.split()
+    for pair in pairs:
+        l1, l2 = pair.split('-')
+        name = 'newstest'
+        if pair in 'bn-hi hi-bn xh-zu zu-xh':
+            name = 'florestest'
+        in_path = f'test/{name}2021.{l1}-{l2}.xml'
+        ent = Entry(did=DatasetId(group=group_id, name=f'{name}_{l1}{l2}', version='2021', langs=(l1, l2)),
+                    filename='wmt21tests.tgz', in_paths=[in_path], in_ext='wmt21xml', cite=wmt20_cite, url=url)
+        index.add_entry(ent)
 
     # ==== TED Talks 2.0 ar-en
     index.add_entry(Entry(did=DatasetId(group=group_id, name='tedtalks', version='2_clean', langs=('en', 'ar')),
@@ -275,3 +294,26 @@ def load(index: Index):
         entry = Entry(did=DatasetId(group=group_id, name='ccaligned', version='1', langs=(src, tgt)), url=url,
                       cite=ccalign_cite, ext='tsv.xz', cols=(0, 1))
         index.add_entry(entry)
+
+    wmt21_cite = 'WMT21'  # unavailable at the time of adding
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name=f'khamenei', version='wmt21', langs=('ha','en')), cite=wmt21_cite,
+        url='http://data.statmt.org/wmt21/translation-task/ha-en/khamenei.v1.ha-en.tsv', ext='tsv', cols=[2, 3]))
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name=f'opus', version='wmt21', langs=('ha', 'en')), cite=wmt21_cite,
+        url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=[1, 0]))
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name=f'paracrawl', version='8.wmt21', langs=('en', 'ha')), cite=wmt21_cite,
+        url='http://data.statmt.org/wmt21/translation-task/paracrawl8/paracrawl-release8.en-ha.bifixed.dedup.laser.filter-0.9.xz',
+        ext='tsv.xz', cols=[1, 2]))
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name=f'paracrawl', version='8.wmt21', langs=('en', 'ru')), cite=wmt21_cite,
+        url='http://data.statmt.org/wmt21/translation-task/paracrawl8/paracrawl-release8.en-ru.bifixed.dedup.filter-1.1.xz',
+        ext='tsv.xz', cols=[0, 1]))
+
+    for pair in ['bn-hi', 'xh-zu']:
+        l1, l2 = pair.split('-')
+        url = f'http://data.statmt.org/wmt21/translation-task/cc-aligned/{pair}.tsv.xz'
+        index.add_entry(Entry(
+            did=DatasetId(group=group_id, name=f'ccaligned', version='wmt21', langs=(l1, l2)), cite=wmt21_cite,
+            url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=[1, 0]))

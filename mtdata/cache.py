@@ -37,10 +37,15 @@ class Cache:
         if entry.in_ext == 'opus_xces':
             return self.opus_xces_format(entry=entry, fix_missing=fix_missing)
 
-        local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing)
-        if zipfile.is_zipfile(local) or tarfile.is_tarfile(local):
-            # look inside the archives and get the desired files
-            local = self.get_local_in_paths(path=local, entry=entry)
+        if isinstance(entry.url, (list, tuple)):
+            assert isinstance(entry.url[0], str)
+            local = [self.get_local_path(url, fix_missing=fix_missing) for url in entry.url]
+        else:
+            assert isinstance(entry.url, str)
+            local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing)
+            if zipfile.is_zipfile(local) or tarfile.is_tarfile(local):
+                # look inside the archives and get the desired files
+                local = self.get_local_in_paths(path=local, entry=entry)
         return local
 
     def get_stats(self, entry: Entry):
@@ -121,7 +126,7 @@ class Cache:
                 in_paths = self.match_globs(names=root.namelist(), globs=in_paths)
             return [ZipPath(path, p) for p in in_paths]   # stdlib is buggy, so I made a workaround
         elif tarfile.is_tarfile(path):
-            return [TarPath(path, p) for p in in_paths]
+            return [TarPath(path, p).child for p in in_paths]
         else:
             raise Exception(f'Unable to read {entry.did}; the file is neither zip nor tar')
 
@@ -140,16 +145,17 @@ class Cache:
             log.info(f"GET {url} → {save_at}")
             resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True, timeout=timeout)
             assert resp.status_code == 200, resp.status_code
-            buf_size = 2 ** 10
-            n_buffers = math.ceil(int(resp.headers.get('Content-Length', '0')) / buf_size) or None
+            buf_size = 2 ** 14
+            tot_bytes = int(resp.headers.get('Content-Length', '0'))
+            n_buffers = math.ceil(tot_bytes / buf_size) or None
             desc = url
             if len(desc) > 60:
                 desc = desc[:30] + '...' + desc[-28:]
-            with pbar_man.counter(color='green', total=n_buffers, unit='KiB', leave=False,
+            with pbar_man.counter(color='green', total=tot_bytes//2**10, unit='KiB', leave=False,
                                   desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):
                     out.write(chunk)
-                    pbar.update()
+                    pbar.update(incr=buf_size//2**10)
             valid_flag.touch()
             lock_file.unlink()
             return save_at

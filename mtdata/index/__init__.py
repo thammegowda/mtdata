@@ -174,16 +174,24 @@ def bitext_lang_match(pair1, pair2, fuzzy_match=False) -> bool:
         return x1 == x2 and y1 == y2
 
 
-def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False) -> List[Entry]:
+def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False, groups=None, not_groups=None) -> List[Entry]:
     """
     :param langs: language pairs  to select eg ('en', 'de')
     :param names:  names to select
     :param not_names:  names to exclude
+    :param groups: groups to select
+    :param not_groups: groups to exlcude
     :param fuzzy_match
     :return: list of dataset entries that match the criteria
     """
     # TODO: our index has grown too big; improve search with fuzzy matches
     select = list(INDEX.get_entries())
+    if groups:
+        groups = set(g.lower() for g in groups)
+        select = [e for e in select if e.did.group.lower() in groups]
+    if not_groups:
+        not_groups = set(g.lower() for g in not_groups)
+        select = [e for e in select if e.did.group.lower() not in not_groups]
     if names:
         names = set(n.lower() for n in names)
         select = [e for e in select if e.did.name in names]

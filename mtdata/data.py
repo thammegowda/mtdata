@@ -24,8 +24,11 @@ class Dataset:
     def __init__(self, dir: Path, langs: LangPair, cache_dir: Path, drop_train_noise=True,
                  drop_test_noise=False, drop_dupes=False, drop_tests=False, compress=False, fail_on_error=False):
         self.dir = dir
-        self.langs = langs
+
         assert len(langs) == 2, f'Only parallel datasets are supported for now and expected two langs; {langs}'
+        assert isinstance(langs[0], BCP47Tag)
+        assert isinstance(langs[1], BCP47Tag)
+        self.langs = langs
         self.cache = Cache(cache_dir)
 
         self.train_parts_dir = dir / 'train-parts'  # will be merged later
@@ -61,7 +64,10 @@ class Dataset:
         # First, resolve and check if they exist before going to process them.
         # Fail early for typos in name
         all_dids = (train_dids or []) + (dev_dids or []) + (test_dids or [])
-        cls.resolve_entries(all_dids)
+        all_entries = cls.resolve_entries(all_dids)
+        for ent in all_entries:
+            if not BCP47Tag.check_compat_swap(pair1=langs, pair2=ent.did.langs)[0]:
+                raise Exception(f'Given languages: {langs} and dataset: {ent.did} are not compatible')
 
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir,
                       drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise,
@@ -267,7 +273,8 @@ class Dataset:
                 try:
                     n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
                                                   compress=compress)
-                    log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
+                    if max(n_good, n_bad) >= 0:  # -1 for skipped record because it is valid
+                        log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
                     pbar.update(force=True)
                 except MTDataException as e:
                     log.error(f"Unable to add {ent.did}: {e}")
@@ -289,6 +296,7 @@ class Dataset:
     def add_part(self, dir_path: Path, entry: Entry, drop_noise=False, compress=False):
         flag_file = dir_path / f'.valid.{entry.did}'
         if flag_file.exists():
+            log.info(f"{flag_file} exits. Skipping")
             return -1, -1
         path = self.cache.get_entry(entry)
         # swap = entry.is_swap(self.langs)
