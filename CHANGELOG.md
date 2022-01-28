@@ -1,6 +1,6 @@
 # Change Log
 
-## v0.3.3 - WIP
+## v0.3.3 - 20220127
 
 - bug fix: xml reading inside tar: Element tree's compain about TarPath 
 - `mtdata list` has `-g/--groups` and `-ng/--not-groups` as include exclude filters on group name (#91)
