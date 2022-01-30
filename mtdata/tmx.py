@@ -54,7 +54,7 @@ def read_tmx(path: Union[Path, str], langs=None):
     fails = 0
     if langs:
         assert len(langs) == 2
-        langs = [lang if isinstance(lang, BCP47Tag) else bcp47(lang) for lang in langs]
+        langs = [bcp47(lang) for lang in langs]
         assert not BCP47Tag.are_compatible(*langs), f'{langs} expected to be different (/unambiguous)'
     with IO.reader(path) as data:
         recs = parse_tmx(data)
