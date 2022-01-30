@@ -10,7 +10,7 @@ import argparse
 from mtdata import log
 from mtdata.utils import IO
 import time
-from mtdata.iso.bcp47 import bcp47
+from mtdata.iso.bcp47 import bcp47, BCP47Tag
 from mtdata.main import lang_pair
 from html import unescape
 import datetime
@@ -52,6 +52,10 @@ def read_tmx(path: Union[Path, str], langs=None):
     """
     passes = 0
     fails = 0
+    if langs:
+        assert len(langs) == 2
+        langs = [lang if isinstance(lang, BCP47Tag) else bcp47(lang) for lang in langs]
+        assert not BCP47Tag.are_compatible(*langs), f'{langs} expected to be different (/unambiguous)'
     with IO.reader(path) as data:
         recs = parse_tmx(data)
         for lang_seg in recs:
@@ -62,8 +66,15 @@ def read_tmx(path: Union[Path, str], langs=None):
                 else:
                     raise Exception(f"Language autodetect for TMX only supports 2 languages,"
                                     f" but provided with {lang_seg.keys()} in TMX {path}")
-            if langs[0] in lang_seg and langs[1] in lang_seg:
-                yield lang_seg[langs[0]], lang_seg[langs[1]]
+            seg1, seg2 = None, None
+            for lang, seg in lang_seg.items():
+                if BCP47Tag.are_compatible(langs[0], lang):
+                    seg1 = seg
+                elif BCP47Tag.are_compatible(langs[1], lang):
+                    seg2 = seg
+                # else ignore
+            if seg1 and seg2:  # both segs are found
+                yield seg1, seg2
                 passes += 1
             else:
                 fails += 1
