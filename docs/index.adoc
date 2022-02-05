@@ -1,6 +1,5 @@
 = MTData
-:author: Thamme Gowda
-:email: tgowdan@gmail.com
+:author: MTData Contributors
 :doctype: book
 :encoding: utf-8
 :lang: en
