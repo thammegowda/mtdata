@@ -22,7 +22,7 @@ echo "Running:: $cmd"
 eval "$cmd" || my_exit 3 "Doc building Failed"
 
 echo "Extracting dataset IDs to $ver_dir/dids.txt"
-python -m mtdata list -id > "$ver_dir/dids.txt"
+python -m mtdata list -id | sort > "$ver_dir/dids.txt"
 
 # link version files to top level dir
 for fname in index.html dids.txt; do
