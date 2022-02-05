@@ -70,6 +70,8 @@ class Parser:
                     if self.ent and self.ent.cols:
                         cols = self.ent.cols
                     readers.append(self.read_tsv(p, cols=cols))
+                elif 'csvwithheader' in self.ext:
+                    readers.append(self.read_tsv(p, delim=',', skipheader=True))
                 elif 'raw' in self.ext or 'txt' in self.ext:
                     readers.append(self.read_plain(p))
                 elif 'tmx' in self.ext:
@@ -107,7 +109,7 @@ class Parser:
             for line in stream:
                 yield line.strip()
 
-    def read_tsv(self, path, delim='\t', cols=None):
+    def read_tsv(self, path, delim='\t', cols=None, skipheader=False):
         """
         Read data from TSV file
         :param path: path to TSV file
@@ -117,6 +119,8 @@ class Parser:
         :return:
         """
         with IO.reader(path) as stream:
+            if skipheader:
+                line = stream.readline()
             for line in stream:
                 row = [x.strip() for x in line.rstrip('\n').split(delim)]
                 if cols:
