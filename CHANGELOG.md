@@ -2,7 +2,11 @@
 
 ## v0.3.4 - WIP
 
--  ELRC datasets updated
+- ELRC datasets updated
+- Added docs, separate copy for each version (github pages)  
+  - Dataset search via web interface. Support for regex match 
+- Added two new datasets Masakane fon-fra
+- Improved TMX files BCP47 lang ID matching: compatibility instead of exact match
 
 
 ## v0.3.3 - 20220127
