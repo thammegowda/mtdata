@@ -1,5 +1,14 @@
 # Change Log
 
+## v0.3.4 - WIP
+
+- ELRC datasets updated
+- Added docs, separate copy for each version (github pages)  
+  - Dataset search via web interface. Support for regex match 
+- Added two new datasets Masakane fon-fra
+- Improved TMX files BCP47 lang ID matching: compatibility instead of exact match
+
+
 ## v0.3.3 - 20220127
 
 - bug fix: xml reading inside tar: Element tree's compain about TarPath 
@@ -12,6 +21,8 @@
 - add wmt21 wikititles v3 (#86)
 - Add train and test sets from StanfordNLP NMT page (large: en-cs, medium: en-de, small: en-vi) (#84) 
   - Add support for two URLs for a single dataset (i.e. without zip/tar files)
+- Fix: buggy matching of languages `y1==y1`
+- Fix: `get` command: ensure train/dev/test datasets are indeed compatible with languages specified in `--langs` args 
  
 ## v0.3.2 - 20211205
 

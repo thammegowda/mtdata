@@ -3,10 +3,14 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/8/20
 
-from typing import Tuple, List, Optional, Set, Union
-from dataclasses import dataclass, field
+from typing import Tuple, List, Optional, Union, Any
+import json
+from dataclasses import dataclass
+from pybtex.database import parse_string
+
 from mtdata import log
 from mtdata.iso.bcp47 import BCP47Tag, bcp47
+
 
 DID_DELIM = '-'  # I  wanted to use ":", but Windows, they dont like ":" in path! :(
 

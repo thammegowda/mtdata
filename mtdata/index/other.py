@@ -123,3 +123,17 @@ def load_all(index: Index):
                         url=_url, ext='zip', in_ext='txt', in_paths=in_paths, cite=cite,
                         filename='Parice_dev_test.20.05.zip')
             index.add_entry(ent)
+
+    # https://github.com/bonaventuredossou/ffr-v1/tree/master/FFR-Dataset/FFR%20Dataset%20v2
+    _url = 'https://raw.githubusercontent.com/bonaventuredossou/ffr-v1/master/FFR-Dataset/FFR%20Dataset%20v2/ffr_dataset_v2.txt'
+    cite = index.ref_db.get_bibtex("emezue-dossou-2020-ffr")
+    ent = Entry(did=DatasetId(group='Masakhane', name=f'ffr', version='2', langs=('fon', 'fra')),
+                url=_url, ext='tsv', cite=cite)
+    index.add_entry(ent)
+
+    # https://zenodo.org/record/4432712
+    _url = 'https://zenodo.org/record/4432712/files/Fon_French_Parallel_Data_25377.csv?download=1'
+    cite = index.ref_db.get_bibtex("dossou2021crowdsourced")
+    ent = Entry(did=DatasetId(group='Masakhane', name=f'daily_dialogues', version='1', langs=('fon', 'fra')),
+                url=_url, ext='csvwithheader', cite=cite)
+    index.add_entry(ent)

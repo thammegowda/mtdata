@@ -6,7 +6,9 @@ MTData automates the collection and preparation of machine translation datasets.
 It provides CLI and python APIs, so it can be either used as a standalone tool or embedded into
  python apps for preparing MT experiments. 
 > 📣 Using MTData we've created a model that can translate from 500 languages to English.  
-> Free, and open-source; a demo and docker is at http://rtg.isi.edu/many-eng/ 
+> Free, and open-source; a demo and docker is at http://rtg.isi.edu/many-eng/  
+> Docs: https://thammegowda.github.io/mtdata   
+> Search datasets: https://thammegowda.github.io/mtdata/search.html
 
 This tool knows:
 - From where to download data sets: WMT News Translation tests and devs for Paracrawl, 
@@ -40,34 +42,34 @@ pip install --editable .
 
 # Current Status:
 
-These are the summary of datasets from various sources (Updated: Oct 2021). 
-The list is incomplete and meant to see as start. 
 We have added some commonly used datasets - you are welcome to add more! 
+These are the summary of datasets from various sources (Updated: Feb 2022).
+
  
-| Source | Dataset Count |
-|---: |--------------:|
-| OPUS<sup>$1</sup> |        80,830 |
+|                  Source | Dataset Count |
+|------------------------:|--------------:|
+|       OPUS<sup>$1</sup> |        80,830 |
 | OPUS_JW300<sup>$2</sup> |        91,248 |
-| Neulab |         4,455 |
-| Facebook |         1,617 |
-| ELRC |         1,341 |
-| EU |         1,178 |
-| Statmt |           699 |
-| Tilde |           519 |
-| LinguaTools |           253 |
-| Anuvaad |           196 |
-| AI4Bharath |           192 |
-| ParaCrawl |           126 |
-| Lindat |            56 |
-| UN<sup>$3</sup> |            30 |
-| JoshuaDec |            29 |
-| Phontron |             4 |
-| NRC_CA |             4 |
-| IITB |             3 |
-| WAT |             3 |
-| StanfordNLP |             3 |
-| KECL |             1 |
-| *Total* |      *182.8K* |
+|                  Neulab |         4,455 |
+|                Facebook |         1,617 |
+|                    ELRC |         1,341 |
+|                      EU |         1,178 |
+|                  Statmt |           699 |
+|                   Tilde |           519 |
+|             LinguaTools |           253 |
+|                 Anuvaad |           196 |
+|              AI4Bharath |           192 |
+|               ParaCrawl |           126 |
+|                  Lindat |            56 |
+|         UN<sup>$3</sup> |            30 |
+|               JoshuaDec |            29 |
+|                Phontron |             4 |
+|                  NRC_CA |             4 |
+|                    IITB |             3 |
+|                     WAT |             3 |
+|             StanfordNLP |             3 |
+|                    KECL |             1 |
+|                 *Total* |      *182.8K* |
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
 - <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format. It has two versions: `v1` (tokenized) and `v1c` (raw)
@@ -316,11 +318,11 @@ We used ISO 639-3 from the beginning, however, we soon faced the limitation that
 
 Our tags are of form `xxx_Yyyy_ZZ` where 
  
-| Pattern | Purpose | Standard | Length | Case | Required | 
-|---|---|---|---|---|---|
-| `xxx` | Language  | ISO 639-3 | three-letters | lowercase | mandatory |
-|`Yyyy`| Script | ISO 15924 | four-letters|  Titlecase | optional |
-|`ZZ` | Region |  ISO 3166-1 | two-letters | CAPITALS | optional |
+| Pattern | Purpose  | Standard   | Length        | Case      | Required  | 
+|---------|----------|------------|---------------|-----------|-----------|
+| `xxx`   | Language | ISO 639-3  | three-letters | lowercase | mandatory |
+| `Yyyy`  | Script   | ISO 15924  | four-letters  | Titlecase | optional  |
+| `ZZ`    | Region   | ISO 3166-1 | two-letters   | CAPITALS  | optional  |
 
 
 Notes:
@@ -336,19 +338,19 @@ To inspect parsing/mapping, use `python -m mtdata.iso.bcp47 <args>`
 python -m mtdata.iso.bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin-Deva kan-Latn
 ```
 
-| INPUT	| STD	|LANG	|SCRIPT	|REGION
-|---|---|---|---|---|
-|eng	|eng	|eng	|None	|None
-|English	|eng	|eng	|None	|None
-|en-US	|eng_US	|eng	|None	|US
-|en-GB	|eng_GB	|eng	|None	|GB
-|eng-Latn	|eng	|eng	|None	|None
-|kan	|kan	|kan	|None	|None
-|Kannada-Deva	|kan_Deva	|kan	|Deva	|None
-|hin-Deva	|hin	|hin	|None	|None
-|kan-Latn	|kan_Latn	|kan	|Latn	|None
-|kan-in	|kan_IN	|kan	|None	|IN
-|kn-knda-in	|kan_IN	|kan	|None	|IN
+| INPUT	        | STD	      | LANG	 | SCRIPT	 | REGION |
+|---------------|-----------|-------|---------|--------|
+| eng	          | eng	      | eng	  | None	   | None   |
+| English	      | eng	      | eng	  | None	   | None   |
+| en-US	        | eng_US	   | eng	  | None	   | US     |
+| en-GB	        | eng_GB	   | eng	  | None	   | GB     |
+| eng-Latn	     | eng	      | eng	  | None	   | None   |
+| kan	          | kan	      | kan	  | None	   | None   |
+| Kannada-Deva	 | kan_Deva	 | kan	  | Deva	   | None   |
+| hin-Deva	     | hin	      | hin	  | None	   | None   |
+| kan-Latn	     | kan_Latn	 | kan	  | Latn	   | None   |
+| kan-in	       | kan_IN	   | kan	  | None	   | IN     |
+| kn-knda-in	   | kan_IN	   | kan	  | None	   | IN     |
 
 **Python API for BCP47 Mapping**
 ```python
