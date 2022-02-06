@@ -22,10 +22,10 @@ echo "Running:: $cmd"
 eval "$cmd" || my_exit 3 "Doc building Failed"
 
 echo "Extracting dataset IDs to $ver_dir/dids.txt"
-python -m mtdata list -id | sort > "$ver_dir/dids.txt"
+python -m mtdata -ri list -id | sort > "$ver_dir/dids.txt"
 
 # link version files to top level dir
-for fname in index.html dids.txt; do
+for fname in index.html dids.txt asciidoctor.css rouge-github.css; do
   [[ -e "$DOCS_DIR/$fname" ]] && rm "$DOCS_DIR/$fname"
   ln -s "v$version/$fname" "$DOCS_DIR/$fname"
 done

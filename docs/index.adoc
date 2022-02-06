@@ -13,6 +13,7 @@
 :docinfo2:
 :icons: font
 :hide-uri-scheme:
+:linkcss:
 :source-highlighter: rouge
 
 
@@ -24,6 +25,7 @@ It provides CLI and python APIs, so it can be either used as a standalone tool o
  python apps for preparing MT experiments.
 
 * 📣 Using MTData we've created a model that can translate from 500 languages to English. Free, and open-source; a demo and docker is at http://rtg.isi.edu/many-eng/
+* Search datasets: https://thammegowda.github.io/mtdata/search.html
 
 This tool knows:
 
@@ -41,7 +43,7 @@ This tool knows:
 
 https://github.com/thammegowda/mtdata[MTData] is here to:
 
- - Automate the MT training data creation by taking out human intervention. Inspired by [SacreBLEU](https://github.com/mjpost/sacreBLEU) that takes out human intervention in evaluation stage.
+ - Automate the MT training data creation by taking out human intervention. Inspired by https://github.com/mjpost/sacreBLEU[SacreBLEU] that takes out human intervention in evaluation stage.
  - A reusable tool instead of dozens of use-once shell scripts spread across multiple repos.
 
 
@@ -61,9 +63,8 @@ pip install --editable .
 
 == Current Status:
 
-These are the summary of datasets from various sources (Updated: Oct 2021).
-The list is incomplete and meant to see as start.
 We have added some commonly used datasets - you are welcome to add more!
+Here is  a summary of datasets from various sources (Updated: Feb 2022).
 
 |===
 | Source | Dataset Count
