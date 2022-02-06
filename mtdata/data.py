@@ -40,11 +40,14 @@ class Dataset:
         self.drop_dupes = drop_dupes  # in training only
         self.drop_tests = drop_tests  # in training only
         self.fail_on_error = fail_on_error
+        self.errors_file = self.dir / 'errors.tsv'
 
     @classmethod
     def resolve_entries(cls, dids: List[DatasetId]):
         inp_dids = set(dids)
-        assert len(inp_dids) == len(dids), f'{dids} are not unique.'
+        if len(inp_dids) != len(dids):
+            dupes = [(id,c) for id, c in coll.Counter(dids).items() if c > 1]
+            assert len(inp_dids) == len(dids), f'Dupes found (unique expected): {dupes}'
         entries = []
         for did in inp_dids:
             if did in INDEX:
@@ -230,11 +233,10 @@ class Dataset:
         l1_link.symlink_to(l1_path)
         l2_link.symlink_to(l2_path)
 
-    def add_dev_entries(self, entries):
+    def add_dev_entries(self, entries, fail_on_error=False):
         assert entries
-        for entry in entries:
-            n_good, n_bad = self.add_part(self.tests_dir, entry, drop_noise=self.drop_test_noise)
-            log.info(f"{entry.did} : found {n_good:} segments and {n_bad:} errors")
+        self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise)
+
         if len(entries) == 1:
             # create a link to the only one
             self.link_to_part(entries[0], self.tests_dir, "dev")
@@ -276,11 +278,12 @@ class Dataset:
                     if max(n_good, n_bad) >= 0:  # -1 for skipped record because it is valid
                         log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
                     pbar.update(force=True)
-                except MTDataException as e:
+                except Exception as e:
                     log.error(f"Unable to add {ent.did}: {e}")
                     if fail_on_error:
                         raise e
-                    log.warning(e)
+                    msg = str(e).replace('\n', '\t')
+                    self.errors_file.open('a').write(f"{ent.did}\t{msg}\n")
 
     @classmethod
     def get_paths(cls, dir_path: Path, entry: Entry, compress=False) -> Tuple[Path, Path]:
