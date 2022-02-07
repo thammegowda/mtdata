@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src='https://cdn.plot.ly/plotly-2.8.3.min.js'></script>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -22,12 +23,14 @@
 </div>
 <div class="container-fluid">
     <a class="mx-4" data-bs-toggle="collapse" href="#collapse-help" role="button" aria-expanded="false"
-       aria-controls="collapse-help">Help</a> <span class="col-3 pull-right"><a href="#" id="download">⬇Save IDs</a></span>
+       aria-controls="collapse-help">Help</a> <span class="col-3 pull-right"><a href="#"
+                                                                                id="download">⬇Save IDs</a></span>
     <div id="summary" class="alert-primary my-1 py-1 px-2" role="alert"></div>
 
     <div class="collapse" id="collapse-help">
         <div class="card card-body">
-            Dataset IDs are of form: <code>Group-name-version-lang1-lang2</code>(JavaScript flavored) Regular expressions are welcome!
+            Dataset IDs are of form: <code>Group-name-version-lang1-lang2</code>(JavaScript flavored) Regular
+            expressions are welcome!
             Examples:
             <ul>
                 <li><code>.*crawl</code> matches both commoncrawl and paracrawl</li>
@@ -42,18 +45,105 @@
         </div>
     </div>
 </div>
+
+<!--.box1 {-->
+<!--  word-break: break-all;-->
+<!--}-->
+<!--<div class="container">-->
 <div class="row">
-    <table class="table table-striped col-4" id="table-dids">
+    <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
+    <!--    <div id="my_dataviz"></div>-->
+</div>
+<div class="row">
+    <table class="table table-striped" id="table-dids">
     </table>
 </div>
+<div class="row">
+    <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
+    <!--    <div id="my_dataviz"></div>-->
+</div>
+<!--</div>-->
 <script type="text/javascript">
     let all_dids = null;
-    let cur_shown = null
+    let cur_shown = null;
+    let groupName = null;
+    let m = null;
+    let k = null;
+    let dicti = {};
+
+    function sort_object(dicti) {
+        console.log(dicti)
+        let items = Object.keys(dicti)
+            .map(function (key) {return [key, dicti[key]];})
+
+        items.sort(function (first, second) {return second[1] - first[1];});
+        let sorted_obj = {}
+        $.each(items, function (k, v) {
+            sorted_obj[v[0]] = v[1]
+        })
+        return sorted_obj
+    }
 
     function display_data(arr) {
-        cur_shown = arr
+        cur_shown = arr;
         console.log(arr.length)
-        let max_dids = 1_000;
+        // ----------------------
+        k = arr[0].split("-")
+        console.log(k[0])
+        for (let i = 0; i < arr.length; i++) {
+            groupName = arr[i].split("-");
+            if (groupName[0] == '') {
+                console.log("Warning! not a good thing to split");
+                continue
+            }
+            if (!(groupName[0] in dicti)) {
+                dicti[groupName[0]] = 0;
+            }
+            dicti[groupName[0]] += 1;
+        }
+        let res = sort_object(dicti)
+        console.log(res)
+        let keys = []
+        let vals = []
+        Object.entries(res).forEach(([key, value]) => {
+            keys.push(key);
+            vals.push(value);
+
+        });
+        console.log("Keys: " + keys)
+        console.log("Values: " + vals)
+
+
+        let data = [
+            {
+            y:vals,
+            x: keys,
+                opacity: 0.4,
+
+                histfunc: "sum",
+            type: 'histogram',
+                marker: {
+            color: 'blue',
+            },
+            }
+        ]
+
+        let layout = {
+            yaxis: {
+                type: 'log',
+                autorange: true,
+                title: "MT Data Distribution",
+                xaxis: {title: "Sources"},
+                yaxis: {title: "Data-set"}
+            }
+        };
+
+        Plotly.newPlot('myDiv', data, layout);
+
+        //-------------------------
+
+
+        let max_dids = 1000;
         let table = $('#table-dids')
         table.empty()
         var dids = arr.slice(0, max_dids)
@@ -100,7 +190,6 @@
             .then(response => response.text())
             .then(function (lines) {
                 all_dids = lines.split("\n");
-                ;
                 display_data(all_dids)
             })
         $("#did-include").change(filter_dids);
@@ -110,6 +199,7 @@
         });
     });
 </script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
