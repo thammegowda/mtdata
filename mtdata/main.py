@@ -4,13 +4,14 @@
 # Created: 4/4/20
 import argparse
 from pathlib import Path
-from typing import List
 from collections import defaultdict
 
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
 from mtdata.entry import DatasetId, lang_pair
 from mtdata.utils import IO
+
+DEF_N_JOBS = 1
 
 
 def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=None, id_only=False):
@@ -27,7 +28,7 @@ def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=
 
 
 def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, merge_train=False, compress=False,
-             drop_dupes=False, drop_tests=False, fail_on_error=False, **kwargs):
+             drop_dupes=False, drop_tests=False, fail_on_error=False, n_jobs=DEF_N_JOBS, **kwargs):
     if kwargs:
         log.warning(f"Args are ignored: {kwargs}")
     from mtdata.data import Dataset
@@ -35,7 +36,7 @@ def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, mer
     dataset = Dataset.prepare(
         langs, train_dids=train_dids, test_dids=test_dids, out_dir=out_dir,
         dev_dids=dev_dids, cache_dir=CACHE_DIR, merge_train=merge_train, compress=compress,
-        drop_dupes=drop_dupes, drop_tests=drop_tests, fail_on_error=fail_on_error)
+        drop_dupes=drop_dupes, drop_tests=drop_tests, fail_on_error=fail_on_error, n_jobs=n_jobs)
     cli_sig = f'-l {"-".join(str(l) for l in langs)}'
     for flag, dids in [('-tr', train_dids), ('-ts', test_dids), ('-dv', dev_dids)]:
         if dids:
@@ -81,7 +82,7 @@ def list_recipes():
 
 
 def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False,
-               **kwargs):
+               n_jobs=DEF_N_JOBS, **kwargs):
     if kwargs:
         log.warning(f"Args are ignored: {kwargs}")
     from mtdata.recipe import RECIPES
@@ -91,7 +92,7 @@ def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_
 
     get_data(langs=recipe.langs, train_dids=recipe.train, dev_dids=recipe.dev, test_dids=recipe.test,
              merge_train=True, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes, drop_tests=drop_tests,
-             fail_on_error=fail_on_error)
+             fail_on_error=fail_on_error, n_jobs=n_jobs)
 
 
 def show_stats(*dids: DatasetId):
@@ -157,7 +158,7 @@ def parse_args():
                        help='Language pairs; e.g.: deu-eng', required=True)
     get_p.add_argument('-tr', '--train', metavar='ID', dest='train_dids', nargs='*', type=DatasetId.parse,
                        help='''R|Names of datasets separated by space, to be used for *training*.
-    e.g. -tr Statmt-news_commentary-16-deu-eng europarl_v9 .
+    e.g. -tr Statmt-news_commentary-16-deu-eng.
      To concatenate all these into a single train file, set --merge flag.''')
     get_p.add_argument('-ts', '--test', metavar='ID', dest='test_dids', nargs='*', type=DatasetId.parse,
                        help='''R|Names of datasets separated by space, to be used for *testing*. 
@@ -170,6 +171,7 @@ def parse_args():
     add_boolean_arg(get_p, 'merge', dest='merge_train', default=False, help='Merge train into a single file')
     add_boolean_arg(get_p, 'fail', dest='fail_on_error', default=False,
                     help='Fail if an error occurs on any one of dataset pars')
+    get_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs", default=DEF_N_JOBS)
 
     def add_getter_args(parser):
         parser.add_argument(f'--compress', action='store_true', default=False, help="Keep the files compressed")
@@ -190,6 +192,8 @@ def parse_args():
     listr_p = sub_ps.add_parser('list-recipe', formatter_class=MyFormatter)
     getr_p = sub_ps.add_parser('get-recipe', formatter_class=MyFormatter)
     getr_p.add_argument('-ri', '--recipe-id', type=str, help='Recipe ID', required=True)
+    getr_p.add_argument('-f', '--fail-on-error', action='store_true', help='Fail on error')
+    getr_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs (processes)", default=DEF_N_JOBS)
     add_getter_args(getr_p)
 
     stats_p = sub_ps.add_parser('stats', formatter_class=MyFormatter)
