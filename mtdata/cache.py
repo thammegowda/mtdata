@@ -151,7 +151,7 @@ class Cache:
             desc = url
             if len(desc) > 60:
                 desc = desc[:30] + '...' + desc[-28:]
-            with pbar_man.counter(color='green', total=tot_bytes//2**10, unit='KiB', leave=False,
+            with pbar_man.counter(color='green', total=tot_bytes//2**10, unit='KiB', leave=False, position=2,
                                   desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):
                     out.write(chunk)

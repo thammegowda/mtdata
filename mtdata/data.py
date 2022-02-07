@@ -147,7 +147,7 @@ class Dataset:
 
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
             with pbar_man.counter(color='green', total=len(paired_files), unit='it', desc="Merging",
-                                  autorefresh=True) as pbar:
+                                  autorefresh=False) as pbar:
                 for name, (if1, if2) in paired_files.items():
                     for seg1, seg2 in self.read_parallel(if1, if2):
                         counts['total'][name] += 1
@@ -301,13 +301,13 @@ class Dataset:
                       fail_on_error=fail_on_error) for ent in entries]
         pool = Pool(self.n_jobs)
         with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
-                              autorefresh=True) as pbar:
+                              autorefresh=True, position=3) as pbar:
             for _ in pool.imap_unordered(self.add_part_thread, tasks):
                 pbar.update(force=True)
 
     def add_parts_sequential(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
         with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
-                              autorefresh=True) as pbar:
+                              autorefresh=True, position=3) as pbar:
             for ent in entries:
                 try:
                     n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
