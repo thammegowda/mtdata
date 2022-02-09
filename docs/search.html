@@ -46,30 +46,20 @@
     </div>
 </div>
 
-<!--.box1 {-->
-<!--  word-break: break-all;-->
-<!--}-->
-<!--<div class="container">-->
 <div class="row">
-    <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
-    <!--    <div id="my_dataviz"></div>-->
+    <div id='myDiv'></div>
 </div>
 <div class="row">
     <table class="table table-striped" id="table-dids">
     </table>
 </div>
 <div class="row">
-    <div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
-    <!--    <div id="my_dataviz"></div>-->
+    <div id='myDiv'></div>
 </div>
-<!--</div>-->
 <script type="text/javascript">
     let all_dids = null;
     let cur_shown = null;
-    let groupName = null;
-    let m = null;
-    let k = null;
-    let dicti = {};
+
 
     function sort_object(dicti) {
         console.log(dicti)
@@ -84,10 +74,12 @@
         return sorted_obj
     }
 
-    function display_data(arr) {
-        cur_shown = arr;
-        console.log(arr.length)
-        // ----------------------
+    function showPlot(arr){
+        let groupName = null;
+        let m = null;
+        let k = null;
+        let dicti = {};
+
         k = arr[0].split("-")
         console.log(k[0])
         for (let i = 0; i < arr.length; i++) {
@@ -139,10 +131,12 @@
         };
 
         Plotly.newPlot('myDiv', data, layout);
+    }
 
-        //-------------------------
-
-
+    function display_data(arr) {
+        cur_shown = arr;
+        console.log(arr.length)
+        showPlot(arr)
         let max_dids = 1000;
         let table = $('#table-dids')
         table.empty()
