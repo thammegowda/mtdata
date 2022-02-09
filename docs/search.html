@@ -49,24 +49,23 @@
 <div class="row">
     <div id='myDiv'></div>
 </div>
-<div class="row">
-    <table class="table table-striped" id="table-dids">
-    </table>
+<div class="row px-4">
+    <table class="table table-striped" id="table-dids"></table>
 </div>
-<div class="row">
-    <div id='myDiv'></div>
-</div>
+
 <script type="text/javascript">
     let all_dids = null;
     let cur_shown = null;
 
-
     function sort_object(dicti) {
         console.log(dicti)
         let items = Object.keys(dicti)
-            .map(function (key) {return [key, dicti[key]];})
-
-        items.sort(function (first, second) {return second[1] - first[1];});
+            .map(function (key) {
+                return [key, dicti[key]];
+            })
+        items.sort(function (first, second) {
+            return second[1] - first[1];
+        });
         let sorted_obj = {}
         $.each(items, function (k, v) {
             sorted_obj[v[0]] = v[1]
@@ -74,17 +73,14 @@
         return sorted_obj
     }
 
-    function showPlot(arr){
+    function showPlot(arr) {
         let groupName = null;
-        let m = null;
-        let k = null;
         let dicti = {};
-
-        k = arr[0].split("-")
-        console.log(k[0])
+        let k = arr[0].split("-")
+        // console.log(k[0])
         for (let i = 0; i < arr.length; i++) {
             groupName = arr[i].split("-");
-            if (groupName[0] == '') {
+            if (!groupName[0]) {
                 console.log("Warning! not a good thing to split");
                 continue
             }
@@ -100,25 +96,21 @@
         Object.entries(res).forEach(([key, value]) => {
             keys.push(key);
             vals.push(value);
-
         });
-        console.log("Keys: " + keys)
-        console.log("Values: " + vals)
+        //console.log("Keys: " + keys)
+        //console.log("Values: " + vals)
 
-
-        let data = [
-            {
-            y:vals,
+        let data = [{
+            y: vals,
             x: keys,
-                opacity: 0.4,
-
-                histfunc: "sum",
+            text: vals,
+            opacity: 0.6,
+            histfunc: "sum",
             type: 'histogram',
-                marker: {
-            color: 'blue',
+            marker: {
+                color: 'blue',
             },
-            }
-        ]
+        }]
 
         let layout = {
             yaxis: {
@@ -126,7 +118,7 @@
                 autorange: true,
                 title: "MT Data Distribution",
                 xaxis: {title: "Sources"},
-                yaxis: {title: "Data-set"}
+                yaxis: {title: "Data-set"},
             }
         };
 
