@@ -2,26 +2,29 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu]
 # Created: 4/5/20
-import hashlib
+import collections as coll
+import json
+from itertools import zip_longest
+from multiprocessing import Pool
 from pathlib import Path
-from mtdata import log, pbar_man, cache_dir as CACHE_DIR, MTDataException
+from typing import Optional, List, Tuple
+
+import portalocker
+
+from mtdata import log, pbar_man, cache_dir as CACHE_DIR, FILE_LOCK_TIMEOUT
 from mtdata.cache import Cache
-from mtdata.index import INDEX
 from mtdata.entry import Entry, DatasetId, LangPair
+from mtdata.index import INDEX
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
 from mtdata.parser import Parser
 from mtdata.utils import IO
-from typing import Optional, List, Tuple
-from itertools import zip_longest
-import collections as coll
-import json
 
 DEF_COMPRESS = 'gz'
 
 
 class Dataset:
 
-    def __init__(self, dir: Path, langs: LangPair, cache_dir: Path, drop_train_noise=True,
+    def __init__(self, dir: Path, langs: LangPair, cache_dir: Path, drop_train_noise=True, n_jobs=1,
                  drop_test_noise=False, drop_dupes=False, drop_tests=False, compress=False, fail_on_error=False):
         self.dir = dir
 
@@ -40,11 +43,17 @@ class Dataset:
         self.drop_dupes = drop_dupes  # in training only
         self.drop_tests = drop_tests  # in training only
         self.fail_on_error = fail_on_error
+        self.compress = compress
+        self.n_jobs = n_jobs
+        self.errors_file = self.dir / 'errors.tsv'
+        assert self.n_jobs > 0
 
     @classmethod
     def resolve_entries(cls, dids: List[DatasetId]):
         inp_dids = set(dids)
-        assert len(inp_dids) == len(dids), f'{dids} are not unique.'
+        if len(inp_dids) != len(dids):
+            dupes = [(id, c) for id, c in coll.Counter(dids).items() if c > 1]
+            assert len(inp_dids) == len(dids), f'Dupes found (unique expected): {dupes}'
         entries = []
         for did in inp_dids:
             if did in INDEX:
@@ -57,7 +66,7 @@ class Dataset:
     def prepare(cls, langs, out_dir: Path, train_dids: Optional[List[DatasetId]] = None,
                 test_dids: Optional[List[DatasetId]] = None, dev_dids: Optional[List[DatasetId]] = None,
                 cache_dir: Path = CACHE_DIR, merge_train=False, drop_noise: Tuple[bool, bool] = (True, False),
-                compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False):
+                compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False, n_jobs=1):
         drop_train_noise, drop_test_noise = drop_noise
         assert langs, 'langs required'
         assert train_dids or test_dids, 'Either train_names or test_names should be given'
@@ -69,9 +78,9 @@ class Dataset:
             if not BCP47Tag.check_compat_swap(pair1=langs, pair2=ent.did.langs)[0]:
                 raise Exception(f'Given languages: {langs} and dataset: {ent.did} are not compatible')
 
-        dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir,
-                      drop_train_noise=drop_train_noise, drop_test_noise=drop_test_noise,
-                      drop_dupes=drop_dupes, drop_tests=drop_tests, fail_on_error=fail_on_error)
+        dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir, drop_train_noise=drop_train_noise,
+                      drop_test_noise=drop_test_noise, drop_dupes=drop_dupes, drop_tests=drop_tests,
+                      fail_on_error=fail_on_error, n_jobs=n_jobs)
 
         dev_entries, test_entries = [], []
         if test_dids:  # tests are smaller so quicker; no merging needed
@@ -91,7 +100,7 @@ class Dataset:
                         p1, p2 = p2, p1  # swap
                     pair_files.append((p1, p2))
                 test_pair_hash, test_seg_hash = dataset.hash_all_bitexts(pair_files)
-                drop_hashes = test_pair_hash | test_seg_hash   # set union
+                drop_hashes = test_pair_hash | test_seg_hash  # set union
             dataset.add_train_entries(train_entries, merge_train=merge_train, compress=compress,
                                       drop_hashes=drop_hashes)
         return dataset
@@ -138,7 +147,7 @@ class Dataset:
 
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
             with pbar_man.counter(color='green', total=len(paired_files), unit='it', desc="Merging",
-                                  autorefresh=True) as pbar:
+                                  autorefresh=False) as pbar:
                 for name, (if1, if2) in paired_files.items():
                     for seg1, seg2 in self.read_parallel(if1, if2):
                         counts['total'][name] += 1
@@ -232,9 +241,8 @@ class Dataset:
 
     def add_dev_entries(self, entries):
         assert entries
-        for entry in entries:
-            n_good, n_bad = self.add_part(self.tests_dir, entry, drop_noise=self.drop_test_noise)
-            log.info(f"{entry.did} : found {n_good:} segments and {n_bad:} errors")
+        self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise, fail_on_error=self.fail_on_error)
+
         if len(entries) == 1:
             # create a link to the only one
             self.link_to_part(entries[0], self.tests_dir, "dev")
@@ -252,11 +260,11 @@ class Dataset:
                 in_paths.append((e1, e2))
             self.cat_bitexts(in_paths=in_paths, out_paths=out_paths)
 
-    def cat_bitexts(self, in_paths:List[Tuple[Path, Path]], out_paths: Tuple[Path, Path]):
+    def cat_bitexts(self, in_paths: List[Tuple[Path, Path]], out_paths: Tuple[Path, Path]):
         of1, of2 = out_paths
         of1.parent.mkdir(exist_ok=True)
         of2.parent.mkdir(exist_ok=True)
-        with pbar_man.counter(color='green', total=len(in_paths), unit='it', desc="Merging") as pbar,\
+        with pbar_man.counter(color='green', total=len(in_paths), unit='it', desc="Merging") as pbar, \
                 IO.writer(of1) as w1, IO.writer(of2) as w2:
             for if1, if2 in in_paths:
                 assert if1.exists()
@@ -266,9 +274,40 @@ class Dataset:
                     w2.write(seg2 + '\n')
                 pbar.update()
 
+    def add_part_thread(self, args):
+        fail_on_error = args.pop('fail_on_error', False)
+        ent = args['entry']
+        assert isinstance(ent, Entry)
+        try:
+            n_good, n_bad = self.add_part(**args)
+            if max(n_good, n_bad) >= 0:  # -1 for skipped record because it is valid
+                log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
+        except Exception as e:
+            log.error(f"Unable to add {ent.did}: {e}")
+            if fail_on_error:
+                raise e
+            msg = str(e).replace('\n', '\t')
+            with portalocker.Lock(self.errors_file, 'a', timeout=FILE_LOCK_TIMEOUT) as fh:
+                # self.errors_file.open('a').write(f"{ent.did}\t{msg}\n")
+                fh.write(f"{ent.did}\t{msg}\n")
+
     def add_parts(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
+        assert isinstance(entries, list)
+        if self.n_jobs == 1:
+            return self.add_parts_sequential(dir_path=dir_path, entries=entries, drop_noise=drop_noise,
+                                             compress=compress, desc=desc, fail_on_error=fail_on_error)
+
+        tasks = [dict(dir_path=dir_path, entry=ent, drop_noise=drop_noise, compress=compress,
+                      fail_on_error=fail_on_error) for ent in entries]
+        pool = Pool(self.n_jobs)
         with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
-                              autorefresh=True) as pbar:
+                              autorefresh=True, position=3) as pbar:
+            for _ in pool.imap_unordered(self.add_part_thread, tasks):
+                pbar.update(force=True)
+
+    def add_parts_sequential(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
+        with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
+                              autorefresh=True, position=3) as pbar:
             for ent in entries:
                 try:
                     n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
@@ -276,11 +315,12 @@ class Dataset:
                     if max(n_good, n_bad) >= 0:  # -1 for skipped record because it is valid
                         log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
                     pbar.update(force=True)
-                except MTDataException as e:
+                except Exception as e:
                     log.error(f"Unable to add {ent.did}: {e}")
                     if fail_on_error:
                         raise e
-                    log.warning(e)
+                    msg = str(e).replace('\n', '\t')
+                    self.errors_file.open('a').write(f"{ent.did}\t{msg}\n")
 
     @classmethod
     def get_paths(cls, dir_path: Path, entry: Entry, compress=False) -> Tuple[Path, Path]:

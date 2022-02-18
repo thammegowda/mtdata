@@ -1,6 +1,11 @@
 # Change Log
 
-## v0.3.4 - WIP
+## v0.3.5 - WIP
+
+- Parallel download support `-j/--n-jobs` argument (with default `4`)
+
+
+## v0.3.4 - 20220206
 
 - ELRC datasets updated
 - Added docs, separate copy for each version (github pages)  
