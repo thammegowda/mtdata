@@ -80,13 +80,13 @@ def load_all(index: Index):
                                   f"khresmoi-summary-test-set-2.0/khresmoi-summary-dev.{l2}"])
             index.add_entry(ent)
 
-    jesc_url = 'https://nlp.stanford.edu/projects/jesc/data/split.tar.gz'
     jesc_cite = index.ref_db.get_bibtex('pryzant_jesc_2018')
     for split in ['train', 'dev', 'test']:
-        ent = Entry(did=DatasetId(group='StanfordNLP', name=f'jesc_{split}', version='1', langs=(l1, l2)),
-                    url=jesc_url, filename='jesc-split.tar.gz', in_ext='tsv',
-                    in_paths=[f"split/{split}"], cite=jesc_cite)
+        ent = Entry(url='https://nlp.stanford.edu/projects/jesc/data/split.tar.gz',
+                    did=DatasetId(group='StanfordNLP', name=f'jesc_{split}', version='1', langs=('en', 'ja')),
+                    filename='jesc-split.tar.gz', in_ext='tsv', in_paths=[f"split/{split}"], cite=jesc_cite)
         index.add_entry(ent)
+
     prefix = 'https://nlp.stanford.edu/projects/nmt/data'
     for name, subdir, src, tgt, cite_key in [
         ("wmt15_train", "wmt15.en-cs", "train.en", "train.cs", "luong2016acl_hybrid"),
