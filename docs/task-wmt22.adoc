@@ -1,0 +1,123 @@
+= MTData for WMT22
+:doctype: article
+:source-highlighter: rouge
+:toc: top
+:sectnums:
+
+== Setup
+
+NOTE:  mtdata v0.3.5 is required which is currently under testing. So install it from develop. We will release it to PyPi once testing is complete.
+
+[source,bash]
+----
+# pip install mtdata==0.3.5
+# Install from develop branch
+pip install https://github.com/thammegowda/mtdata/archive/develop.zip
+----
+
+== Get Recipes File
+
+NOTE: these files might be distributed from WMT22 webpage
+
+[source,bash]
+----
+wget https://raw.githubusercontent.com/thammegowda/mtdata/develop/recipes/mtdata.recipes.wmt22.yml
+----
+File name has to be in current directory and match the glob `mtdata.recipes*.yml`
+
+If you would like to place all your recipe YML files in a specific designated directory, then `export MTDATA_RECIPES=/path/to/dir`
+
+This file has all datasets for WMT22 langauge pairs
+[source,bash]
+----
+wget https://raw.githubusercontent.com/thammegowda/mtdata/develop/recipes/mtdata.recipes.wmt22all.yml
+----
+
+
+== List available recipes
+
+[source,bash]
+----
+$ mtdata list-recipe | cut -f1 | grep wmt22
+wmt22-csen-all
+wmt22-deen-all
+wmt22-jaen-all
+wmt22-ruen-all
+wmt22-zhen-all
+wmt22-frde-all
+wmt22-hren-all
+wmt22-csen
+wmt22-deen
+wmt22-jaen
+wmt22-ruen
+wmt22-zhen
+wmt22-frde
+wmt22-hren
+----
+
+`wmt22*` ids are all loaded from `mtdata.recipes.wmt22*.yml` file.
+
+== Download Recipe
+
+
+.Usage: `mtdata get-recipe`
+[source,bash]
+----
+$  mtdata get-recipe  -h
+usage: mtdata get-recipe [-h] -ri RECIPE_ID [-f] [-j N_JOBS] [--merge | --no-merge] [--compress] [-dd] [-dt] -o OUT_DIR
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -ri RECIPE_ID, --recipe-id RECIPE_ID
+                        Recipe ID (default: None)
+  -f, --fail-on-error   Fail on error (default: False)
+  -j N_JOBS, --n-jobs N_JOBS
+                        Number of worker jobs (processes) (default: 1)
+  --merge               Merge train into a single file (default: True)
+  --no-merge            Do not Merge train into a single file (default: False)
+  --compress            Keep the files compressed (default: False)
+  -dd, --dedupe, --drop-dupes
+                        Remove duplicate (src, tgt) pairs in training (if any); valid when --merge. Not recommended for large datasets. (default: False)
+  -dt, --drop-tests     Remove dev/test sentences from training sets (if any); valid when --merge (default: False)
+  -o OUT_DIR, --out OUT_DIR
+                        Output directory name (default: None)
+
+----
+
+.Get All Recipes
+[source,bash]
+----
+for rid in wmt22-{cs,de,ja,ru,hr}en wmt22-frde; do
+  mtdata get-recipe -ri $rid -o $rid
+done
+----
+
+
+== Add Your Own Recipe
+
+Here is an example
+
+[source,yaml]
+----
+- id: wmt22-deen #<1>
+  langs: deu-eng
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  dev:  #<2>
+    - Statmt-newstest_deen-2020-deu-eng
+    - Statmt-newstest_ende-2020-eng-deu
+  test: #<2>
+    - Statmt-newstest_deen-2021-deu-eng
+    - Statmt-newstest_ende-2021-eng-deu
+  train: #<3>
+    - Statmt-europarl-10-deu-eng
+    - ParaCrawl-paracrawl-9-eng-deu
+    - Statmt-commoncrawl_wmt13-1-deu-eng
+    - Statmt-news_commentary-16-deu-eng
+    - Statmt-wikititles-3-deu-eng
+    - Tilde-rapid-2019-deu-eng # - Tilde-rapid-2016-deu-eng
+    - Facebook-wikimatrix-1-deu-eng
+----
+1. `id` has to be unique.
+2. `dev` and `test` are optional. They can be a single dataset (i.e. String) or list of datasets (i.e. list of strings)
+3. `train` is required.
