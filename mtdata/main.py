@@ -82,7 +82,7 @@ def list_recipes():
 
 
 def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False,
-               n_jobs=DEF_N_JOBS, merge_train=False, **kwargs):
+               n_jobs=DEF_N_JOBS, merge_train=True, **kwargs):
     if kwargs:
         log.warning(f"Args are ignored: {kwargs}")
     from mtdata.recipe import RECIPES
