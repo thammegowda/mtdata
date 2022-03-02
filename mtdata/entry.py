@@ -4,9 +4,8 @@
 # Created: 4/8/20
 
 from typing import Tuple, List, Optional, Union, Any
-import json
 from dataclasses import dataclass
-from pybtex.database import parse_string
+
 
 from mtdata import log
 from mtdata.iso.bcp47 import BCP47Tag, bcp47
@@ -76,7 +75,7 @@ class Entry:
     __slots__ = ('did', 'url', 'filename', 'ext', 'in_paths', 'in_ext', 'cite', 'cols', 'is_archive')
 
     def __init__(self, did: DatasetId,
-                 url: Union[str, Tuple[str,str]],
+                 url: Union[str, Tuple[str, str]],
                  filename: Optional[str] = None,
                  ext: Optional[str] = None,
                  in_paths: Optional[List[str]] = None,
