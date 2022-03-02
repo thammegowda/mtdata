@@ -275,6 +275,12 @@ def load(index: Index):
                     url=url, cite=wmt20_cite, ext='tsv.xz', cols=(0, 1))
         index.add_entry(entry)
 
+    # for ja-en only TED was available
+    index.add_entry(Entry(url="http://data.statmt.org/wmt20/translation-task/ja-en/ted.en-ja.tgz",
+                    did=DatasetId(group=group_id, name='ted', version='wmt20', langs=('en', 'ja')),
+                    cite=wmt20_cite, ext='tgz', in_ext='txt',
+                    in_paths=['en-ja/train.tags.en-ja.en', 'en-ja/train.tags.en-ja.ja']))
+
     ccalign_cite = index.ref_db.get_bibtex('chaudhary-EtAl:2019:WMT')
     CC_ALIGNED = 'http://www.statmt.org/cc-aligned/sentence-aligned/{src}-{tgt}.tsv.xz'
     tgts='es_XX et_EE fa_IR ff_NG fi_FI fr_XX gu_IN ha_NG he_IL hi_IN hr_HR ht_HT hu_HU hy_AM id_ID ig_NG is_IS it_IT ja_XX jv_ID ka_GE kg_AO kk_KZ km_KH kn_IN ko_KR ku_TR ky_KG lg_UG ln_CD lo_LA lt_LT lv_LV mg_MG mi_NZ mk_MK ml_IN mn_MN mr_IN ms_MY mt_MT my_MM ne_NP nl_XX no_XX ns_ZA ny_MW om_KE or_IN pa_IN pl_PL ps_AF pt_XX qa_MM qd_MM ro_RO ru_RU si_LK sk_SK sl_SI sn_ZW so_SO sq_AL sr_RS ss_SZ st_ZA su_ID sv_SE sw_KE sz_PL ta_IN te_IN tg_TJ th_TH ti_ET tl_XX tn_BW tr_TR ts_ZA tz_MA uk_UA ur_PK ve_ZA vi_VN wo_SN xh_ZA yo_NG zh_CN zh_TW zu_ZA zz_TR'.split()

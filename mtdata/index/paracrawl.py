@@ -78,7 +78,8 @@ def load(index: Index):
         cite=cite, ext='tsv.gz'))
 
     # Japanese-English paracrawl (5.1) used by WMT20 and WMT21
-    ent = Entry(did=DatasetId(group='KECL', name=f'paracrawl', version='2', langs=('eng', 'jpn')),
-                in_paths=['en-ja/en-ja.bicleaner05.txt'], in_ext='tsv', cols=(2, 3), cite='',
-                url='http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/2.0/bitext/en-ja.tar.gz')
-    index.add_entry(ent)
+    for version in ['2', '3']:
+        ent = Entry(did=DatasetId(group='KECL', name=f'paracrawl', version=version, langs=('eng', 'jpn')),
+                    in_paths=['en-ja/en-ja.bicleaner05.txt'], in_ext='tsv', cols=(2, 3), cite='',
+                    url=f'http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/{version}.0/bitext/en-ja.tar.gz')
+        index.add_entry(ent)
