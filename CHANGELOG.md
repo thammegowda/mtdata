@@ -3,7 +3,13 @@
 ## v0.3.5 - WIP
 
 - Parallel download support `-j/--n-jobs` argument (with default `4`)
-
+- Add histogram to web search interface (Thanks, @sgowdaks)
+- Update OPUS index. Use OPUS API to download all datasets
+  - A lot of new datasets are added
+- Fix: JESC dataset language IDs were wrong  
+- New datasets:
+   - paracrawl v3 for jpn-eng
+- Option to set `MTDATA_RECIPES` dir (default is $PWD). All files matching the glob `${MTDATA_RECIPES}/mtdata.recipes*.yml` are loaded  
 
 ## v0.3.4 - 20220206
 
