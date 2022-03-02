@@ -17,35 +17,29 @@ pip install https://github.com/thammegowda/mtdata/archive/develop.zip
 
 == Get Recipes File
 
-NOTE: these files might be distributed from WMT22 webpage
+NOTE: The recipe files maybe be better if distributed from WMT22 webpage
 
 [source,bash]
 ----
 wget https://raw.githubusercontent.com/thammegowda/mtdata/develop/recipes/mtdata.recipes.wmt22.yml
 ----
-File name has to be in current directory and match the glob `mtdata.recipes*.yml`
+The recipe file has to be in the current directory (where `mtdata` is invoked) and the name has to match the glob `mtdata.recipes*.yml`
 
-If you would like to place all your recipe YML files in a specific designated directory, then `export MTDATA_RECIPES=/path/to/dir`
+If you would like to place all your recipe YML files in a specific directory, then `export MTDATA_RECIPES=/path/to/dir`
 
-This file has all datasets for WMT22 langauge pairs
+
+This file has all datasets for WMT22 langauge pairs. 
 [source,bash]
 ----
 wget https://raw.githubusercontent.com/thammegowda/mtdata/develop/recipes/mtdata.recipes.wmt22all.yml
 ----
 
 
-== List available recipes
+== List Available Recipes
 
 [source,bash]
 ----
 $ mtdata list-recipe | cut -f1 | grep wmt22
-wmt22-csen-all
-wmt22-deen-all
-wmt22-jaen-all
-wmt22-ruen-all
-wmt22-zhen-all
-wmt22-frde-all
-wmt22-hren-all
 wmt22-csen
 wmt22-deen
 wmt22-jaen
@@ -57,7 +51,7 @@ wmt22-hren
 
 `wmt22*` ids are all loaded from `mtdata.recipes.wmt22*.yml` file.
 
-== Download Recipe
+== Download a Recipe
 
 
 .Usage: `mtdata get-recipe`
@@ -81,7 +75,6 @@ optional arguments:
   -dt, --drop-tests     Remove dev/test sentences from training sets (if any); valid when --merge (default: False)
   -o OUT_DIR, --out OUT_DIR
                         Output directory name (default: None)
-
 ----
 
 .Get All Recipes
