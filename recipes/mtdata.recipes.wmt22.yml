@@ -14,10 +14,12 @@
     - Statmt-commoncrawl_wmt13-1-ces-eng
     - Statmt-news_commentary-16-ces-eng
     - Statmt-wikititles-3-ces-eng
-    - Tilde-rapid-2019-ces-eng #- Tilde-eesc-2017-ces-eng, Tilde-ema-2016-ces-eng, Tilde-ecb-2017-ces-eng
     - Facebook-wikimatrix-1-ces-eng
-    # TODO: backtranslated news,  cant find link
-    # TODO: CzEng 2.0 requires login
+    - Tilde-eesc-2017-ces-eng
+    - Tilde-ema-2016-ces-eng
+    - Tilde-ecb-2017-ces-eng
+    - Tilde-rapid-2019-ces-eng
+    # TODO: CzEng2.0 and backtranslated news require login
 
 - id: wmt22-deen
   langs: deu-eng
@@ -35,8 +37,14 @@
     - Statmt-commoncrawl_wmt13-1-deu-eng
     - Statmt-news_commentary-16-deu-eng
     - Statmt-wikititles-3-deu-eng
-    - Tilde-rapid-2019-deu-eng # - Tilde-rapid-2016-deu-eng
     - Facebook-wikimatrix-1-deu-eng
+    - Tilde-eesc-2017-deu-eng
+    - Tilde-ema-2016-deu-eng
+    - Tilde-airbaltic-1-deu-eng
+    - Tilde-czechtourism-1-deu-eng
+    - Tilde-ecb-2017-deu-eng
+    - Tilde-rapid-2016-deu-eng
+    - Tilde-rapid-2019-deu-eng
 
 - id: wmt22-jaen
   langs: jpn-eng
@@ -73,13 +81,16 @@
     - Statmt-news_commentary-16-eng-rus
     # TODO: yandex, requires login
     - Statmt-wikititles-3-rus-eng
-    - OPUS-unpc-1.0-eng-rus     # TODO UNPC from  https://conferences.unite.un.org/UNCorpus
+    - OPUS-unpc-1.0-eng-rus
     - Tilde-airbaltic-1-eng-rus
     - Tilde-czechtourism-1-eng-rus
     - Tilde-worldbank-1-eng-rus
     - Facebook-wikimatrix-1-eng-rus
     - Statmt-backtrans_ruen-wmt20-rus-eng
-    # - Statmt-backtrans_enru-wmt20-eng-rus # for eng-rus
+    - Statmt-backtrans_enru-wmt20-eng-rus # for eng-rus
+    - Tilde-airbaltic-1-eng-rus
+    - Tilde-czechtourism-1-eng-rus
+    - Tilde-worldbank-1-eng-rus
 
 - id: wmt22-zhen
   langs: zho-eng
@@ -115,8 +126,12 @@
     - Statmt-paracrawl-wmt19-fra-deu
     - Statmt-news_commentary-16-deu-fra
     - Statmt-wikititles-3-deu-fra
-    - Tilde-rapid-2016-deu-fra # Tilde-eesc-2017-deu-fra Tilde-ema-2016-deu-fra Tilde-czechtourism-1-deu-fra Tilde-ecb-2017-deu-fra
     - Facebook-wikimatrix-1-deu-fra
+    - Tilde-eesc-2017-deu-fra
+    - Tilde-ema-2016-deu-fra
+    - Tilde-czechtourism-1-deu-fra
+    - Tilde-ecb-2017-deu-fra
+    - Tilde-rapid-2016-deu-fra
 
 - id: wmt22-hren
   langs: hrv-eng
@@ -126,10 +141,55 @@
   #test:
   train:
     - ParaCrawl-paracrawl-9-eng-hrv
-    # Commoncrawl for hr-en is linked to fr-de on wmt22 site, is it a mistake?
     - Tilde-eesc-2017-eng-hrv
     - Tilde-ema-2016-eng-hrv
     - Tilde-ecb-2017-eng-hrv
     - Tilde-rapid-2016-eng-hrv
     - Tilde-worldbank-1-eng-hrv
-    # TODO: add OPUS   # there are too manny
+    - OPUS-ccaligned-v1-eng-hrv
+    - OPUS-ccmatrix-v1-eng-hrv
+    - OPUS-dgt-v2019-eng-hrv
+    - OPUS-elitr_eca-v1-eng-hrv
+    - OPUS-elra_w0131-v1-eng-hrv
+    - OPUS-elra_w0135-v1-eng-hrv
+    - OPUS-elra_w0142-v1-eng-hrv
+    - OPUS-elra_w0204-v1-eng-hrv
+    - OPUS-elra_w0226-v1-eng-hrv
+    - OPUS-elra_w0238-v1-eng-hrv
+    - OPUS-elra_w0264-v1-eng-hrv
+    - OPUS-elra_w0266-v1-eng-hrv
+    - OPUS-elra_w0273-v1-eng-hrv
+    - OPUS-elra_w0291-v1-eng-hrv
+    - OPUS-elra_w0292-v1-eng-hrv
+    - OPUS-elra_w0293-v1-eng-hrv
+    - OPUS-elra_w0294-v1-eng-hrv
+    - OPUS-elrc_2922-v1-eng-hrv
+    - OPUS-elrc_2923-v1-eng-hrv
+    - OPUS-elrc_3382-v1-eng-hrv
+    - OPUS-eubookshop-v2-eng-hrv
+    - OPUS-europat-v2-eng-hrv
+    - OPUS-europat-v3-eng-hrv
+    - OPUS-gnome-v1-eng-hrv
+    - OPUS-kde4-v2-eng-hrv
+    - OPUS-multiccaligned-v1-eng-hrv
+    - OPUS-multiparacrawl-v7.1-eng-hrv
+    - OPUS-opensubtitles-v2018-eng-hrv
+    #- OPUS-paracrawl-v4-eng-hrv
+    #- OPUS-paracrawl-v5-eng-hrv
+    #- OPUS-paracrawl-v7.1-eng-hrv
+    #- OPUS-paracrawl-v8-eng-hrv
+    - OPUS-qed-v2.0a-eng-hrv
+    #- OPUS-setimes-v1-eng-hrv
+    - OPUS-setimes-v2-eng-hrv
+    #- OPUS-ted2020-v1-eng-hrv
+    #- OPUS-tatoeba-v2-eng-hrv
+    - OPUS-tatoeba-v20210722-eng-hrv
+    - OPUS-tedtalks-v1-eng-hrv
+    - OPUS-tildemodel-v2018-eng-hrv
+    - OPUS-ubuntu-v14.10-eng-hrv
+    - OPUS-wikimatrix-v1-eng-hrv
+    - OPUS-xlent-v1.1-eng-hrv
+    - OPUS-bible_uedin-v1-eng-hrv
+    - OPUS-hrenwac-v1-eng-hrv
+    #- OPUS-wikimedia-v20190628-eng-hrv
+    - OPUS-wikimedia-v20210402-eng-hrv

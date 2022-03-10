@@ -1,8 +1,14 @@
 = MTData for WMT22
 :doctype: article
 :source-highlighter: rouge
-:toc: top
+:toc: auto
 :sectnums:
+:hide-uri-scheme:
+
+This document helps download datasets for WMT22 General MT task using `mtdata`.
+
+* See https://statmt.org/wmt22/translation-task.html for info on shared task details
+* See https://github.com/thammegowda/mtdata for more details on `mtdata` tool
 
 == Setup
 
@@ -23,17 +29,13 @@ NOTE: The recipe files maybe be better if distributed from WMT22 webpage
 ----
 wget https://raw.githubusercontent.com/thammegowda/mtdata/develop/recipes/mtdata.recipes.wmt22.yml
 ----
-The recipe file has to be in the current directory (where `mtdata` is invoked) and the name has to match the glob `mtdata.recipes*.yml`
-
-If you would like to place all your recipe YML files in a specific directory, then `export MTDATA_RECIPES=/path/to/dir`
-
+By default, the recipe file has to be in the current directory (where `mtdata` is invoked) and the name has to match `mtdata.recipes*.yml` glob. If you would like to place all your recipe YML files in a specific directory, then `export MTDATA_RECIPES=/path/to/dir`
 
 This file has all datasets for WMT22 langauge pairs. 
 [source,bash]
 ----
 wget https://raw.githubusercontent.com/thammegowda/mtdata/develop/recipes/mtdata.recipes.wmt22all.yml
 ----
-
 
 == List Available Recipes
 
@@ -52,7 +54,6 @@ wmt22-hren
 `wmt22*` ids are all loaded from `mtdata.recipes.wmt22*.yml` file.
 
 == Download a Recipe
-
 
 .Usage: `mtdata get-recipe`
 [source,bash]
@@ -84,6 +85,9 @@ for rid in wmt22-{cs,de,ja,ru,hr}en wmt22-frde; do
   mtdata get-recipe -ri $rid -o $rid
 done
 ----
+
+NOTE:
+Three datasets listed under WMT 22 page -- CsEng2.0, Yandex Corpus, and CCMT -- require login and will not be downloaded using this tool.
 
 
 == Add Your Own Recipe
