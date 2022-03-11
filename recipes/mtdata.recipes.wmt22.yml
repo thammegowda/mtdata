@@ -1,0 +1,192 @@
+- id: wmt22-csen
+  langs: ces-eng
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  dev:
+    - Statmt-newstest_csen-2020-ces-eng
+    - Statmt-newstest_encs-2020-eng-ces
+  test:
+    - Statmt-newstest_csen-2021-ces-eng
+    - Statmt-newstest_encs-2021-eng-ces
+  train:
+    - Statmt-europarl-10-ces-eng
+    - ParaCrawl-paracrawl-9-eng-ces
+    - Statmt-commoncrawl_wmt13-1-ces-eng
+    - Statmt-news_commentary-16-ces-eng
+    - Statmt-wikititles-3-ces-eng
+    - Facebook-wikimatrix-1-ces-eng
+    - Tilde-eesc-2017-ces-eng
+    - Tilde-ema-2016-ces-eng
+    - Tilde-ecb-2017-ces-eng
+    - Tilde-rapid-2019-ces-eng
+    # TODO: CzEng2.0 and backtranslated news require login
+
+- id: wmt22-deen
+  langs: deu-eng
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  dev:
+    - Statmt-newstest_deen-2020-deu-eng
+    - Statmt-newstest_ende-2020-eng-deu
+  test:
+    - Statmt-newstest_deen-2021-deu-eng
+    - Statmt-newstest_ende-2021-eng-deu
+  train:
+    - Statmt-europarl-10-deu-eng
+    - ParaCrawl-paracrawl-9-eng-deu
+    - Statmt-commoncrawl_wmt13-1-deu-eng
+    - Statmt-news_commentary-16-deu-eng
+    - Statmt-wikititles-3-deu-eng
+    - Facebook-wikimatrix-1-deu-eng
+    - Tilde-eesc-2017-deu-eng
+    - Tilde-ema-2016-deu-eng
+    - Tilde-airbaltic-1-deu-eng
+    - Tilde-czechtourism-1-deu-eng
+    - Tilde-ecb-2017-deu-eng
+    - Tilde-rapid-2016-deu-eng
+    - Tilde-rapid-2019-deu-eng
+
+- id: wmt22-jaen
+  langs: jpn-eng
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  dev:
+    - Statmt-newstest_enja-2020-eng-jpn
+    - Statmt-newstest_jaen-2020-jpn-eng
+  test:
+    - Statmt-newstest_enja-2021-eng-jpn
+    - Statmt-newstest_jaen-2021-jpn-eng
+  train:
+    - Statmt-news_commentary-16-eng-jpn
+    - KECL-paracrawl-3-eng-jpn
+    - Statmt-wikititles-3-jpn-eng
+    - Facebook-wikimatrix-1-eng-jpn
+    - Statmt-ted-wmt20-eng-jpn
+    - StanfordNLP-jesc_train-1-eng-jpn
+    - Phontron-kftt_train-1-eng-jpn
+
+- id: wmt22-ruen
+  langs: rus-eng
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  dev:
+    - Statmt-newstest_enru-2020-eng-rus
+    - Statmt-newstest_ruen-2020-rus-eng
+  test:
+    - Statmt-newstest_enru-2021-eng-rus
+    - Statmt-newstest_ruen-2021-rus-eng
+  train:
+    - ParaCrawl-paracrawl-1_bonus-eng-rus
+    - Statmt-commoncrawl_wmt13-1-rus-eng
+    - Statmt-news_commentary-16-eng-rus
+    # TODO: yandex, requires login
+    - Statmt-wikititles-3-rus-eng
+    - OPUS-unpc-v1.0-eng-rus
+    - Facebook-wikimatrix-1-eng-rus
+    - Statmt-backtrans_ruen-wmt20-rus-eng
+    - Statmt-backtrans_enru-wmt20-eng-rus # for eng-rus
+    - Tilde-airbaltic-1-eng-rus
+    - Tilde-czechtourism-1-eng-rus
+    - Tilde-worldbank-1-eng-rus
+
+- id: wmt22-zhen
+  langs: zho-eng
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  dev:
+    - Statmt-newstest_enzh-2020-eng-zho
+    - Statmt-newstest_zhen-2020-zho-eng
+  test:
+    - Statmt-newstest_enzh-2021-eng-zho
+    - Statmt-newstest_zhen-2021-zho-eng
+  train:
+    - ParaCrawl-paracrawl-1_bonus-eng-zho
+    - Statmt-news_commentary-16-eng-zho
+    - Statmt-wikititles-3-zho-eng
+    - OPUS-unpc-v1.0-eng-zho
+    # TODO: CCMT
+    - Facebook-wikimatrix-1-eng-zho
+    - Statmt-backtrans_enzh-wmt20-eng-zho
+
+- id: wmt22-frde
+  langs: fra-de
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  dev:
+    - Statmt-newstest_defr-2020-deu-fra
+    - Statmt-newstest_frde-2020-fra-deu
+  test:
+    - Statmt-newstest_frde-2021-fra-deu
+    - Statmt-newstest_defr-2021-deu-fra
+  train:
+    - Statmt-europarl-10-deu-fra
+    - Statmt-paracrawl-wmt19-fra-deu
+    - Statmt-news_commentary-16-deu-fra
+    - Statmt-wikititles-3-deu-fra
+    - Facebook-wikimatrix-1-deu-fra
+    - Tilde-eesc-2017-deu-fra
+    - Tilde-ema-2016-deu-fra
+    - Tilde-czechtourism-1-deu-fra
+    - Tilde-ecb-2017-deu-fra
+    - Tilde-rapid-2016-deu-fra
+
+- id: wmt22-hren
+  langs: hrv-eng
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  #dev:
+  #test:
+  train:
+    - ParaCrawl-paracrawl-9-eng-hrv
+    - Tilde-eesc-2017-eng-hrv
+    - Tilde-ema-2016-eng-hrv
+    - Tilde-ecb-2017-eng-hrv
+    - Tilde-rapid-2016-eng-hrv
+    - Tilde-worldbank-1-eng-hrv
+    - OPUS-ccaligned-v1-eng-hrv
+    - OPUS-ccmatrix-v1-eng-hrv
+    - OPUS-dgt-v2019-eng-hrv
+    - OPUS-elitr_eca-v1-eng-hrv
+    - OPUS-elra_w0131-v1-eng-hrv
+    - OPUS-elra_w0135-v1-eng-hrv
+    - OPUS-elra_w0142-v1-eng-hrv
+    - OPUS-elra_w0204-v1-eng-hrv
+    - OPUS-elra_w0226-v1-eng-hrv
+    - OPUS-elra_w0238-v1-eng-hrv
+    - OPUS-elra_w0264-v1-eng-hrv
+    - OPUS-elra_w0266-v1-eng-hrv
+    - OPUS-elra_w0273-v1-eng-hrv
+    - OPUS-elra_w0291-v1-eng-hrv
+    - OPUS-elra_w0292-v1-eng-hrv
+    - OPUS-elra_w0293-v1-eng-hrv
+    - OPUS-elra_w0294-v1-eng-hrv
+    - OPUS-elrc_2922-v1-eng-hrv
+    - OPUS-elrc_2923-v1-eng-hrv
+    - OPUS-elrc_3382-v1-eng-hrv
+    - OPUS-eubookshop-v2-eng-hrv
+    - OPUS-europat-v2-eng-hrv
+    - OPUS-europat-v3-eng-hrv
+    - OPUS-gnome-v1-eng-hrv
+    - OPUS-kde4-v2-eng-hrv
+    - OPUS-multiccaligned-v1-eng-hrv
+    - OPUS-multiparacrawl-v7.1-eng-hrv
+    - OPUS-opensubtitles-v2018-eng-hrv
+    #- OPUS-paracrawl-v4-eng-hrv
+    #- OPUS-paracrawl-v5-eng-hrv
+    #- OPUS-paracrawl-v7.1-eng-hrv
+    #- OPUS-paracrawl-v8-eng-hrv
+    - OPUS-qed-v2.0a-eng-hrv
+    #- OPUS-setimes-v1-eng-hrv
+    - OPUS-setimes-v2-eng-hrv
+    #- OPUS-ted2020-v1-eng-hrv
+    #- OPUS-tatoeba-v2-eng-hrv
+    - OPUS-tatoeba-v20210722-eng-hrv
+    - OPUS-tedtalks-v1-eng-hrv
+    - OPUS-tildemodel-v2018-eng-hrv
+    - OPUS-ubuntu-v14.10-eng-hrv
+    - OPUS-wikimatrix-v1-eng-hrv
+    - OPUS-xlent-v1.1-eng-hrv
+    - OPUS-bible_uedin-v1-eng-hrv
+    - OPUS-hrenwac-v1-eng-hrv
+    #- OPUS-wikimedia-v20190628-eng-hrv
+    - OPUS-wikimedia-v20210402-eng-hrv

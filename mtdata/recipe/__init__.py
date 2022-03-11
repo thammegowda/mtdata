@@ -6,16 +6,15 @@
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Union, Dict, Optional
+from typing import List, Dict, Optional
 
-
-from mtdata import yaml, cache_dir, log
+from mtdata import yaml, cache_dir, recipes_dir, log
 from mtdata.entry import lang_pair, LangPair, DatasetId, BCP47Tag, bcp47
 
 
 _def_recipes: Path = Path(__file__).parent / 'recipes.yml'
-_cwd_recipes: Path = Path('.').expanduser() / 'mtdata.recipes.yml'
 _home_recipes: Path = cache_dir / 'mtdata.recipes.yml'
+_cwd_recipes: List[Path] = list(recipes_dir.glob('mtdata.recipes*.yml'))
 
 
 @dataclass
@@ -30,7 +29,7 @@ class Recipe:
     url: str = ''
 
     @classmethod
-    def parse(cls, langs, train, test, dev, **kwargs):
+    def parse(cls, langs, train, test=None, dev=None, **kwargs):
         train, dev, test = [None if not x else
                             isinstance(x, list) and x or x.split(',') for x in (train, dev, test)]
         langs = lang_pair(langs)
@@ -57,7 +56,11 @@ class Recipe:
                 recipes_raw = yaml.load(inp)
             for r in recipes_raw:
                 assert isinstance(r, dict), f'{r} expected to be a dict'
-                r = cls.parse(**r)
+                try:
+                    r = cls.parse(**r)
+                except:
+                    log.error(f"Error while parsing recipe:\n{r}")
+                    raise
                 assert r.id not in recipes, f'{r} is a duplicate'
                 recipes[r.id] = r
         return recipes
@@ -68,8 +71,8 @@ class Recipe:
         paths = [_def_recipes]
         if _home_recipes.exists():
             paths.append(_home_recipes)
-        if _cwd_recipes.exists():
-            paths.append(_cwd_recipes)
+        if _cwd_recipes:
+            paths.extend(_cwd_recipes)
         return cls.load(*paths)
 
 

@@ -72,7 +72,7 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 |                 *Total* |      *182.8K* |
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
-- <sup>$2</sup> - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format. It has two versions: `v1` (tokenized) and `v1c` (raw)
+- <sup>$2</sup> - ~~JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format. It has two versions: `v1` (tokenized) and `v1c` (raw)~~ This dataset has been taken down at source
 - <sup>$3</sup> - Only test sets are included
 
 # CLI Usage
@@ -251,9 +251,11 @@ Recipe is a set of datasets nominated for train, dev, and tests, and are meant t
 Recipes are loaded from 
 1. Default:  [`mtdata/recipe/recipes.yml`](mtdata/recipe/recipes.yml) from source code
 2. Cache dir: `$MTDATA/mtdata.recipes.yml` where `$MTDATA` has default of `~/.mtdata`
-3. Current dir: `$PWD/mtdata.recipes.yml`
+3. Current dir: All files matching the glob: `$PWD/mtdata.recipes*.yml` 
+   * If current dir is not preferred, `export MTDATA_RECIPES=/path/to/dir`
+   * Alternatively, `MTDATA_RECIPES=/path/to/dir mtdata list-recipe` 
 
-See [`mtdata/recipe/recipes.yml`](mtdata/recipe/recipes.yml) for format and examples.
+See [`mtdata/recipe/recipes.yml`](mtdata/recipe/recipes.yml) for the format and examples.
 
 ```bash
 mtdata list-recipe  # see all recipes

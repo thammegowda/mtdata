@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from mtdata.main import get_data, DatasetId, lang_pair
 
+
 def check_parallel(path1:Path, path2: Path):
     assert path1.stat().st_size > 0
     assert path2.stat().st_size > 0
@@ -37,7 +38,7 @@ def test_simple_dataset():
         # some random test sets
         train_dids = [DatasetId.parse('Anuvaad-drivespark-20210303-eng-kan'),
                       DatasetId.parse('Anuvaad-nativeplanet-20210315-eng-kan'),
-                      DatasetId.parse('OPUS-ccaligned-1-eng-kan')]
+                      DatasetId.parse('OPUS-ccaligned-v1-eng-kan')]
         dev_dids = [DatasetId.parse('Anuvaad-oneindia-20210320-eng-kan')]
         test_dids = [DatasetId.parse('Anuvaad-mk-20210320-eng-kan')]
         langs = lang_pair("eng-kan")

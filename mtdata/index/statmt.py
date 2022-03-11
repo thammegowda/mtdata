@@ -275,6 +275,12 @@ def load(index: Index):
                     url=url, cite=wmt20_cite, ext='tsv.xz', cols=(0, 1))
         index.add_entry(entry)
 
+    # for ja-en only TED was available
+    index.add_entry(Entry(url="http://data.statmt.org/wmt20/translation-task/ja-en/ted.en-ja.tgz",
+                    did=DatasetId(group=group_id, name='ted', version='wmt20', langs=('en', 'ja')),
+                    cite=wmt20_cite, ext='tgz', in_ext='txt',
+                    in_paths=['en-ja/train.tags.en-ja.en', 'en-ja/train.tags.en-ja.ja']))
+
     ccalign_cite = index.ref_db.get_bibtex('chaudhary-EtAl:2019:WMT')
     CC_ALIGNED = 'http://www.statmt.org/cc-aligned/sentence-aligned/{src}-{tgt}.tsv.xz'
     tgts='es_XX et_EE fa_IR ff_NG fi_FI fr_XX gu_IN ha_NG he_IL hi_IN hr_HR ht_HT hu_HU hy_AM id_ID ig_NG is_IS it_IT ja_XX jv_ID ka_GE kg_AO kk_KZ km_KH kn_IN ko_KR ku_TR ky_KG lg_UG ln_CD lo_LA lt_LT lv_LV mg_MG mi_NZ mk_MK ml_IN mn_MN mr_IN ms_MY mt_MT my_MM ne_NP nl_XX no_XX ns_ZA ny_MW om_KE or_IN pa_IN pl_PL ps_AF pt_XX qa_MM qd_MM ro_RO ru_RU si_LK sk_SK sl_SI sn_ZW so_SO sq_AL sr_RS ss_SZ st_ZA su_ID sv_SE sw_KE sz_PL ta_IN te_IN tg_TJ th_TH ti_ET tl_XX tn_BW tr_TR ts_ZA tz_MA uk_UA ur_PK ve_ZA vi_VN wo_SN xh_ZA yo_NG zh_CN zh_TW zu_ZA zz_TR'.split()
@@ -298,10 +304,10 @@ def load(index: Index):
     wmt21_cite = 'WMT21'  # unavailable at the time of adding
     index.add_entry(Entry(
         did=DatasetId(group=group_id, name=f'khamenei', version='wmt21', langs=('ha','en')), cite=wmt21_cite,
-        url='http://data.statmt.org/wmt21/translation-task/ha-en/khamenei.v1.ha-en.tsv', ext='tsv', cols=[2, 3]))
+        url='http://data.statmt.org/wmt21/translation-task/ha-en/khamenei.v1.ha-en.tsv', ext='tsv', cols=(2, 3)))
     index.add_entry(Entry(
         did=DatasetId(group=group_id, name=f'opus', version='wmt21', langs=('ha', 'en')), cite=wmt21_cite,
-        url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=[1, 0]))
+        url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=(1, 0)))
     index.add_entry(Entry(
         did=DatasetId(group=group_id, name=f'paracrawl', version='8.wmt21', langs=('en', 'ha')), cite=wmt21_cite,
         url='http://data.statmt.org/wmt21/translation-task/paracrawl8/paracrawl-release8.en-ha.bifixed.dedup.laser.filter-0.9.xz',
@@ -316,4 +322,25 @@ def load(index: Index):
         url = f'http://data.statmt.org/wmt21/translation-task/cc-aligned/{pair}.tsv.xz'
         index.add_entry(Entry(
             did=DatasetId(group=group_id, name=f'ccaligned', version='wmt21', langs=(l1, l2)), cite=wmt21_cite,
-            url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=[1, 0]))
+            url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=(1, 0)))
+
+    # https://data.statmt.org/wmt19/translation-task/fr-de/bitexts/de-fr.bicleaner07.de.gz
+    for cln_name, name in [('commoncrawl', ''), ('paracrawl', 'de-fr.bicleaner07'), ('europarl_v7', '')]:
+        l1, l2 = 'fr', 'de'
+        prefix = 'https://data.statmt.org/wmt19/translation-task/fr-de/bitexts'
+        index.add_entry(Entry(did=DatasetId(group=group_id, name=cln_name or name, version='wmt19', langs=(l1, l2)),
+                              ext='txt.gz', url=(f'{prefix}/{name}.{l1}.gz', f'{prefix}/{name}.{l2}.gz')))
+
+    # Back Translation
+    prefix = 'https://data.statmt.org/wmt20/translation-task/back-translation/zh-en'
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name='backtrans_enzh', version='wmt20', langs=('en', 'zh')),
+        ext='txt.gz', url=(f'{prefix}/news.en.gz', f'{prefix}/news.translatedto.zh.gz')))
+
+    prefix = 'https://data.statmt.org/wmt20/translation-task/back-translation/ru-en'
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name='backtrans_enru', version='wmt20', langs=('en', 'ru')),
+                      ext='txt.gz', url=(f'{prefix}/news.en.gz', f'{prefix}/news.en.translatedto.ru.gz')))
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name='backtrans_ruen', version='wmt20', langs=('ru', 'en')),
+        ext='txt.gz', url=(f'{prefix}/news.ru.gz', f'{prefix}/news.ru.translatedto.en.gz')))

@@ -82,7 +82,7 @@ def list_recipes():
 
 
 def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False,
-               n_jobs=DEF_N_JOBS, **kwargs):
+               n_jobs=DEF_N_JOBS, merge_train=True, **kwargs):
     if kwargs:
         log.warning(f"Args are ignored: {kwargs}")
     from mtdata.recipe import RECIPES
@@ -91,7 +91,7 @@ def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_
         raise ValueError(f'recipe {recipe_id} not found. See "mtdata list-recipe"')
 
     get_data(langs=recipe.langs, train_dids=recipe.train, dev_dids=recipe.dev, test_dids=recipe.test,
-             merge_train=True, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes, drop_tests=drop_tests,
+             merge_train=merge_train, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes, drop_tests=drop_tests,
              fail_on_error=fail_on_error, n_jobs=n_jobs)
 
 
@@ -194,6 +194,7 @@ def parse_args():
     getr_p.add_argument('-ri', '--recipe-id', type=str, help='Recipe ID', required=True)
     getr_p.add_argument('-f', '--fail-on-error', action='store_true', help='Fail on error')
     getr_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs (processes)", default=DEF_N_JOBS)
+    add_boolean_arg(getr_p, 'merge', dest='merge_train', default=True, help='Merge train into a single file')
     add_getter_args(getr_p)
 
     stats_p = sub_ps.add_parser('stats', formatter_class=MyFormatter)
