@@ -65,7 +65,7 @@ class Index:
             ('JoshuaIndianCoprus', joshua_indian.load_all),
             ('UnitedNations', unitednations.load_all),
             ('OPUS', opus_index.load_all),
-            ('OPUS_JW300', jw300.load_all),
+            # ('OPUS_JW300', jw300.load_all), # JW300 is taken down
             ('OPUS100', opus100.load_all),
             ('WikiMatrix', wikimatrix.load_all),
             ('Other', other.load_all),
