@@ -81,10 +81,7 @@
     - Statmt-news_commentary-16-eng-rus
     # TODO: yandex, requires login
     - Statmt-wikititles-3-rus-eng
-    - OPUS-unpc-1.0-eng-rus
-    - Tilde-airbaltic-1-eng-rus
-    - Tilde-czechtourism-1-eng-rus
-    - Tilde-worldbank-1-eng-rus
+    - OPUS-unpc-v1.0-eng-rus
     - Facebook-wikimatrix-1-eng-rus
     - Statmt-backtrans_ruen-wmt20-rus-eng
     - Statmt-backtrans_enru-wmt20-eng-rus # for eng-rus
@@ -106,7 +103,7 @@
     - ParaCrawl-paracrawl-1_bonus-eng-zho
     - Statmt-news_commentary-16-eng-zho
     - Statmt-wikititles-3-zho-eng
-    - OPUS-unpc-1.0-eng-zho
+    - OPUS-unpc-v1.0-eng-zho
     # TODO: CCMT
     - Facebook-wikimatrix-1-eng-zho
     - Statmt-backtrans_enzh-wmt20-eng-zho
