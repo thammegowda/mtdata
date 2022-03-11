@@ -24,14 +24,14 @@ NOTE: The recipe files maybe be better if distributed from WMT22 webpage
 
 [source,bash]
 ----
-wget https://raw.githubusercontent.com/thammegowda/mtdata/develop/recipes/mtdata.recipes.wmt22.yml
+wget https://raw.githubusercontent.com/thammegowda/mtdata/master/recipes/mtdata.recipes.wmt22.yml
 ----
 By default, the recipe file has to be in the current directory (where `mtdata` is invoked) and the name has to match `mtdata.recipes*.yml` glob. If you would like to place all your recipe YML files in a specific directory, then `export MTDATA_RECIPES=/path/to/dir`
 
 This file has all datasets for WMT22 langauge pairs. 
 [source,bash]
 ----
-wget https://raw.githubusercontent.com/thammegowda/mtdata/develop/recipes/mtdata.recipes.wmt22all.yml
+wget https://raw.githubusercontent.com/thammegowda/mtdata/master/recipes/mtdata.recipes.wmt22all.yml
 ----
 
 == List Available Recipes
