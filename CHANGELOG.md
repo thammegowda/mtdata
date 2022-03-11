@@ -1,17 +1,20 @@
 # Change Log
 
-## v0.3.5 - WIP
+## v0.3.5 - 20220310 
 
 - Parallel download support `-j/--n-jobs` argument (with default `4`)
 - Add histogram to web search interface (Thanks, @sgowdaks)
 - Update OPUS index. Use OPUS API to download all datasets
   - A lot of new datasets are added. 
-  - WARNING: Some of OPUS IDs are not backward compatible (version number mismatch) 
+  - WARNING: Some OPUS IDs are not backward compatible (version number mismatch) 
 - Fix: JESC dataset language IDs were wrong  
 - New datasets:
    - jpn-eng: add paracrawl v3, and wmt19 TED
    - backtranslation datasets for en2ru ru2en en2ru
-- Option to set `MTDATA_RECIPES` dir (default is $PWD). All files matching the glob `${MTDATA_RECIPES}/mtdata.recipes*.yml` are loaded  
+- Option to set `MTDATA_RECIPES` dir (default is $PWD). All files matching the glob `${MTDATA_RECIPES}/mtdata.recipes*.yml` are loaded
+- WMT22 recipes added 
+- JW300 is disabled [#77](https://github.com/thammegowda/mtdata/issues/77)
+- Automatically create references.bib file based on datasets selected
 
 ## v0.3.4 - 20220206
 

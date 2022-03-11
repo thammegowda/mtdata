@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.16">
+<meta name="author" content="MTData Contributors">
+<title>MTData</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+<link rel="stylesheet" href="./asciidoctor.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="./rouge-github.css">
+<style>
+    #header, #content, #footnotes, #footer {
+  width: 100%;
+  margin: 0 auto;
+  max-width: 120em;
+}
+</style>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-172035750-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-172035750-1');
+</script>
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>MTData</h1>
+<div class="details">
+<span id="author" class="author">MTData Contributors</span><br>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_installation">1. Installation</a></li>
+<li><a href="#_current_status">2. Current Status:</a></li>
+<li><a href="#_mtdata_list">3. <code>mtdata list</code></a>
+<ul class="sectlevel2">
+<li><a href="#_dataset_id">3.1. Dataset ID</a></li>
+<li><a href="#_mtdata_get">3.2. <code>mtdata get</code></a></li>
+</ul>
+</li>
+<li><a href="#_quickstart_example">4. Quickstart / Example</a></li>
+<li><a href="#_recipes">5. Recipes</a></li>
+<li><a href="#_language_name_standardization">6. Language Name Standardization</a>
+<ul class="sectlevel2">
+<li><a href="#_iso_639_3">6.1. ISO 639 3</a></li>
+<li><a href="#_bcp_47">6.2. BCP-47</a>
+<ul class="sectlevel3">
+<li><a href="#_example">6.2.1. Example:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_how_to_contribute">7. How to Contribute:</a></li>
+<li><a href="#_change_cache_directory">8. Change Cache Directory:</a></li>
+<li><a href="#_run_tests">9. Run tests</a></li>
+<li><a href="#_developers_and_contributor">10. Developers and Contributor:</a></li>
+<li><a href="#_citation">11. Citation</a></li>
+<li><a href="#_disclaimer_on_datasets">12. Disclaimer on Datasets</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><span class="image"><a class="image" href="https://pypi.python.org/pypi/mtdata/"><img src="http://img.shields.io/pypi/v/mtdata.svg" alt="PyPI version"></a></span>
+<span class="image"><img src="https://img.shields.io/travis/com/thammegowda/mtdata?style=plastic" alt="Travis"></span></p>
+</div>
+<div class="paragraph">
+<p>MTData automates the collection and preparation of machine translation datasets.
+It provides CLI and python APIs, so it can be either used as a standalone tool or embedded into
+ python apps for preparing MT experiments.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>📣 Using MTData we&#8217;ve created a model that can translate from 500 languages to English. Free, and open-source; a demo and docker is at <a href="http://rtg.isi.edu/many-eng/" class="bare">rtg.isi.edu/many-eng/</a></p>
+</li>
+<li>
+<p>Search datasets: <a href="https://thammegowda.github.io/mtdata/search.html" class="bare">thammegowda.github.io/mtdata/search.html</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This tool knows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>From where to download data sets: WMT News Translation tests and devs for Paracrawl,
+Europarl, News Commentary, WikiTitles, Tilde Model corpus, OPUS &#8230;&#8203;</p>
+</li>
+<li>
+<p>How to extract files : .tar, .tar.gz, .tgz, .zip, &#8230;&#8203;</p>
+</li>
+<li>
+<p>How to parse .tmx, .sgm and such XMLs, or .tsv &#8230;&#8203; Checks if they have same number of segments.</p>
+</li>
+<li>
+<p>Whether parallel data is in one .tsv file or two sgm files.</p>
+</li>
+<li>
+<p>Whether data is compressed in gz, xz or none at all.</p>
+</li>
+<li>
+<p>Whether the source-target is in the same order or is it swapped as target-source order.</p>
+</li>
+<li>
+<p>How to map code to ISO language codes! Using ISO 639_3 that has space for 7000+ languages of our planet.</p>
+</li>
+<li>
+<p>New in v0.3: BCP-47 like language ID: (language, script, region)</p>
+</li>
+<li>
+<p>Download only once and keep the files in local cache.</p>
+</li>
+<li>
+<p>(And more of such tiny details over the time.)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/thammegowda/mtdata">MTData</a> is here to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Automate the MT training data creation by taking out human intervention. Inspired by <a href="https://github.com/mjpost/sacreBLEU">SacreBLEU</a> that takes out human intervention in evaluation stage.</p>
+</li>
+<li>
+<p>A reusable tool instead of dozens of use-once shell scripts spread across multiple repos.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_installation">1. Installation</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="c"># from pypi</span>
+pip <span class="nb">install </span>mtdata
+
+<span class="c"># from the source code on github</span>
+git clone https://github.com/thammegowda/mtdata
+<span class="nb">cd </span>mtdata
+pip <span class="nb">install</span> <span class="nt">--editable</span> .</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_current_status">2. Current Status:</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We have added some commonly used datasets - you are welcome to add more!
+Here is  a summary of datasets from various sources (Updated: Feb 2022).</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Source</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dataset Count</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OPUS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">120,465</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Neulab</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4,455</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Facebook</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1,617</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ELRC</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1,394</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EU</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1,178</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Statmt</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">750</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tilde</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">519</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LinguaTools</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">253</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anuvaad</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">196</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AI4Bharath</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ParaCrawl</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">126</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Lindat</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">56</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">30</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JoshuaDec</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">29</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">StanfordNLP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">15</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ParIce</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Phontron</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NRC_CA</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IITB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">WAT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">KECL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Masakhane</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Total</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>131,301</strong></p></td>
+</tr>
+</tbody>
+</table>
+<div class="ulist">
+<ul>
+<li>
+<p>&lt;sup&gt;$1&lt;/sup&gt; - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.</p>
+</li>
+<li>
+<p>&lt;sup&gt;$2&lt;/sup&gt; - JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format. It has two versions: <code>v1</code> (tokenized) and <code>v1c</code> (raw)</p>
+</li>
+<li>
+<p>&lt;sup&gt;$3&lt;/sup&gt; - Only test sets are included</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">CLI Usage</div>
+<ul>
+<li>
+<p>After pip installation, the CLI can be called using <code>mtdata</code> command  or <code>python -m mtdata</code></p>
+</li>
+<li>
+<p>There are two sub commands: <code>list</code> for listing the datasets, and <code>get</code> for getting them</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mtdata_list">3. <code>mtdata list</code></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Lists datasets that are known to this tool.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">mtdata list <span class="nt">-h</span>
+usage: __main__.py list <span class="o">[</span><span class="nt">-h</span><span class="o">]</span> <span class="o">[</span><span class="nt">-l</span> L1-L2] <span class="o">[</span><span class="nt">-n</span> <span class="o">[</span>NAME ...]] <span class="o">[</span><span class="nt">-nn</span> <span class="o">[</span>NAME ...]] <span class="o">[</span><span class="nt">-f</span><span class="o">]</span> <span class="o">[</span><span class="nt">-o</span> OUT]
+
+optional arguments:
+  <span class="nt">-h</span>, <span class="nt">--help</span>            show this <span class="nb">help </span>message and <span class="nb">exit</span>
+  <span class="nt">-l</span> L1-L2, <span class="nt">--langs</span> L1-L2
+                        Language pairs<span class="p">;</span> e.g.: deu-eng <span class="o">(</span>default: None<span class="o">)</span>
+  <span class="nt">-n</span> <span class="o">[</span>NAME ...], <span class="nt">--names</span> <span class="o">[</span>NAME ...]
+                        Name of dataset <span class="nb">set</span><span class="p">;</span> eg europarl_v9. <span class="o">(</span>default: None<span class="o">)</span>
+  <span class="nt">-nn</span> <span class="o">[</span>NAME ...], <span class="nt">--not-names</span> <span class="o">[</span>NAME ...]
+                        Exclude these names <span class="o">(</span>default: None<span class="o">)</span>
+  <span class="nt">-f</span>, <span class="nt">--full</span>            Show Full Citation <span class="o">(</span>default: False<span class="o">)</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="c"># List everything ; add | cut -f1  to see ID column only</span>
+mtdata list | <span class="nb">cut</span> <span class="nt">-f1</span>
+
+<span class="c"># List a lang pair</span>
+mtdata list <span class="nt">-l</span> deu-eng
+
+<span class="c"># List a dataset by name(s)</span>
+mtdata list <span class="nt">-n</span> europarl
+mtdata list <span class="nt">-n</span> europarl news_commentary
+
+<span class="c"># list by both language pair and dataset name</span>
+ mtdata list <span class="nt">-l</span> deu-eng <span class="nt">-n</span> europarl news_commentary newstest_deen  | <span class="nb">cut</span> <span class="nt">-f1</span>
+    Statmt-europarl-9-deu-eng
+    Statmt-europarl-7-deu-eng
+    Statmt-news_commentary-14-deu-eng
+    Statmt-news_commentary-15-deu-eng
+    Statmt-news_commentary-16-deu-eng
+    Statmt-newstest_deen-2014-deu-eng
+    Statmt-newstest_deen-2015-deu-eng
+    Statmt-newstest_deen-2016-deu-eng
+    Statmt-newstest_deen-2017-deu-eng
+    Statmt-newstest_deen-2018-deu-eng
+    Statmt-newstest_deen-2019-deu-eng
+    Statmt-newstest_deen-2020-deu-eng
+    Statmt-europarl-10-deu-eng
+    OPUS-europarl-8-deu-eng
+
+<span class="c"># get citation of a dataset (if available in index.py)</span>
+mtdata list <span class="nt">-l</span> deu-eng <span class="nt">-n</span> newstest_deen <span class="nt">--full</span></code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dataset_id">3.1. Dataset ID</h3>
+<div class="paragraph">
+<p>Dataset IDs are standardized to this format:
+<code>&lt;Group&gt;-&lt;name&gt;-&lt;version&gt;-&lt;lang1&gt;-&lt;lang2&gt;</code></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Group</code>: source or the website where we are obtaining this dataset</p>
+</li>
+<li>
+<p><code>name</code>: name of the dataset</p>
+</li>
+<li>
+<p><code>version</code>: version name</p>
+</li>
+<li>
+<p><code>lang1</code> and <code>lang2</code> are BCP47-like codes. In simple case, they are ISO-639-3 codes, however, they might have script and language tags separated by underscores (<code>_</code>).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mtdata_get">3.2. <code>mtdata get</code></h3>
+<div class="paragraph">
+<p>This command downloads datasets specified by names for languages to a directory.
+You will have to make definite choice for <code>--train</code> and <code>--test</code> arguments</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code>mtdata get -h
+python -m mtdata get -h
+usage: __main__.py get [-h] -l L1-L2 [-tr [ID ...]] [-ts [ID ...]] [-dv ID] [--merge | --no-merge] [--compress] -o OUT_DIR
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -l L1-L2, --langs L1-L2
+                        Language pairs; e.g.: deu-eng (default: None)
+  -tr [ID ...], --train [ID ...]
+                        Names of datasets separated by space, to be used for *training*.
+                            e.g. -tr Statmt-news_commentary-16-deu-eng europarl_v9 .
+                             To concatenate all these into a single train file, set --merge flag. (default: None)
+  -ts [ID ...], --test [ID ...]
+                        Names of datasets separated by space, to be used for *testing*.
+                            e.g. "-ts Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng ".
+                            You may also use shell expansion if your shell supports it.
+                            e.g. "-ts Statmt-newstest_deen-20{19,20}-deu-eng"  (default: None)
+  -dv ID, --dev ID     Dataset to be used for development (aka validation).
+                            e.g. "-dv Statmt-newstest_deen-2017-deu-eng" (default: None)
+  --merge               Merge train into a single file (default: False)
+  --no-merge            Do not Merge train into a single file (default: True)
+  --compress            Keep the files compressed (default: False)
+  -o OUT_DIR, --out OUT_DIR
+                        Output directory name (default: None)</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quickstart_example">4. Quickstart / Example</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>See what datasets are available for <code>deu-eng</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="nv">$ </span>mtdata list <span class="nt">-l</span> deu-eng | <span class="nb">cut</span> <span class="nt">-f1</span>  <span class="c"># see available datasets</span>
+    Statmt-commoncrawl_wmt13-1-deu-eng
+    Statmt-europarl_wmt13-7-deu-eng
+    Statmt-news_commentary_wmt18-13-deu-eng
+    Statmt-europarl-9-deu-eng
+    Statmt-europarl-7-deu-eng
+    Statmt-news_commentary-14-deu-eng
+    Statmt-news_commentary-15-deu-eng
+    Statmt-news_commentary-16-deu-eng
+    Statmt-wiki_titles-1-deu-eng
+    Statmt-wiki_titles-2-deu-eng
+    Statmt-newstest_deen-2014-deu-eng
+    ....[truncated]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Get these datasets and store under dir <code>data/deu-eng</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"> <span class="nv">$ </span>mtdata get <span class="nt">-l</span> deu-eng <span class="nt">--out</span> data/deu-eng <span class="nt">--merge</span> <span class="se">\</span>
+     <span class="nt">--train</span> Statmt-europarl-10-deu-eng Statmt-news_commentary-16-deu-eng <span class="se">\</span>
+     <span class="nt">--dev</span> Statmt-newstest_deen-2017-deu-eng  <span class="nt">--test</span> Statmt-newstest_deen-20<span class="o">{</span>18,19,20<span class="o">}</span><span class="nt">-deu-eng</span>
+    <span class="c"># ...[truncated]</span>
+    INFO:root:Train stats:
+    <span class="o">{</span>
+      <span class="s2">"total"</span>: 2206240,
+      <span class="s2">"parts"</span>: <span class="o">{</span>
+        <span class="s2">"Statmt-news_commentary-16-deu-eng"</span>: 388482,
+        <span class="s2">"Statmt-europarl-10-deu-eng"</span>: 1817758
+      <span class="o">}</span>
+    <span class="o">}</span>
+    INFO:root:Dataset is ready at deu-eng</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To reproduce this dataset again in the future or by others, please refer to <code>&lt;out-dir&gt;/mtdata.signature.txt</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="nv">$ </span><span class="nb">cat </span>deu-eng/mtdata.signature.txt
+mtdata get <span class="nt">-l</span> deu-eng <span class="nt">-tr</span> Statmt-europarl-10-deu-eng Statmt-news_commentary-16-deu-eng <span class="se">\</span>
+   <span class="nt">-ts</span> Statmt-newstest_deen-2018-deu-eng Statmt-newstest_deen-2019-deu-eng Statmt-newstest_deen-2020-deu-eng <span class="se">\</span>
+   <span class="nt">-dv</span> Statmt-newstest_deen-2017-deu-eng <span class="nt">--merge</span> <span class="nt">-o</span> &lt;out-dir&gt;
+mtdata version 0.3.0-dev</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See what the above command has accomplished:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="nv">$ </span>tree  data/deu-eng/
+├── dev.deu -&gt; tests/Statmt-newstest_deen-2017-deu-eng.deu
+├── dev.eng -&gt; tests/Statmt-newstest_deen-2017-deu-eng.eng
+├── mtdata.signature.txt
+├── test1.deu -&gt; tests/Statmt-newstest_deen-2020-deu-eng.deu
+├── test1.eng -&gt; tests/Statmt-newstest_deen-2020-deu-eng.eng
+├── test2.deu -&gt; tests/Statmt-newstest_deen-2018-deu-eng.deu
+├── test2.eng -&gt; tests/Statmt-newstest_deen-2018-deu-eng.eng
+├── test3.deu -&gt; tests/Statmt-newstest_deen-2019-deu-eng.deu
+├── test3.eng -&gt; tests/Statmt-newstest_deen-2019-deu-eng.eng
+├── tests
+│   ├── Statmt-newstest_deen-2017-deu-eng.deu
+│   ├── Statmt-newstest_deen-2017-deu-eng.eng
+│   ├── Statmt-newstest_deen-2018-deu-eng.deu
+│   ├── Statmt-newstest_deen-2018-deu-eng.eng
+│   ├── Statmt-newstest_deen-2019-deu-eng.deu
+│   ├── Statmt-newstest_deen-2019-deu-eng.eng
+│   ├── Statmt-newstest_deen-2020-deu-eng.deu
+│   └── Statmt-newstest_deen-2020-deu-eng.eng
+├── train-parts
+│   ├── Statmt-europarl-10-deu-eng.deu
+│   ├── Statmt-europarl-10-deu-eng.eng
+│   ├── Statmt-news_commentary-16-deu-eng.deu
+│   └── Statmt-news_commentary-16-deu-eng.eng
+├── train.deu
+├── train.eng
+├── train.meta.gz
+└── train.stats.json</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_recipes">5. Recipes</h2>
+<div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Since v0.3.1</p>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p>Recipe is a set of datasets nominated for train, dev, and tests, and are meant to improve reproducibility of experiments.
+Recipes are loaded from
+1. Default:  [<code>mtdata/recipe/recipes.yml</code>](mtdata/recipe/recipes.yml) from source code
+2. Cache dir: <code>$MTDATA/mtdata.recipes.yml</code> where <code>$MTDATA</code> has default of <code>~/.mtdata</code>
+3. Current dir: <code>$PWD/mtdata.recipes.yml</code></p>
+</div>
+<div class="paragraph">
+<p>See [<code>mtdata/recipe/recipes.yml</code>](mtdata/recipe/recipes.yml) for format and examples.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">mtdata list-recipe  <span class="c"># see all recipes</span>
+mtdata get-recipe <span class="nt">-ri</span> &lt;recipe_id&gt; <span class="nt">-o</span> &lt;out_dir&gt;  <span class="c"># get recipe, recreate dataset</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_language_name_standardization">6. Language Name Standardization</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_iso_639_3">6.1. ISO 639 3</h3>
+<div class="paragraph">
+<p>Internally, all language codes are mapped to ISO-639 3 codes.
+The mapping can be inspected with <code>python -m mtdata.iso ` or `mtdata-iso</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="nv">$ </span> mtdata-iso <span class="nt">-h</span>
+usage: python <span class="nt">-m</span> mtdata.iso <span class="o">[</span><span class="nt">-h</span><span class="o">]</span> <span class="o">[</span><span class="nt">-b</span><span class="o">]</span> <span class="o">[</span>langs <span class="o">[</span>langs ...]]
+
+ISO 639-3 lookup tool
+
+positional arguments:
+  langs        Language code or name that needs to be looked up. When no
+               language code is given, all languages are listed.
+
+optional arguments:
+  <span class="nt">-h</span>, <span class="nt">--help</span>   show this <span class="nb">help </span>message and <span class="nb">exit</span>
+  <span class="nt">-b</span>, <span class="nt">--brief</span>  be brief<span class="p">;</span> <span class="k">do </span>crash on error inputs
+
+<span class="c"># list all 7000+ languages and their 3 letter codes</span>
+<span class="nv">$ </span>mtdata-iso    <span class="c"># python -m mtdata.iso</span>
+...
+
+<span class="c"># lookup codes for some languages</span>
+<span class="nv">$ </span>mtdata-iso ka kn en de xx english german
+Input   ISO639_3        Name
+ka      kat     Georgian
+kn      kan     Kannada
+en      eng     English
+de      deu     German
+xx      <span class="nt">-none-</span>  <span class="nt">-none-</span>
+english eng     English
+german  deu     German
+
+<span class="c"># Print no header, and crash on error;</span>
+<span class="nv">$ </span>mtdata-iso xx <span class="nt">-b</span>
+Exception: Unable to find ISO 639-3 code <span class="k">for</span> <span class="s1">'xx'</span><span class="nb">.</span> Please run
+python <span class="nt">-m</span> mtdata.iso | <span class="nb">grep</span> <span class="nt">-i</span> &lt;name&gt;
+to know the 3 letter ISO code <span class="k">for </span>the language.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To use Python API</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="python"><span class="kn">from</span> <span class="nn">mtdata.iso</span> <span class="kn">import</span> <span class="n">iso3_code</span>
+<span class="k">print</span><span class="p">(</span><span class="n">iso3_code</span><span class="p">(</span><span class="s">'en'</span><span class="p">,</span> <span class="n">fail_error</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">iso3_code</span><span class="p">(</span><span class="s">'eNgLIsH'</span><span class="p">,</span> <span class="n">fail_error</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>  <span class="c1"># case doesnt matter</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_bcp_47">6.2. BCP-47</h3>
+<div class="paragraph">
+<p>&gt;&gt; Since v0.3.0</p>
+</div>
+<div class="paragraph">
+<p>We used ISO 639-3 from the beginning, however, we soon faced the limitation that ISO 639-3 cannot distinguish script and region variants of language. So we have upgraded to BCP-47 like language tags in <code>v0.3.0</code>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>BCP47 uses two-letter codes to some and three-letter codes to the rest, we use three-letter codes to all languages.</p>
+</li>
+<li>
+<p>BCP47 uses <code>-</code> hyphens we use <code>_</code> underscores, since hyphens are used by MT community to separate bitext pairs (e.g. en-de or eng-deu)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Our tags are of form <code>xxx_Yyyy_ZZ</code> where</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.667%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pattern</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Purpose</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Standard</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Length</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Case</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>xxx</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Language</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISO 639-3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">three-letters</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lowercase</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mandatory</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Yyyy</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Script</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISO 15924</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">four-letters</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Titlecase</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ZZ</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Region</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ISO 3166-1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">two-letters</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CAPITALS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Notes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Region is preserved when available and left blank when unavailable</p>
+</li>
+<li>
+<p>Script <code>Yyyy</code> is forcibly suppressed in obvious cases. E.g. <code>eng</code> is written using <code>Latn</code> script, writing <code>eng-Latn</code> is just awkward to read as <code>Latn</code> is default we suppress <code>Latn</code> script for English. On the other hand a language like <code>Kannada</code> is written using <code>Knda</code> script (<code>kan-Knda</code> &#8594; <code>kan</code>), but occasionally written using <code>Latn</code> script, so <code>kan-Latn</code> is not suppressed.</p>
+</li>
+<li>
+<p>The information about what is default script is obtained from IANA language code registry</p>
+</li>
+<li>
+<p>Language code <code>mul</code> stands for _multiple languages, and is used as a placeholder for multilingual datasets (See <code>mul-eng</code> to represent many-to-English dataset recipes in [(mtdata/recipe/recipes.yml](mtdata/recipe/recipes.yml))</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_example">6.2.1. Example:</h4>
+<div class="paragraph">
+<p>To inspect parsing/mapping, use <code>python -m mtdata.iso.bcp47 &lt;args&gt;</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">python <span class="nt">-m</span> mtdata.iso.bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin-Deva kan-Latn</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">INPUT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">STD</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LANG</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SCRIPT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">REGION</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">English</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">en-US</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng_US</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">US</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">en-GB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng_GB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GB</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng-Latn</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">eng</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Kannada-Deva</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan_Deva</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Deva</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hin-Deva</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan-Latn</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan_Latn</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Latn</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan-in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan_IN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IN</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kn-knda-in</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan_IN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">kan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IN</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>Python API for BCP47 Mapping</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="python"><span class="kn">from</span> <span class="nn">mtdata.iso.bcp47</span> <span class="kn">import</span> <span class="n">bcp47</span>
+<span class="n">tag</span> <span class="o">=</span> <span class="n">bcp47</span><span class="p">(</span><span class="s">"en_US"</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="o">*</span><span class="n">tag</span><span class="p">)</span>  <span class="c1"># tag is a tuple
+</span><span class="k">print</span><span class="p">(</span><span class="sa">f</span><span class="s">"</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>  <span class="c1"># str(tag) gets standardized string</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_to_contribute">7. How to Contribute:</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Please help grow the datasets by adding any missing and new datasets to [<code>index</code>](mtdata/index/<em>init</em>.py) module.</p>
+</li>
+<li>
+<p>Please create issues and/or pull requests at <a href="https://github.com/thammegowda/mtdata/" class="bare">github.com/thammegowda/mtdata/</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_change_cache_directory">8. Change Cache Directory:</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The default cache directory is <code>$HOME/.mtdata</code>.
+It can grow to a large size when you download a lot of datasets using this command.</p>
+</div>
+<div class="paragraph">
+<p>To change it:
+*  set the following environment variable
+<code>export MTDATA=/path/to/new-cache-dir</code>
+* Alternatively, move <code>$HOME/.mtdata</code> to the desired place and create a symbolic link</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="nb">mv</span> <span class="nv">$HOME</span>/.mtdata /path/to/new/place
+<span class="nb">ln</span> <span class="nt">-s</span> /path/to/new/place <span class="nv">$HOME</span>/.mtdata</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_run_tests">9. Run tests</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Tests are located in [tests/](tests) directory. To run all the tests:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>python -m pytest</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_developers_and_contributor">10. Developers and Contributor:</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>See - <a href="https://github.com/thammegowda/mtdata/graphs/contributors" class="bare">github.com/thammegowda/mtdata/graphs/contributors</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_citation">11. Citation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://aclanthology.org/2021.acl-demo.37/" class="bare">aclanthology.org/2021.acl-demo.37/</a></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code>@inproceedings{gowda-etal-2021-many,
+    title = "Many-to-{E}nglish Machine Translation Tools, Data, and Pretrained Models",
+    author = "Gowda, Thamme  and
+      Zhang, Zhao  and
+      Mattmann, Chris  and
+      May, Jonathan",
+    booktitle = "Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing: System Demonstrations",
+    month = aug,
+    year = "2021",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2021.acl-demo.37",
+    doi = "10.18653/v1/2021.acl-demo.37",
+    pages = "306--316",
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_disclaimer_on_datasets">12. Disclaimer on Datasets</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This tools downloads and prepares public datasets. We do not host or distribute these datasets, vouch for their quality or fairness, or make any claims regarding license to use these datasets. It is your responsibility to determine whether you have permission to use the dataset under the dataset&#8217;s license.
+We request all the users of this tool to cite the original creators of the datsets, which maybe obtained from  <code>mtdata list -n &lt;NAME&gt; -l &lt;L1-L2&gt; -full</code>.</p>
+</div>
+<div class="paragraph">
+<p>If you&#8217;re a dataset owner and wish to update any part of it (description, citation, etc.), or do not want your dataset to be included in this library, please get in touch through a GitHub issue. Thanks for your contribution to the ML community!</p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2022-03-10 19:13:25 -0800
+</div>
+</div>
+</body>
+</html>

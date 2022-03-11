@@ -45,35 +45,35 @@ pip install --editable .
 We have added some commonly used datasets - you are welcome to add more! 
 These are the summary of datasets from various sources (Updated: Feb 2022).
 
- 
-|                  Source | Dataset Count |
-|------------------------:|--------------:|
-|       OPUS<sup>$1</sup> |        80,830 |
-| OPUS_JW300<sup>$2</sup> |        91,248 |
-|                  Neulab |         4,455 |
-|                Facebook |         1,617 |
-|                    ELRC |         1,341 |
-|                      EU |         1,178 |
-|                  Statmt |           699 |
-|                   Tilde |           519 |
-|             LinguaTools |           253 |
-|                 Anuvaad |           196 |
-|              AI4Bharath |           192 |
-|               ParaCrawl |           126 |
-|                  Lindat |            56 |
-|         UN<sup>$3</sup> |            30 |
-|               JoshuaDec |            29 |
-|                Phontron |             4 |
-|                  NRC_CA |             4 |
-|                    IITB |             3 |
-|                     WAT |             3 |
-|             StanfordNLP |             3 |
-|                    KECL |             1 |
-|                 *Total* |      *182.8K* |
+|                         Source | Dataset Count |
+|-------------------------------:|--------------:|
+|              OPUS<sup>$1</sup> |        80,830 |
+|                         Neulab |         4,455 |
+|                       Facebook |         1,617 |
+|                           ELRC |         1,394 |
+|                             EU |         1,178 |
+|                         Statmt |           750 |
+|                          Tilde |           519 |
+|                    LinguaTools |           253 |
+|                        Anuvaad |           196 |
+|                     AI4Bharath |           192 |
+|                      ParaCrawl |           126 |
+|                         Lindat |            56 |
+|                UN<sup>$3</sup> |            30 |
+|                      JoshuaDec |            29 |
+|                    StanfordNLP |            15 |
+|                         ParIce |             8 |
+|                       Phontron |             4 |
+|                         NRC_CA |             4 |
+|                           IITB |             3 |
+|                            WAT |             3 |
+|                           KECL |             2 |
+|                      Masakhane |             2 |
+|                        *Total* |     *131,301* |
+
 
 - <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
-- <sup>$2</sup> - ~~JW300 is also retrieved from OPUS, however handled differently due to the difference in the scale and internal format. It has two versions: `v1` (tokenized) and `v1c` (raw)~~ This dataset has been taken down at source
-- <sup>$3</sup> - Only test sets are included
+- <sup>$2</sup> - Only test sets are included
 
 # CLI Usage
 - After pip installation, the CLI can be called using `mtdata` command  or `python -m mtdata`

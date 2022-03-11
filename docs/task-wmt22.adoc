@@ -12,13 +12,10 @@ This document helps download datasets for WMT22 General MT task using `mtdata`.
 
 == Setup
 
-NOTE:  mtdata v0.3.5 is required which is currently under testing. So install it from develop. We will release it to PyPi once testing is complete.
-
 [source,bash]
 ----
-# pip install mtdata==0.3.5
-# Install from develop branch
-pip install https://github.com/thammegowda/mtdata/archive/develop.zip
+pip install mtdata==0.3.5
+# pip install https://github.com/thammegowda/mtdata/archive/develop.zip  # Install from develop branch
 ----
 
 == Get Recipes File
