@@ -103,6 +103,16 @@ class Dataset:
                 drop_hashes = test_pair_hash | test_seg_hash  # set union
             dataset.add_train_entries(train_entries, merge_train=merge_train, compress=compress,
                                       drop_hashes=drop_hashes)
+
+        # citations
+        refs_file = out_dir / 'references.bib'
+        if refs_file.exists():
+            refs_file.rename(refs_file.with_suffix('.bib.bak'))
+        with refs_file.open('w', encoding='utf-8', errors='ignore') as fh:
+            for ent in all_entries:
+                cite = ent.cite or 'UNKNOWN'
+                fh.write(f"%% {ent.did}\n{cite}\n\n")
+        log.info(f"Created references at {refs_file}")
         return dataset
 
     def hash_all_bitexts(self, paired_files):
