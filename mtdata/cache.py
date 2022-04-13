@@ -95,7 +95,7 @@ class Cache:
         hostname = urlparse(url).hostname or 'nohost'
         filename = filename or url.split('/')[-1]
         assert hostname and filename
-        mdf5_sum = md5(url.encode('utf-8')).hexdigest()
+        mdf5_sum = md5(url.encode('utf-8'), usedforsecurity=False).hexdigest()
         local = self.root / hostname / mdf5_sum[:4] / mdf5_sum[4:] / filename
         if fix_missing:
             self.download(url, local)
