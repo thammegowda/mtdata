@@ -326,7 +326,8 @@ class Dataset:
                         log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
                     pbar.update(force=True)
                 except Exception as e:
-                    log.error(f"Unable to add {ent.did}: {e}")
+                    log.exception(f"Unable to add {ent.did}: {e}")
+
                     if fail_on_error:
                         raise e
                     msg = str(e).replace('\n', '\t')

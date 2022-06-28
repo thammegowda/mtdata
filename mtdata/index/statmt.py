@@ -344,3 +344,10 @@ def load(index: Index):
     index.add_entry(Entry(
         did=DatasetId(group=group_id, name='backtrans_ruen', version='wmt20', langs=('ru', 'en')),
         ext='txt.gz', url=(f'{prefix}/news.ru.gz', f'{prefix}/news.ru.translatedto.en.gz')))
+
+
+    index.add_entry(Entry(
+        did=DatasetId(group=group_id, name='yandex', version='wmt22', langs=('en', 'ru')),
+        ext='zip', in_ext='tsv', cols=(0,1), in_paths=[f'WMT2022-data-main/en-ru/en-ru.1m_{i}.tsv' for i in range(1, 11)], 
+        url='https://github.com/mashashma/WMT2022-data/archive/refs/heads/main.zip'))
+
