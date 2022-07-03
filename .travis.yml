@@ -10,6 +10,7 @@ python:
 
 before_install:
   - sudo apt-get -y update
+  - pip install setuptools==61.2
   - python3 setup.py install
 
 install:
