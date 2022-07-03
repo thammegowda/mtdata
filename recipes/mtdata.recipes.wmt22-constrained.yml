@@ -6,8 +6,8 @@
     - Statmt-newstest_csen-2020-ces-eng
     - Statmt-newstest_encs-2020-eng-ces
   test:
-    - Statmt-newstest_csen-2021-ces-eng
-    - Statmt-newstest_encs-2021-eng-ces
+    #- Statmt-newstest_csen-2021-ces-eng
+    #- Statmt-newstest_encs-2021-eng-ces
   train:
     - Statmt-europarl-10-ces-eng
     - ParaCrawl-paracrawl-9-eng-ces
@@ -30,8 +30,8 @@
     - Statmt-newstest_deen-2020-deu-eng
     - Statmt-newstest_ende-2020-eng-deu
   test:
-    - Statmt-newstest_deen-2021-deu-eng
-    - Statmt-newstest_ende-2021-eng-deu
+    #- Statmt-newstest_deen-2021-deu-eng
+    #- Statmt-newstest_ende-2021-eng-deu
   train:
     - Statmt-europarl-10-deu-eng
     - ParaCrawl-paracrawl-9-eng-deu
@@ -55,8 +55,8 @@
     - Statmt-newstest_enja-2020-eng-jpn
     - Statmt-newstest_jaen-2020-jpn-eng
   test:
-    - Statmt-newstest_enja-2021-eng-jpn
-    - Statmt-newstest_jaen-2021-jpn-eng
+    #- Statmt-newstest_enja-2021-eng-jpn
+    #- Statmt-newstest_jaen-2021-jpn-eng
   train:
     - Statmt-news_commentary-16-eng-jpn
     - KECL-paracrawl-3-eng-jpn
@@ -74,8 +74,8 @@
     - Statmt-newstest_enru-2020-eng-rus
     - Statmt-newstest_ruen-2020-rus-eng
   test:
-    - Statmt-newstest_enru-2021-eng-rus
-    - Statmt-newstest_ruen-2021-rus-eng
+    #- Statmt-newstest_enru-2021-eng-rus
+    #- Statmt-newstest_ruen-2021-rus-eng
   train:
     - ParaCrawl-paracrawl-1_bonus-eng-rus
     - Statmt-commoncrawl_wmt13-1-rus-eng
@@ -98,8 +98,8 @@
     - Statmt-newstest_enzh-2020-eng-zho
     - Statmt-newstest_zhen-2020-zho-eng
   test:
-    - Statmt-newstest_enzh-2021-eng-zho
-    - Statmt-newstest_zhen-2021-zho-eng
+    #- Statmt-newstest_enzh-2021-eng-zho
+    #- Statmt-newstest_zhen-2021-zho-eng
   train:
     - ParaCrawl-paracrawl-1_bonus-eng-zho
     - Statmt-news_commentary-16-eng-zho
@@ -117,8 +117,8 @@
     - Statmt-newstest_defr-2020-deu-fra
     - Statmt-newstest_frde-2020-fra-deu
   test:
-    - Statmt-newstest_frde-2021-fra-deu
-    - Statmt-newstest_defr-2021-deu-fra
+    #- Statmt-newstest_frde-2021-fra-deu
+    #- Statmt-newstest_defr-2021-deu-fra
   train:
     - Statmt-europarl-10-deu-fra
     - Statmt-paracrawl-wmt19-fra-deu
