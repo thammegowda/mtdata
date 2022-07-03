@@ -1,4 +1,5 @@
-dist: focal
+dist: jammy # focal
+# see all versions at https://hub.docker.com/_/ubuntu
 sudo: false
 language: python
 python:
@@ -8,7 +9,7 @@ python:
   - "3.9"
 
 before_install:
-  #- sudo apt-get -y update
+  - sudo apt-get -y update
   - python3 setup.py install
 
 install:
