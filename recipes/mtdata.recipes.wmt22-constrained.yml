@@ -6,8 +6,8 @@
     - Statmt-newstest_csen-2020-ces-eng
     - Statmt-newstest_encs-2020-eng-ces
   test:
-    - Statmt-newstest_csen-2021-ces-eng
-    - Statmt-newstest_encs-2021-eng-ces
+    #- Statmt-newstest_csen-2021-ces-eng
+    #- Statmt-newstest_encs-2021-eng-ces
   train:
     - Statmt-europarl-10-ces-eng
     - ParaCrawl-paracrawl-9-eng-ces
@@ -21,6 +21,7 @@
     - Tilde-rapid-2019-ces-eng
     # TODO: CzEng2.0 and backtranslated news require login
 
+
 - id: wmt22-deen
   langs: deu-eng
   desc: WMT 22 General MT
@@ -29,8 +30,8 @@
     - Statmt-newstest_deen-2020-deu-eng
     - Statmt-newstest_ende-2020-eng-deu
   test:
-    - Statmt-newstest_deen-2021-deu-eng
-    - Statmt-newstest_ende-2021-eng-deu
+    #- Statmt-newstest_deen-2021-deu-eng
+    #- Statmt-newstest_ende-2021-eng-deu
   train:
     - Statmt-europarl-10-deu-eng
     - ParaCrawl-paracrawl-9-eng-deu
@@ -54,8 +55,8 @@
     - Statmt-newstest_enja-2020-eng-jpn
     - Statmt-newstest_jaen-2020-jpn-eng
   test:
-    - Statmt-newstest_enja-2021-eng-jpn
-    - Statmt-newstest_jaen-2021-jpn-eng
+    #- Statmt-newstest_enja-2021-eng-jpn
+    #- Statmt-newstest_jaen-2021-jpn-eng
   train:
     - Statmt-news_commentary-16-eng-jpn
     - KECL-paracrawl-3-eng-jpn
@@ -73,13 +74,13 @@
     - Statmt-newstest_enru-2020-eng-rus
     - Statmt-newstest_ruen-2020-rus-eng
   test:
-    - Statmt-newstest_enru-2021-eng-rus
-    - Statmt-newstest_ruen-2021-rus-eng
+    #- Statmt-newstest_enru-2021-eng-rus
+    #- Statmt-newstest_ruen-2021-rus-eng
   train:
     - ParaCrawl-paracrawl-1_bonus-eng-rus
     - Statmt-commoncrawl_wmt13-1-rus-eng
     - Statmt-news_commentary-16-eng-rus
-    # TODO: yandex, requires login
+    - Statmt-yandex-wmt22-eng-rus
     - Statmt-wikititles-3-rus-eng
     - OPUS-unpc-v1.0-eng-rus
     - Facebook-wikimatrix-1-eng-rus
@@ -97,8 +98,8 @@
     - Statmt-newstest_enzh-2020-eng-zho
     - Statmt-newstest_zhen-2020-zho-eng
   test:
-    - Statmt-newstest_enzh-2021-eng-zho
-    - Statmt-newstest_zhen-2021-zho-eng
+    #- Statmt-newstest_enzh-2021-eng-zho
+    #- Statmt-newstest_zhen-2021-zho-eng
   train:
     - ParaCrawl-paracrawl-1_bonus-eng-zho
     - Statmt-news_commentary-16-eng-zho
@@ -116,8 +117,8 @@
     - Statmt-newstest_defr-2020-deu-fra
     - Statmt-newstest_frde-2020-fra-deu
   test:
-    - Statmt-newstest_frde-2021-fra-deu
-    - Statmt-newstest_defr-2021-deu-fra
+    #- Statmt-newstest_frde-2021-fra-deu
+    #- Statmt-newstest_defr-2021-deu-fra
   train:
     - Statmt-europarl-10-deu-fra
     - Statmt-paracrawl-wmt19-fra-deu
@@ -190,3 +191,108 @@
     - OPUS-hrenwac-v1-eng-hrv
     #- OPUS-wikimedia-v20190628-eng-hrv
     - OPUS-wikimedia-v20210402-eng-hrv
+
+- id: wmt22-liveng
+  langs: liv-ces
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  dev:
+  test:
+  train:
+    - OPUS-tatoeba-v20190709-eng-liv
+    - OPUS-tatoeba-v20200531-eng-liv
+    - OPUS-tatoeba-v20201109-eng-liv
+    - OPUS-tatoeba-v20210310-eng-liv
+    - OPUS-tatoeba-v20210722-eng-liv
+    - OPUS-liv4ever-v1-eng-liv
+
+- id: wmt22-uken
+  langs: ukr-eng
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  #dev:
+  #test:
+  train:
+    - ParaCrawl-paracrawl-1_bonus-eng-ukr
+    - Tilde-worldbank-1-eng-ukr 
+    - Facebook-wikimatrix-1-eng-ukr
+    - OPUS-ccaligned-v1-eng-ukr
+    - OPUS-ccmatrix-v1-eng-ukr
+    - OPUS-elrc_2922-v1-eng-ukr
+    - OPUS-eubookshop-v2-eng-ukr
+    - OPUS-gnome-v1-eng-ukr
+    - OPUS-gnome-v1-eng_AU-ukr
+    - OPUS-gnome-v1-eng_CA-ukr
+    - OPUS-gnome-v1-eng_GB-ukr
+    - OPUS-gnome-v1-eng_NZ-ukr
+    - OPUS-gnome-v1-eng_US-ukr
+    - OPUS-gnome-v1-eng_ZA-ukr
+    - OPUS-kde4-v2-eng-ukr
+    - OPUS-kde4-v2-eng_GB-ukr
+    - OPUS-kdedoc-v1-eng_GB-ukr
+    - OPUS-multiccaligned-v1-eng-ukr
+    - OPUS-opensubtitles-v2016-eng-ukr
+    - OPUS-opensubtitles-v2018-eng-ukr
+    - OPUS-qed-v2.0a-eng-ukr
+    - OPUS-ted2020-v1-eng-ukr
+    - OPUS-tatoeba-v2-eng-ukr
+    - OPUS-tatoeba-v20190709-eng-ukr
+    - OPUS-tatoeba-v20200531-eng-ukr
+    - OPUS-tatoeba-v20201109-eng-ukr
+    - OPUS-tatoeba-v20210310-eng-ukr
+    - OPUS-tatoeba-v20210722-eng-ukr
+    - OPUS-tildemodel-v2018-eng-ukr
+    - OPUS-ubuntu-v14.10-eng-ukr
+    - OPUS-ubuntu-v14.10-eng_AU-ukr
+    - OPUS-ubuntu-v14.10-eng_CA-ukr
+    - OPUS-ubuntu-v14.10-eng_GB-ukr
+    - OPUS-ubuntu-v14.10-eng_NZ-ukr
+    - OPUS-ubuntu-v14.10-eng_US-ukr
+    - OPUS-wikimatrix-v1-eng-ukr
+    - OPUS-xlent-v1-eng-ukr
+    - OPUS-xlent-v1.1-eng-ukr
+    - OPUS-bible_uedin-v1-eng-ukr
+    - OPUS-wikimedia-v20210402-eng-ukr
+    # TODO: EU acts in Ukranian 
+ 
+- id: wmt22-ukcs
+  langs: ukr-ces
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  #dev:
+  #test:
+  train:
+    - Facebook-wikimatrix-1-ces-ukr 
+    - OPUS-ccmatrix-v1-ces-ukr
+    - OPUS-eubookshop-v2-ces-ukr
+    - OPUS-gnome-v1-ces-ukr
+    - OPUS-kde4-v2-ces-ukr
+    - OPUS-multiccaligned-v1-ces-ukr
+    - OPUS-multiccaligned-v1.1-ces-ukr
+    - OPUS-opensubtitles-v2016-ces-ukr
+    - OPUS-opensubtitles-v2018-ces-ukr
+    - OPUS-qed-v2.0a-ces-ukr
+    - OPUS-ted2020-v1-ces-ukr
+    - OPUS-tatoeba-v2-ces-ukr
+    - OPUS-tatoeba-v20190709-ces-ukr
+    - OPUS-tatoeba-v20200531-ces-ukr
+    - OPUS-tatoeba-v20201109-ces-ukr
+    - OPUS-tatoeba-v20210310-ces-ukr
+    - OPUS-tatoeba-v20210722-ces-ukr
+    - OPUS-ubuntu-v14.10-ces-ukr
+    - OPUS-wikimatrix-v1-ces-ukr
+    - OPUS-xlent-v1-ces-ukr
+    - OPUS-xlent-v1.1-ces-ukr
+    - OPUS-bible_uedin-v1-ces-ukr
+    - OPUS-wikimedia-v20210402-ces-ukr
+    # TODO: ELRC EU acts in Ukrain
+
+- id: wmt22-sahen
+  langs: sah-eng
+  desc: WMT 22 General MT
+  url: https://www.statmt.org/wmt22/translation-task.html
+  #dev:
+  #test:
+  train:
+    - Statmt-yakut-wmt22-sah-rus
+

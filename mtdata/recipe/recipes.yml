@@ -28,8 +28,10 @@
     - WAT-alt_train-2020-mya-eng
     - Statmt-pmindia-1-eng-tel
   dev:
-    - AI4Bharath-wat_dev-2021-eng-tel
+    #- AI4Bharath-wat_dev-2021-eng-tel
+    - JoshuaDec-indian_dev-1-tel-eng
     - WAT-alt_dev-2020-mya-eng
   test:
-    - AI4Bharath-wat_test-2021-eng-tel
+    #- AI4Bharath-wat_test-2021-eng-tel
+    - JoshuaDec-indian_test-1-tel-eng
     - WAT-alt_test-2020-mya-eng
