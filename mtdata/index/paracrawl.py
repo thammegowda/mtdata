@@ -56,7 +56,7 @@ def load(index: Index):
                         url=url, cite=cite, ext='tsv.gz')
             index.add_entry(ent)
 
-    PARACRAWL_BONUS = f'{URL_PREFIX}/bonus/{pair}.txt.gz'
+    PARACRAWL_BONUS = URL_PREFIX + '/bonus/{pair}.txt.gz'
     for pair in 'en-km en-my en-ne en-ps en-si en-so en-sw en-tl en-ru en-ko'.split():
         l1, l2 = pair.split('-')
         url = PARACRAWL_BONUS.format(pair=pair)
@@ -64,7 +64,7 @@ def load(index: Index):
                     url=url, cite=cite, ext='tsv.gz')
         index.add_entry(ent)
 
-    PARACRAWL_V9 = f'{URL_PREFIX}/release9/{l1}-{l2}/{l1}-{l2}.txt.gz'
+    PARACRAWL_V9 = URL_PREFIX + '/release9/{l1}-{l2}/{l1}-{l2}.txt.gz'
     for pair in ('en-bg en-cs en-da en-de en-el en-es en-et en-fi en-fr en-ga en-hr en-hu en-is en-it en-lt en-lv'
                  ' en-mt en-nb en-nl en-nn en-pl en-pt en-ro en-sk en-sl en-sv es-ca es-eu es-gl').split():
         l1, l2 = pair.split('-')
