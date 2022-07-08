@@ -47,33 +47,30 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 
 |                         Source | Dataset Count |
 |-------------------------------:|--------------:|
-|              OPUS<sup>$1</sup> |        80,830 |
-|                         Neulab |         4,455 |
-|                       Facebook |         1,617 |
-|                           ELRC |         1,394 |
-|                             EU |         1,178 |
-|                         Statmt |           750 |
-|                          Tilde |           519 |
-|                    LinguaTools |           253 |
-|                        Anuvaad |           196 |
-|                     AI4Bharath |           192 |
-|                      ParaCrawl |           126 |
-|                         Lindat |            56 |
-|                UN<sup>$3</sup> |            30 |
-|                      JoshuaDec |            29 |
-|                    StanfordNLP |            15 |
-|                         ParIce |             8 |
-|                       Phontron |             4 |
-|                         NRC_CA |             4 |
-|                           IITB |             3 |
-|                            WAT |             3 |
-|                           KECL |             2 |
-|                      Masakhane |             2 |
-|                        *Total* |     *131,301* |
+| OPUS | 120,465|
+| Neulab | 4,455|
+| Facebook | 1,617|
+| ELRC | 1,394|
+| EU | 1,178|
+| Statmt | 752|
+| Tilde | 519|
+| LinguaTools | 253|
+| Anuvaad | 196|
+| AI4Bharath | 192|
+| ParaCrawl | 127|
+| Lindat | 56|
+| UN | 30|
+| JoshuaDec | 29|
+| StanfordNLP | 15|
+| ParIce | 8|
+| Phontron | 4|
+| NRC_CA | 4|
+| IITB | 3|
+| WAT | 3|
+| KECL | 2|
+| Masakhane | 2|
+| *Total* | *131,304*|
 
-
-- <sup>$1</sup> - OPUS contains duplicate entries from other listed sources, but they are often older releases of corpus.
-- <sup>$2</sup> - Only test sets are included
 
 # CLI Usage
 - After pip installation, the CLI can be called using `mtdata` command  or `python -m mtdata`

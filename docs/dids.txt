@@ -1,1 +1,1 @@
-v0.3.5/dids.txt
+v0.3.6/dids.txt
