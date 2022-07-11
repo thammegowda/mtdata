@@ -13,13 +13,19 @@ version=$(python -m mtdata -v  2> /dev/null | cut -d' ' -f2 | sed 's/-.*//')   #
 [[ -n $version ]] || my_exit 1 "Unable to parse mtdata version; check: python -m mtdata -v"
 echo "mtdata $version"
 asciidoctor -v || my_exit 2 "asciidoctor not found; please install and rerun"
+kramdoc -v || my_exit 2 "kramdoc is not found; please install and rerun. See https://github.com/asciidoctor/kramdown-asciidoc#installation"
+# gem install kramdown-asciidoc
 
 ver_dir="${DOCS_DIR}/v${version}"
 [[ -d $ver_dir ]] || mkdir -p "$ver_dir"
 
-cmd="asciidoctor -o ${ver_dir}/index.html $DOCS_DIR/index.adoc"
+cmd="kramdoc ${DOCS_DIR}/../README.md -o ${DOCS_DIR}/index.adoc"
 echo "Running:: $cmd"
-eval "$cmd" || my_exit 3 "Doc building Failed"
+eval "$cmd" || my_exit 3 "Error: .md -> .adoc converter failed"
+
+cmd="asciidoctor $DOCS_DIR/index.adoc -o ${ver_dir}/index.html"
+echo "Running:: $cmd"
+eval "$cmd" || my_exit 3 "Error: .adoc -> .html failed"
 
 echo "Extracting dataset IDs to $ver_dir/dids.txt"
 python -m mtdata -ri list -id | sort > "$ver_dir/dids.txt"

@@ -2,19 +2,19 @@
 [![image](http://img.shields.io/pypi/v/mtdata.svg)](https://pypi.python.org/pypi/mtdata/)
 ![Travis (.com)](https://img.shields.io/travis/com/thammegowda/mtdata?style=plastic)
 
-MTData automates the collection and preparation of machine translation datasets.
-It provides CLI and python APIs, so it can be either used as a standalone tool or embedded into
- python apps for preparing MT experiments. 
-> 📣 Using MTData we've created a model that can translate from 500 languages to English.  
-> Free, and open-source; a demo and docker is at http://rtg.isi.edu/many-eng/  
-> Docs: https://thammegowda.github.io/mtdata   
-> Search datasets: https://thammegowda.github.io/mtdata/search.html
+MTData automates the collection and preparation of machine translation (MT) datasets.
+It provides CLI and python APIs, which can be used for preparing MT experiments.
+
+* [Quickstart Example](#quickstart--example)
+* [Docs](https://thammegowda.github.io/mtdata/)
+* Search datasets: https://thammegowda.github.io/mtdata/search.html
+
 
 This tool knows:
-- From where to download data sets: WMT News Translation tests and devs for Paracrawl, 
-  Europarl, News Commentary, WikiTitles, Tilde Model corpus, OPUS ... 
-- How to extract files : .tar, .tar.gz, .tgz, .zip, ... 
-- How to parse .tmx, .sgm and such XMLs, or .tsv ... Checks if they have same number of segments.  
+- From where to download data sets: WMT News Translation tests and devs for Paracrawl,
+  Europarl, News Commentary, WikiTitles, Tilde Model corpus, OPUS ...
+- How to extract files : .tar, .tar.gz, .tgz, .zip, ...
+- How to parse .tmx, .sgm and such XMLs, or .tsv ... Checks if they have same number of segments.
 - Whether parallel data is in one .tsv file or two sgm files.
 - Whether data is compressed in gz, xz or none at all.
 - Whether the source-target is in the same order or is it swapped as target-source order.
@@ -24,19 +24,21 @@ This tool knows:
 - (And more of such tiny details over the time.)
 
 [MTData](https://github.com/thammegowda/mtdata) is here to:
-- Automate the MT training data creation by taking out human intervention. Inspired by [SacreBLEU](https://github.com/mjpost/sacreBLEU) that takes out human intervention in evaluation stage.
-- A reusable tool instead of dozens of use-once shell scripts spread across multiple repos. 
+- Automate machinbe translation training data creation by taking out human intervention. This is inspired by [SacreBLEU](https://github.com/mjpost/sacreBLEU) that takes out human intervention at the evaluation stage.
+- A reusable tool instead of dozens of use-once shell scripts spread across multiple repos.
 
 
 # Installation
 ```bash
-# from pypi 
-pip install mtdata  
+# from pypi
+pip install mtdata
 
-# from the source code on github 
-git clone https://github.com/thammegowda/mtdata 
+# from the source code on github
+git clone https://github.com/thammegowda/mtdata
 cd mtdata
 pip install --editable .
+
+# from develop branch
 ```
 
 
@@ -50,7 +52,7 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | OPUS | 120,465|
 | Neulab | 4,455|
 | Facebook | 1,617|
-| ELRC | 1,394|
+| ELRC | 1,489|
 | EU | 1,178|
 | Statmt | 752|
 | Tilde | 519|
@@ -69,12 +71,17 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | WAT | 3|
 | KECL | 2|
 | Masakhane | 2|
-| *Total* | *131,304*|
+| **Total** | **131,399** |
 
+
+# Usecases
+* USC ISI's 500-to-English MT: http://rtg.isi.edu/many-eng/
+* WMT 2022 General (News) Translation Task: https://www.statmt.org/wmt22/mtdata/ 
+* Meta AI's 200-to-200 MT: [Whitepaper](https://research.facebook.com/file/585831413174038/No-Language-Left-Behind--Scaling-Human-Centered-Machine-Translation.pdf)
 
 # CLI Usage
 - After pip installation, the CLI can be called using `mtdata` command  or `python -m mtdata`
-- There are two sub commands: `list` for listing the datasets, and `get` for getting them   
+- There are two sub commands: `list` for listing the datasets, and `get` for getting them
 
 ### `mtdata list`
 Lists datasets that are known to this tool.
@@ -327,7 +334,7 @@ Our tags are of form `xxx_Yyyy_ZZ` where
 Notes:
 * Region is preserved when available and left blank when unavailable
 * Script `Yyyy` is forcibly suppressed in obvious cases. E.g. `eng` is written using `Latn` script, writing `eng-Latn` is just awkward to read as `Latn` is default we suppress `Latn` script for English. On the other hand a language like `Kannada` is written using `Knda` script (`kan-Knda` -> `kan`), but occasionally written using `Latn` script, so `kan-Latn` is not suppressed. 
-* The information about what is default script is obtained from IANA language code registry 
+* The information about what is default script is obtained from IANA language code registry
 * Language code `mul` stands for _multiple languages, and is used as a placeholder for multilingual datasets (See `mul-eng` to represent many-to-English dataset recipes in [(mtdata/recipe/recipes.yml](mtdata/recipe/recipes.yml))
 
 #### Example:
@@ -377,7 +384,6 @@ mv $HOME/.mtdata /path/to/new/place
 ln -s /path/to/new/place $HOME/.mtdata
 ```
 
- 
 ## Run tests
 Tests are located in [tests/](tests) directory. To run all the tests:
 
@@ -411,7 +417,7 @@ https://aclanthology.org/2021.acl-demo.37/
 }
 ```
 
---- 
+---
 ## Disclaimer on Datasets
 
 This tools downloads and prepares public datasets. We do not host or distribute these datasets, vouch for their quality or fairness, or make any claims regarding license to use these datasets. It is your responsibility to determine whether you have permission to use the dataset under the dataset's license.
