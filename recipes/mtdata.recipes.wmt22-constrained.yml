@@ -1,3 +1,6 @@
+# pip install mtdata==0.3.7
+# Newstest 2021 are not supported yet. Join the chat at https://github.com/thammegowda/mtdata/issues/116
+
 - id: wmt22-csen
   langs: ces-eng
   desc: WMT 22 General MT
@@ -20,7 +23,6 @@
     - Tilde-ecb-2017-ces-eng
     - Tilde-rapid-2019-ces-eng
     # TODO: CzEng2.0 and backtranslated news require login
-
 
 - id: wmt22-deen
   langs: deu-eng
@@ -192,8 +194,8 @@
     #- OPUS-wikimedia-v20190628-eng-hrv
     - OPUS-wikimedia-v20210402-eng-hrv
 
-- id: wmt22-liveng
-  langs: liv-ces
+- id: wmt22-liven
+  langs: liv-eng
   desc: WMT 22 General MT
   url: https://www.statmt.org/wmt22/translation-task.html
   dev:
@@ -253,8 +255,9 @@
     - OPUS-xlent-v1.1-eng-ukr
     - OPUS-bible_uedin-v1-eng-ukr
     - OPUS-wikimedia-v20210402-eng-ukr
-    # TODO: EU acts in Ukranian 
- 
+    - ELRC-acts_ukrainian-1-eng-ukr
+
+
 - id: wmt22-ukcs
   langs: ukr-ces
   desc: WMT 22 General MT
@@ -285,14 +288,14 @@
     - OPUS-xlent-v1.1-ces-ukr
     - OPUS-bible_uedin-v1-ces-ukr
     - OPUS-wikimedia-v20210402-ces-ukr
-    # TODO: ELRC EU acts in Ukrain
+    - ELRC-acts_ukrainian-1-ces-ukr
 
-- id: wmt22-sahen
-  langs: sah-eng
+
+- id: wmt22-sahru
+  langs: sah-rus
   desc: WMT 22 General MT
   url: https://www.statmt.org/wmt22/translation-task.html
   #dev:
   #test:
   train:
     - Statmt-yakut-wmt22-sah-rus
-
