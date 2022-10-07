@@ -325,11 +325,14 @@ def load(index: Index):
             url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=(1, 0)))
 
     # https://data.statmt.org/wmt19/translation-task/fr-de/bitexts/de-fr.bicleaner07.de.gz
-    for cln_name, name in [('commoncrawl', ''), ('paracrawl', 'de-fr.bicleaner07'), ('europarl_v7', '')]:
+    for cln_name, file_name in [
+        ('commoncrawl', 'commoncrawl'),
+        ('paracrawl', 'de-fr.bicleaner07'),
+        ('europarl_v7', 'europarl-v7')]:
         l1, l2 = 'fr', 'de'
         prefix = 'https://data.statmt.org/wmt19/translation-task/fr-de/bitexts'
-        index.add_entry(Entry(did=DatasetId(group=group_id, name=cln_name or name, version='wmt19', langs=(l1, l2)),
-                              ext='txt.gz', url=(f'{prefix}/{name}.{l1}.gz', f'{prefix}/{name}.{l2}.gz')))
+        index.add_entry(Entry(did=DatasetId(group=group_id, name=cln_name, version='wmt19', langs=(l1, l2)),
+                              ext='txt.gz', url=(f'{prefix}/{file_name}.{l1}.gz', f'{prefix}/{file_name}.{l2}.gz')))
 
     # Back Translation
     prefix = 'https://data.statmt.org/wmt20/translation-task/back-translation/zh-en'
