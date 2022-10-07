@@ -105,9 +105,13 @@ class Parser:
                 pbar.update()
 
     def read_plain(self, path):
-        with IO.reader(path) as stream:
-            for line in stream:
-                yield line.strip()
+        try:
+            with IO.reader(path) as stream:
+                for line in stream:
+                    yield line.strip()
+        except:
+            log.warning(f'Error reading file {path}')
+            raise
 
     def read_tsv(self, path, delim='\t', cols=None, skipheader=False):
         """
