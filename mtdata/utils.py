@@ -211,3 +211,12 @@ class TarPath(ArchivedPath):
                 dir_name = name[:-len(ext)]
                 break
         return dir_name
+
+
+def format_byte_size(n: int) -> str:
+    """formats byte count into human readable size such as kB, MB, GB..."""
+    for power, unit in [(12, 'TB'), (9, 'GB'), (6, 'MB'), (3, 'kB')]:
+        if n >= (10 ** power):
+            m = n / 10 ** power
+            return f'{m:.2f}'.rstrip('0') + f' {unit}'
+    return f'{n}B'

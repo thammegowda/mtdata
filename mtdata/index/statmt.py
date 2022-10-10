@@ -331,7 +331,7 @@ def load(index: Index):
         ('europarl_v7', 'europarl-v7')]:
         l1, l2 = 'fr', 'de'
         prefix = 'https://data.statmt.org/wmt19/translation-task/fr-de/bitexts'
-        index.add_entry(Entry(did=DatasetId(group=group_id, name=cln_name, version='wmt19', langs=(l1, l2)),
+        index.add_entry(Entry(did=DatasetId(group=group_id, name=cln_name, version='wmt19', langs=(l1, l2)), in_ext='txt',
                               ext='txt.gz', url=(f'{prefix}/{file_name}.{l1}.gz', f'{prefix}/{file_name}.{l2}.gz')))
 
     # Back Translation

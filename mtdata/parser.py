@@ -45,7 +45,8 @@ class Parser:
         if not self.ext:
             exts = [detect_extension(p.name) for p in self.paths]
             if len(exts) == 2:
-                log.warning(f"Treating {' .'.join(exts)} as plain text. To override: in_ext=<ext>")
+                did = self.ent and self.ent.did or ''
+                log.warning(f"{did} :: Treating {' .'.join(exts)} as plain text. To override: in_ext=<ext>")
                 exts = ['txt']  # treat that as plain text
             assert len(set(exts)) == 1, f'Expected a type of exts, but found: {exts}'
             self.ext = exts[0]

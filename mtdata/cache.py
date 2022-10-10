@@ -9,9 +9,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from mtdata.index import Entry
 from mtdata import log, __version__, pbar_man, MTDataException, FILE_LOCK_TIMEOUT
-from mtdata.utils import ZipPath, TarPath
+from mtdata.utils import ZipPath, TarPath, format_byte_size
 from mtdata.parser import Parser
-from typing import List, Union
+from typing import List, Tuple, Union
 
 import portalocker
 from hashlib import md5
@@ -22,6 +22,8 @@ import math
 
 
 headers = {'User-Agent': f'mtdata downloader {__version__}; cURL and wget like.'}
+
+OPUS_XCES = 'opus_xces'
 
 
 @dataclass
@@ -34,7 +36,7 @@ class Cache:
         log.info(f"Local cache is at {self.root}")
 
     def get_entry(self, entry: Entry, fix_missing=True) -> Union[Path, List[Path]]:
-        if entry.in_ext == 'opus_xces':
+        if entry.in_ext == OPUS_XCES:
             return self.opus_xces_format(entry=entry, fix_missing=fix_missing)
 
         if isinstance(entry.url, (list, tuple)):
@@ -48,12 +50,38 @@ class Cache:
                 local = self.get_local_in_paths(path=local, entry=entry)
         return local
 
+    def get_content_length(self, entry: Entry) -> Tuple[int, List[Tuple[str, int]]]:
+        urls = []
+        if entry.in_ext == OPUS_XCES:
+            aln_url, (l1_url, l2_url) = entry.url, entry.in_paths
+            urls += [l1_url, l2_url, aln_url]
+        else:
+            if isinstance(entry.url, (list, tuple)):
+                urls += entry.url
+            else:
+                assert isinstance(entry.url, str)
+                urls.append(entry.url)
+        lengths = [(url, self.get_url_content_length(url)) for url in urls]
+        total_bytes = sum(x[1] for x in lengths)
+        stats = dict(id = str(entry.did),
+                     total_bytes=total_bytes,
+                     total_size=format_byte_size(total_bytes),
+                     urls=dict(lengths))
+        return stats
+
+    @classmethod
+    def get_url_content_length(cls, url: str) -> int:
+        log.debug(f"HEAD {url}")
+        length = requests.head(url).headers.get('content-length') or '0'
+        return int(length)
+
     def get_stats(self, entry: Entry):
         path = self.get_entry(entry)
         parser = Parser(path, ext=entry.in_ext or None, ent=entry)
         count, skips, noise = 0, 0, 0
         toks = [0, 0]
         chars = [0, 0]
+        bytes = [0, 0]
         for rec in parser.read_segs():
             if len(rec) < 2 or not rec[0] or not rec[1]:
                 skips += 1
@@ -64,6 +92,8 @@ class Cache:
                 continue
             count += 1
             s1, s2 = rec[:2]  # get the first two recs
+            bytes[0] += len(s1.encode('utf-8')) + 1   # +1 for newline byte
+            bytes[1] += len(s2.encode('utf-8')) + 1
             chars[0] += len(s1)
             chars[1] += len(s2)
             s1_tok, s2_tok = s1.split(), s2.split()
@@ -73,10 +103,12 @@ class Cache:
         l1, l2 = entry.did.langs
         l1, l2 = l1.lang, l2.lang
         assert count > 0, f'No valid records are found for {entry.did}'
-        if l2 < l1:
+        if l2 < l1:  #swap
             l1, l2 = l2, l1
             toks = toks[1], toks[0]
             chars = chars[1], chars[0]
+            bytes = bytes[1], bytes[0]
+
         return {
             'id': str(entry.did),
             'segs': count,
@@ -85,7 +117,11 @@ class Cache:
             f'{l1}_toks': toks[0],
             f'{l2}_toks': toks[1],
             f'{l1}_chars': chars[0],
-            f'{l2}_chars': chars[0]
+            f'{l2}_chars': chars[1],
+            f'{l1}_bytes': bytes[0],
+            f'{l2}_bytes': bytes[1],
+            f'total_bytes': bytes[0] + bytes[1],
+            f'total_size': format_byte_size(bytes[0] + bytes[1]),
         }
 
     def get_flag_file(self, file: Path):
@@ -112,7 +148,7 @@ class Cache:
         return result
 
     def opus_xces_format(self, entry, fix_missing=True) -> List[Path]:
-        assert entry.in_ext == 'opus_xces'
+        assert entry.in_ext == OPUS_XCES
         l1_url, l2_url = entry.in_paths
         align_file = self.get_local_path(entry.url, fix_missing=fix_missing)
         l1_path = self.get_local_path(l1_url, fix_missing=fix_missing)

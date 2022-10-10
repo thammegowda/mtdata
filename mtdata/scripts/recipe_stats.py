@@ -3,7 +3,7 @@
 # Created by Thamme Gowda on Sept 7, 2022
 
 import argparse
-import logging
+import logging as log
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -13,8 +13,7 @@ import time
 
 from operator import add
 
-log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.basicConfig(level=log.INFO)
 
 
 
@@ -112,7 +111,7 @@ def parse_args():
 def main(**args):
     args = args or parse_args()
     if args.pop('debug'):
-        log.setLevel(logging.DEBUG)
+        log.setLevel(log.DEBUG)
         log.debug('Debug mode enabled')
     recipe_dirs = args.pop('recipe_dirs')
     header = ['Directory', 'Pair', 'DatasetID', 'Sentences', 'L1 Tokens', 'L2 Tokens', 'L1 Types', 'L2 Types']
