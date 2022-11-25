@@ -6,8 +6,8 @@
 * progressbar can be disabled from CLI `--no-pbar`; default is enabled `--pbar`
 * `mtdata stats --quick` does HTTP HEAD and shows content length; e.g. `mtdata stats --quick Statmt-commoncrawl-wmt19-fra-deu`
 * `python -m mtdata.scripts.recipe_stats` to read stats from output directory
-* Security fix with tar extract; thanks @TrellixVulnTeam
-* 
+* Security fix with tar extract | Thanks @TrellixVulnTeam
+* Added NLLB datasets prepared by AllenAI | Thanks @AlexUmnov  
 
 
 ## v0.3.7 - 20220711
