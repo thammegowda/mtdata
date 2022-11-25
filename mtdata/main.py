@@ -183,7 +183,7 @@ def parse_args():
                        help='''R|Dataset to be used for development (aka validation).
     e.g. "-dev Statmt-newstest_deen-2017-deu-eng"''')
     add_boolean_arg(get_p, 'merge', dest='merge_train', default=False, help='Merge train into a single file')
-    add_boolean_arg(get_p, 'fail', dest='fail_on_error', default=False,
+    add_boolean_arg(get_p, 'fail', dest='fail_on_error', default=True,
                     help='Fail if an error occurs on any one of dataset pars')
     get_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs", default=DEF_N_JOBS)
 
