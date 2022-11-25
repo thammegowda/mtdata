@@ -45,7 +45,8 @@ class Parser:
         if not self.ext:
             exts = [detect_extension(p.name) for p in self.paths]
             if len(exts) == 2:
-                log.warning(f"Treating {' .'.join(exts)} as plain text. To override: in_ext=<ext>")
+                did = self.ent and self.ent.did or ''
+                log.warning(f"{did} :: Treating {' .'.join(exts)} as plain text. To override: in_ext=<ext>")
                 exts = ['txt']  # treat that as plain text
             assert len(set(exts)) == 1, f'Expected a type of exts, but found: {exts}'
             self.ext = exts[0]
@@ -105,9 +106,13 @@ class Parser:
                 pbar.update()
 
     def read_plain(self, path):
-        with IO.reader(path) as stream:
-            for line in stream:
-                yield line.strip()
+        try:
+            with IO.reader(path) as stream:
+                for line in stream:
+                    yield line.strip()
+        except:
+            log.warning(f'Error reading file {path}')
+            raise
 
     def read_tsv(self, path, delim='\t', cols=None, skipheader=False):
         """

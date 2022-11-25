@@ -47,12 +47,13 @@ pip install --editable .
 We have added some commonly used datasets - you are welcome to add more! 
 These are the summary of datasets from various sources (Updated: Feb 2022).
 
-|                         Source | Dataset Count |
-|-------------------------------:|--------------:|
-| OPUS | 120,465|
+|       Source | Dataset Count |
+|-------------:|--------------:|
+| OPUS | 131,359|
 | Neulab | 4,455|
 | Facebook | 1,617|
-| ELRC | 1,489|
+| AllenAi | 1,611|
+| ELRC | 1,506|
 | EU | 1,178|
 | Statmt | 752|
 | Tilde | 519|
@@ -71,7 +72,7 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | WAT | 3|
 | KECL | 2|
 | Masakhane | 2|
-| **Total** | **131,399** |
+| **Total** | **143,921** |
 
 
 # Usecases

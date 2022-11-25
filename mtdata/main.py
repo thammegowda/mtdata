@@ -5,11 +5,13 @@
 import argparse
 from pathlib import Path
 from collections import defaultdict
+import json
 
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
+from mtdata import pbar_man
 from mtdata.entry import DatasetId, lang_pair
-from mtdata.utils import IO
+from mtdata.utils import IO, format_byte_size
 
 DEF_N_JOBS = 1
 
@@ -30,7 +32,7 @@ def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=
 def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, merge_train=False, compress=False,
              drop_dupes=False, drop_tests=False, fail_on_error=False, n_jobs=DEF_N_JOBS, **kwargs):
     if kwargs:
-        log.warning(f"Args are ignored: {kwargs}")
+        log.info(f"Args are ignored: {kwargs}")
     from mtdata.data import Dataset
     assert train_dids or test_dids, 'Required --train or --test or both'
     dataset = Dataset.prepare(
@@ -71,8 +73,9 @@ def generate_report(langs, names, not_names=None, format='plain'):
         print(f'{key}\t{val:,}')
 
     print("\nGroups:")
-    for key, val in group_stats.items():
+    for key, val in sorted(group_stats.items(), key=lambda x:x[1], reverse=True):
         print(f'{key}\t{val:,}')
+    print(f'[Total]\t{sum(group_stats.values()):,}')
 
 
 def list_recipes():
@@ -95,14 +98,17 @@ def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_
              fail_on_error=fail_on_error, n_jobs=n_jobs)
 
 
-def show_stats(*dids: DatasetId):
+def show_stats(*dids: DatasetId, quick=False):
     from mtdata.index import INDEX as index
     from mtdata.cache import Cache
     cache = Cache(CACHE_DIR)
     for did in dids:
         entry = index[did]
-        stats = cache.get_stats(entry)
-        print(stats)
+        if quick:
+            stats = cache.get_content_length(entry)
+        else:
+            stats = cache.get_stats(entry)
+        print(json.dumps(stats))
 
 
 class MyFormatter(argparse.ArgumentDefaultsHelpFormatter):
@@ -126,18 +132,26 @@ def parse_args():
     p = argparse.ArgumentParser(formatter_class=MyFormatter, epilog=f'Loaded from {my_path} (v{__version__})')
     p.add_argument('-vv', '--verbose', action='store_true', help='verbose mode')
     p.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__} \n{my_path}')
+    p.add_argument('-ll', '--log-level', help='Set log level', default='WARNING',
+                   choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
     p.add_argument('-ri', '--reindex', action='store_true',
                    help=f"Invalidate index of entries and recreate it. This deletes"
                         f" {cached_index_file} only and not the downloaded files. "
                         f"Use this if you're using in developer mode and modifying mtdata index.")
+    grp = p.add_mutually_exclusive_group()
+    grp.add_argument('-pb', '--pbar', action='store_true', dest='progressbar',
+                     help=f"Show progressbar", default=True)
+    grp.add_argument('-no-pb', '--no-pbar', action='store_false', dest='progressbar',
+                    help=f"Do not show progressbar", default=False)
+
 
     sub_ps = p.add_subparsers(required=True, dest='task',
                               help='''R|
-"list" - List the available entries 
+"list" - List the available entries
 "get" - Downloads the entry files and prepares them for experiment
-"list-recipe" - List the (well) known papers and dataset recipes used in their experiments 
-"get-recipe" - Get the datasets used in the specified experiment from "list-recipe" 
-"stats" - Get stats of dataset" 
+"list-recipe" - List the (well) known papers and dataset recipes used in their experiments
+"get-recipe" - Get the datasets used in the specified experiment from "list-recipe"
+"stats" - Get stats of dataset"
 ''')
 
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
@@ -199,15 +213,25 @@ def parse_args():
 
     stats_p = sub_ps.add_parser('stats', formatter_class=MyFormatter)
     stats_p.add_argument('did', nargs='+', type=DatasetId.parse, help="Show stats of dataset IDs")
+    stats_p.add_argument('-q', '--quick', action='store_true',
+                         help=("Show quick stats without downloading or parsing dataset." 
+                               "This flag sends HEAD request and shows Content-Length"))
 
     args = p.parse_args()
+    if args.log_level:
+        log_level = log._nameToLevel[args.log_level]
+        log.getLogger().setLevel(level=log_level)
+        log.debug(f'log level set to {args.log_level}')
+
+    pbar_man.enabled = bool(args.progressbar)
+
     if args.verbose:
-        log.getLogger().setLevel(level=log.DEBUG)
         mtdata.debug_mode = True
     return args
 
 
 def main():
+
     args = parse_args()
     if args.reindex and cached_index_file.exists():
         bak_file = cached_index_file.with_suffix(".bak")
@@ -223,7 +247,7 @@ def main():
     elif args.task == 'get-recipe':
         get_recipe(**vars(args))
     elif args.task == 'stats':
-        show_stats(*args.did)
+        show_stats(*args.did, quick=args.quick)
     elif args.task == 'report':
         generate_report(args.langs, names=args.names, not_names=args.not_names)
     else:

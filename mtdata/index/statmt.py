@@ -282,7 +282,7 @@ def load(index: Index):
                     in_paths=['en-ja/train.tags.en-ja.en', 'en-ja/train.tags.en-ja.ja']))
 
     ccalign_cite = index.ref_db.get_bibtex('chaudhary-EtAl:2019:WMT')
-    CC_ALIGNED = 'http://www.statmt.org/cc-aligned/sentence-aligned/{src}-{tgt}.tsv.xz'
+    CC_ALIGNED = 'http://data.statmt.org/cc-aligned/sentence-aligned/{src}-{tgt}.tsv.xz'
     tgts='es_XX et_EE fa_IR ff_NG fi_FI fr_XX gu_IN ha_NG he_IL hi_IN hr_HR ht_HT hu_HU hy_AM id_ID ig_NG is_IS it_IT ja_XX jv_ID ka_GE kg_AO kk_KZ km_KH kn_IN ko_KR ku_TR ky_KG lg_UG ln_CD lo_LA lt_LT lv_LV mg_MG mi_NZ mk_MK ml_IN mn_MN mr_IN ms_MY mt_MT my_MM ne_NP nl_XX no_XX ns_ZA ny_MW om_KE or_IN pa_IN pl_PL ps_AF pt_XX qa_MM qd_MM ro_RO ru_RU si_LK sk_SK sl_SI sn_ZW so_SO sq_AL sr_RS ss_SZ st_ZA su_ID sv_SE sw_KE sz_PL ta_IN te_IN tg_TJ th_TH ti_ET tl_XX tn_BW tr_TR ts_ZA tz_MA uk_UA ur_PK ve_ZA vi_VN wo_SN xh_ZA yo_NG zh_CN zh_TW zu_ZA zz_TR'.split()
     srcs = 'af_ZA ak_GH am_ET ar_AR as_IN ay_BO az_AZ az_IR be_BY bg_BG bm_ML bn_IN br_FR bs_BA ca_ES cb_IQ cs_CZ cx_PH cy_GB da_DK de_DE el_GR'.split()
     pairs = [('en_XX', tgt) for tgt in tgts] + [(src, 'en_XX') for src in srcs]
@@ -325,11 +325,14 @@ def load(index: Index):
             url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=(1, 0)))
 
     # https://data.statmt.org/wmt19/translation-task/fr-de/bitexts/de-fr.bicleaner07.de.gz
-    for cln_name, name in [('commoncrawl', ''), ('paracrawl', 'de-fr.bicleaner07'), ('europarl_v7', '')]:
+    for cln_name, file_name in [
+        ('commoncrawl', 'commoncrawl'),
+        ('paracrawl', 'de-fr.bicleaner07'),
+        ('europarl_v7', 'europarl-v7')]:
         l1, l2 = 'fr', 'de'
         prefix = 'https://data.statmt.org/wmt19/translation-task/fr-de/bitexts'
-        index.add_entry(Entry(did=DatasetId(group=group_id, name=cln_name or name, version='wmt19', langs=(l1, l2)),
-                              ext='txt.gz', url=(f'{prefix}/{name}.{l1}.gz', f'{prefix}/{name}.{l2}.gz')))
+        index.add_entry(Entry(did=DatasetId(group=group_id, name=cln_name, version='wmt19', langs=(l1, l2)), in_ext='txt',
+                              ext='txt.gz', url=(f'{prefix}/{file_name}.{l1}.gz', f'{prefix}/{file_name}.{l2}.gz')))
 
     # Back Translation
     prefix = 'https://data.statmt.org/wmt20/translation-task/back-translation/zh-en'

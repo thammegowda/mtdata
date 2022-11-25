@@ -1,5 +1,28 @@
 # Change Log
 
+## v0.3.8 - WIP/20221124
+
+* CLI arg `--log-level` with default set to `WARNING`
+* progressbar can be disabled from CLI `--no-pbar`; default is enabled `--pbar`
+* `mtdata stats --quick` does HTTP HEAD and shows content length; e.g. `mtdata stats --quick Statmt-commoncrawl-wmt19-fra-deu`
+* `python -m mtdata.scripts.recipe_stats` to read stats from output directory
+* Security fix with tar extract | Thanks @TrellixVulnTeam
+* Added NLLB datasets prepared by AllenAI | Thanks @AlexUmnov  
+* Opus and ELRC datasets update | Thanks @ZenBel 
+
+
+## v0.3.7 - 20220711
+- Update ELRC data including EU acts which is used for wmt22 (thanks @kpu) 
+
+
+## v0.3.6 - 20220708 
+- fixes and additions for wmt22
+- Fixed KECL-JParaCrawl
+- added Paracrawl bonus for ukr-eng
+- added Yandex rus-eng corpus
+- added Yakut sah-eng
+- update recipe for wmt22 constrained eval
+
 ## v0.3.5 - 20220310 
 
 - Parallel download support `-j/--n-jobs` argument (with default `4`)

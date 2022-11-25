@@ -100,7 +100,7 @@ class Entry:
         self.cite = cite
         self.cols = cols   # column index starts from zero
 
-        assert not self.ext.startswith("."), f'ext {self.ext} should not start with a dot (.)'
+        assert not self.ext.startswith("."), f'{did} :: ext {self.ext} should not start with a dot (.)'
         self.is_archive = self.ext in ('zip', 'tar', 'tar.gz', 'tgz')
         if self.is_archive:
             assert self.in_paths and len(self.in_paths) > 0, 'Archive entries must have in_paths'
