@@ -73,8 +73,9 @@ def generate_report(langs, names, not_names=None, format='plain'):
         print(f'{key}\t{val:,}')
 
     print("\nGroups:")
-    for key, val in group_stats.items():
+    for key, val in sorted(group_stats.items(), key=lambda x:x[1], reverse=True):
         print(f'{key}\t{val:,}')
+    print(f'[Total]\t{sum(group_stats.values()):,}')
 
 
 def list_recipes():
