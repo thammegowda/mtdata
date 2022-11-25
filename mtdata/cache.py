@@ -11,12 +11,11 @@ from mtdata.index import Entry
 from mtdata import log, __version__, pbar_man, MTDataException, FILE_LOCK_TIMEOUT
 from mtdata.utils import ZipPath, TarPath, format_byte_size
 from mtdata.parser import Parser
-from typing import List, Tuple, Union
+from typing import List, Union, Dict, Any
 
 import portalocker
 from hashlib import md5
 from urllib.parse import urlparse
-from .parser import detect_extension
 import requests
 import math
 
@@ -50,7 +49,7 @@ class Cache:
                 local = self.get_local_in_paths(path=local, entry=entry)
         return local
 
-    def get_content_length(self, entry: Entry) -> Tuple[int, List[Tuple[str, int]]]:
+    def get_content_length(self, entry: Entry) -> Dict[str, Any]:
         urls = []
         if entry.in_ext == OPUS_XCES:
             aln_url, (l1_url, l2_url) = entry.url, entry.in_paths
@@ -75,7 +74,7 @@ class Cache:
         length = requests.head(url).headers.get('content-length') or '0'
         return int(length)
 
-    def get_stats(self, entry: Entry):
+    def get_stats(self, entry: Entry) -> Dict[str, Any]:
         path = self.get_entry(entry)
         parser = Parser(path, ext=entry.in_ext or None, ent=entry)
         count, skips, noise = 0, 0, 0
