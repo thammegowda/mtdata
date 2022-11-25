@@ -32,7 +32,7 @@ def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=
 def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, merge_train=False, compress=False,
              drop_dupes=False, drop_tests=False, fail_on_error=False, n_jobs=DEF_N_JOBS, **kwargs):
     if kwargs:
-        log.warning(f"Args are ignored: {kwargs}")
+        log.info(f"Args are ignored: {kwargs}")
     from mtdata.data import Dataset
     assert train_dids or test_dids, 'Required --train or --test or both'
     dataset = Dataset.prepare(

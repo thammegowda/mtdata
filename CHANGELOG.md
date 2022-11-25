@@ -8,6 +8,7 @@
 * `python -m mtdata.scripts.recipe_stats` to read stats from output directory
 * Security fix with tar extract | Thanks @TrellixVulnTeam
 * Added NLLB datasets prepared by AllenAI | Thanks @AlexUmnov  
+* Opus and ELRC datasets update | Thanks @ZenBel 
 
 
 ## v0.3.7 - 20220711

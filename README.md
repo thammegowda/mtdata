@@ -49,11 +49,11 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 
 |       Source | Dataset Count |
 |-------------:|--------------:|
-| OPUS | 120,465|
+| OPUS | 131,359|
 | Neulab | 4,455|
 | Facebook | 1,617|
 | AllenAi | 1,611|
-| ELRC | 1,489|
+| ELRC | 1,506|
 | EU | 1,178|
 | Statmt | 752|
 | Tilde | 519|
@@ -72,7 +72,7 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | WAT | 3|
 | KECL | 2|
 | Masakhane | 2|
-| **Total** | **133,010** |
+| **Total** | **143,921** |
 
 
 # Usecases
