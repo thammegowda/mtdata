@@ -3,6 +3,7 @@ include mtdata/index/refs.bib
 include mtdata/index/elrc_share.tsv
 include mtdata/index/anuvaad.tsv
 include mtdata/index/opus/opus_index.tsv
+include mtdata/index/allenai_nllb.json
 include mtdata/iso/bcp47.json
 include mtdata/recipe/recipes.yml
 global-exclude *.pyc
