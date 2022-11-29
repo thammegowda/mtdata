@@ -1,5 +1,4 @@
 = MTData
-:doctype: book
 
 image:http://img.shields.io/pypi/v/mtdata.svg[image,link=https://pypi.python.org/pypi/mtdata/]
 image:https://img.shields.io/travis/com/thammegowda/mtdata?style=plastic[Travis (.com)]
@@ -30,7 +29,7 @@ https://github.com/thammegowda/mtdata[MTData] is here to:
 * Automate machinbe translation training data creation by taking out human intervention. This is inspired by https://github.com/mjpost/sacreBLEU[SacreBLEU] that takes out human intervention at the evaluation stage.
 * A reusable tool instead of dozens of use-once shell scripts spread across multiple repos.
 
-= Installation
+== Installation
 
 [,bash]
 ----
@@ -45,7 +44,7 @@ pip install --editable .
 # from develop branch
 ----
 
-= Current Status:
+== Current Status:
 
 We have added some commonly used datasets - you are welcome to add more!
 These are the summary of datasets from various sources (Updated: Feb 2022).
@@ -127,18 +126,17 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | *143,921*
 |===
 
-= Usecases
+== Usecases
 
 * USC ISI's 500-to-English MT: http://rtg.isi.edu/many-eng/
 * WMT 2022 General (News) Translation Task: https://www.statmt.org/wmt22/mtdata/
 * Meta AI's 200-to-200 MT: https://research.facebook.com/file/585831413174038/No-Language-Left-Behind--Scaling-Human-Centered-Machine-Translation.pdf[Whitepaper]
 
-= CLI Usage
+== CLI Usage
 
 * After pip installation, the CLI can be called using `mtdata` command  or `python -m mtdata`
 * There are two sub commands: `list` for listing the datasets, and `get` for getting them
 
-[discrete]
 === `mtdata list`
 
 Lists datasets that are known to this tool.
@@ -192,7 +190,6 @@ mtdata list -n europarl news_commentary
 mtdata list -l deu-eng -n newstest_deen --full
 ----
 
-[discrete]
 === Dataset ID
 
 Dataset IDs are standardized to this format: +
@@ -203,7 +200,6 @@ Dataset IDs are standardized to this format: +
 * `version`: version name
 * `lang1` and `lang2` are BCP47-like codes. In simple case, they are ISO-639-3 codes, however, they might have script and language tags separated by underscores (`_`).
 
-[discrete]
 === `mtdata get`
 
 This command downloads datasets specified by names for languages to a directory.

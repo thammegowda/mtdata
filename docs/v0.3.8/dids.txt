@@ -2492,7 +2492,6 @@ ELRC-kam.lt-1-eng-lit
 ELRC-kazakh_legal_mt_test_set-1-eng-kaz
 ELRC-koro_art_norway-1-eng-nob
 ELRC-laegemiddelstyrelsen.dk-1-dan-eng
-ELRC-láithreángréasáinoég-1-eng_IE-gle_IE
 ELRC-language_scheme_customer_charter_customer_action_plan-1-eng-gle
 ELRC-latvian_financial_mt_test_set_dev-1-eng-lav
 ELRC-latvian_financial_mt_test_set_test-1-eng-lav
@@ -2502,10 +2501,10 @@ ELRC-legal-1-eng-fra
 ELRC-legal-1-eng-ita
 ELRC-legal-1-fra-ita
 ELRC-legal_estonian_justice-1-eng-est
-ELRC-legislação-1-eng-por
 ELRC-legislation_bulgaria_energy-1-bul-eng
 ELRC-legislation_portuguese_parliament-1-eng-por
 ELRC-legislation_pt-1-eng-por
+ELRC-legislação-1-eng-por
 ELRC-lei_20_2008_pt_e_eng-1-eng-por
 ELRC-lei_25_2009_pt_e_eng-1-eng-por
 ELRC-lei_orgânica_2_2008-1-eng-por
@@ -2554,6 +2553,7 @@ ELRC-localidades_alentejo-1-ita-por
 ELRC-luxembourg.lu-1-deu-eng
 ELRC-luxembourg.lu-1-deu-fra
 ELRC-luxembourg.lu-1-eng-fra
+ELRC-láithreángréasáinoég-1-eng_IE-gle_IE
 ELRC-macroeconomic_developments-1-ell-eng
 ELRC-malta_government_gazette-1-eng-mlt
 ELRC-marketing_influência-1-eng-por
@@ -2911,8 +2911,6 @@ ELRC-nteu_tierb-1-spa-lav
 ELRC-nteu_tierb-1-spa-lit
 ELRC-nteu_tierb-1-spa-slk
 ELRC-nteu_tierb-1-spa-swe
-ELRC-ó_chonradh_don_aonad_chumarsáide_den_roinn_gnóthaí_eachtracha_agus_trádála-1-eng-gle
-ELRC-ó_chonradh_ginearálta_den_roinn_gnóthaí_eachtracha_agus_trádála-1-eng-gle
 ELRC-official_parliament_ukraine_abstracts_uk_laws-1-eng-ukr
 ELRC-official_parliament_ukraine_primary_legislation-1-eng-ukr
 ELRC-official_parliament_ukraine_ukrainian_laws_en-1-eng-ukr
@@ -2992,7 +2990,6 @@ ELRC-portuguese_constitution-1-eng-por
 ELRC-portuguese_law_referendum-1-fra-por
 ELRC-portuguese_legislation-1-eng-fra
 ELRC-portuguese_legislation_fr-1-fra-por
-ELRC-póstaer_faoi_scoil_ag_clárú-1-eng-gle
 ELRC-praias_2007-1-deu-eng
 ELRC-praias_2007-1-deu-fra
 ELRC-praias_2007-1-deu-por
@@ -3016,13 +3013,13 @@ ELRC-preasráiteas_ó_choláiste_na_tríonóide_baile_átha_cliath_5142-1-eng-gl
 ELRC-preasráiteas_ó_choláiste_na_tríonóide_baile_átha_cliath_5143-1-eng-gle
 ELRC-preasráitis_gaois_fiontar_scoil_na_gaeilge_dcu_part1-1-eng-gle
 ELRC-preasráitis_gaois_fiontar_scoil_na_gaeilge_dcu_part2-1-eng-gle
+ELRC-preasráitis_oifig_an_choimisinéara_teanga-1-eng-gle
+ELRC-preasráitis_ollscoil_mhá_nuad_earrach_2019-1-eng-gle
+ELRC-preasráitis_ollscoil_mhá_nuad_samhradh_2019-1-eng-gle
 ELRC-preasráitis_ó_choláiste_na_tríonóide-1-eng-gle
 ELRC-preasráitis_ó_choláiste_na_tríonóide_baile_átha_cliath_5137-1-eng-gle
 ELRC-preasráitis_ó_choláiste_na_tríonóide_baile_átha_cliath_5138-1-eng-gle
 ELRC-preasráitis_ó_choláiste_na_tríonóide_baile_átha_cliath_5141-1-eng-gle
-ELRC-preasráitis_oifig_an_choimisinéara_teanga-1-eng-gle
-ELRC-preasráitis_ollscoil_mhá_nuad_earrach_2019-1-eng-gle
-ELRC-preasráitis_ollscoil_mhá_nuad_samhradh_2019-1-eng-gle
 ELRC-presidency-1-deu-eng
 ELRC-president.ee-1-eng-est
 ELRC-president_lithuania-1-eng-lit
@@ -3062,9 +3059,8 @@ ELRC-principle_mvep_legal-1-fra_FR-hrv_HR
 ELRC-procurement_1-1-eng-pol
 ELRC-procurement_2-1-eng-pol
 ELRC-programme_government_annual_report_2013-1-eng-gle
+ELRC-póstaer_faoi_scoil_ag_clárú-1-eng-gle
 ELRC-quarterly_reports_parliamentary_budget-1-ell-eng
-ELRC-ráitis_airgeadais_oifig_an_choimisinéara_teanga-1-eng-gle
-ELRC-ráitis_airgeadais_ollscoil_mhá_nuad_2017_2018-1-eng-gle
 ELRC-regional_development-1-eng-pol
 ELRC-regional_development_funds-1-eng-hrv
 ELRC-relatório_gam-1-fra-por
@@ -3115,7 +3111,6 @@ ELRC-rights_arrested-1-nld-pol
 ELRC-rights_arrested-1-nld-ron
 ELRC-rights_arrested-1-pol-ron
 ELRC-rigsrevisionen.dk-1-dan-eng
-ELRC-ríkiskaup_2020-1-eng-isl
 ELRC-roinn_an_dlí_tinte_ealaíne-1-eng-gle
 ELRC-romanian_literature-1-eng-ron
 ELRC-romanian_new_criminal_procedure_code-1-eng-ron
@@ -3125,6 +3120,9 @@ ELRC-romanian_wikipedia-1-eng-ron
 ELRC-royal_danish_library-1-dan-eng
 ELRC-rural_development_programme_period_2014_2020_croatian_rural_development_programme-1-eng-hrv
 ELRC-rural_development_programme_romania-1-eng-ron
+ELRC-ráitis_airgeadais_oifig_an_choimisinéara_teanga-1-eng-gle
+ELRC-ráitis_airgeadais_ollscoil_mhá_nuad_2017_2018-1-eng-gle
+ELRC-ríkiskaup_2020-1-eng-isl
 ELRC-science_centre-1-eng-pol
 ELRC-science_higher_education-1-eng-pol
 ELRC-science_poland-1-eng-pol
@@ -3340,7 +3338,6 @@ ELRC-swedish_work_environment-1-spa-pol
 ELRC-swedish_work_environment-1-spa-swe
 ELRC-swps_university_social_sciences_humanities-1-eng-pol
 ELRC-swps_university_social_sciences_humanities-1-eng-rus
-ELRC-téarmaíocht_agus_aistriúcháin_a_bhaineann_le_fógraí_poist_folúntais_ábhair_chomórtha_1916_agus_eolas_ginearálta_ar_oifig_na_gaeilge.-1-eng-gle
 ELRC-termitur-1-deu-spa
 ELRC-termitur-1-eng-spa
 ELRC-tilde_statistics_iceland-1-eng-isl
@@ -3351,6 +3348,7 @@ ELRC-tuarascáil_bhliantúil_2018_ón_roinn_dlí_agus_cirt_agus_comhionannais-1-
 ELRC-tuarascáil_bhliantúil_chomhairle_chontae_longfoirt-1-eng-gle
 ELRC-tuarascálaca_bliantúla_na_roinne_leanaí_agus_gnóthaí_óige-1-eng-gle
 ELRC-tuarascálacha_bliantúla_ó_choláiste_na_tríonóide_baile_átha_cliath-1-eng-gle
+ELRC-téarmaíocht_agus_aistriúcháin_a_bhaineann_le_fógraí_poist_folúntais_ábhair_chomórtha_1916_agus_eolas_ginearálta_ar_oifig_na_gaeilge.-1-eng-gle
 ELRC-ucd_bord_na_gaeilge-1-eng-gle
 ELRC-udáras_na_gaeltachta-1-eng-gle
 ELRC-ufm.dk-1-dan-eng
@@ -3503,6 +3501,8 @@ ELRC-www.visitestonia.com-1-eng-swe
 ELRC-www.visitvejle.com-1-dan-eng
 ELRC-www.vtv.fi-1-eng-fin
 ELRC-www.vtv.fi-1-eng-swe
+ELRC-ó_chonradh_don_aonad_chumarsáide_den_roinn_gnóthaí_eachtracha_agus_trádála-1-eng-gle
+ELRC-ó_chonradh_ginearálta_den_roinn_gnóthaí_eachtracha_agus_trádála-1-eng-gle
 EU-dcep-1-bul-ces
 EU-dcep-1-bul-dan
 EU-dcep-1-bul-deu

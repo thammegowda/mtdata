@@ -28,7 +28,7 @@ This tool knows:
 - A reusable tool instead of dozens of use-once shell scripts spread across multiple repos.
 
 
-# Installation
+## Installation
 ```bash
 # from pypi
 pip install mtdata
@@ -42,7 +42,7 @@ pip install --editable .
 ```
 
 
-# Current Status:
+## Current Status:
 
 We have added some commonly used datasets - you are welcome to add more! 
 These are the summary of datasets from various sources (Updated: Feb 2022).
@@ -75,12 +75,12 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | **Total** | **143,921** |
 
 
-# Usecases
+## Usecases
 * USC ISI's 500-to-English MT: http://rtg.isi.edu/many-eng/
 * WMT 2022 General (News) Translation Task: https://www.statmt.org/wmt22/mtdata/ 
 * Meta AI's 200-to-200 MT: [Whitepaper](https://research.facebook.com/file/585831413174038/No-Language-Left-Behind--Scaling-Human-Centered-Machine-Translation.pdf)
 
-# CLI Usage
+## CLI Usage
 - After pip installation, the CLI can be called using `mtdata` command  or `python -m mtdata`
 - There are two sub commands: `list` for listing the datasets, and `get` for getting them
 

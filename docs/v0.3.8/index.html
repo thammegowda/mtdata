@@ -436,7 +436,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
 </head>
-<body class="book">
+<body class="article">
 <div id="header">
 <h1>MTData</h1>
 </div>
@@ -521,9 +521,9 @@ Europarl, News Commentary, WikiTitles, Tilde Model corpus, OPUS &#8230;&#8203;</
 </div>
 </div>
 </div>
-<h1 id="_installation" class="sect0">Installation</h1>
-<div class="openblock partintro">
-<div class="content">
+<div class="sect1">
+<h2 id="_installation">Installation</h2>
+<div class="sectionbody">
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash"># from pypi
@@ -539,9 +539,9 @@ pip install --editable .
 </div>
 </div>
 </div>
-<h1 id="_current_status" class="sect0">Current Status:</h1>
-<div class="openblock partintro">
-<div class="content">
+<div class="sect1">
+<h2 id="_current_status">Current Status:</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>We have added some commonly used datasets - you are welcome to add more!
 These are the summary of datasets from various sources (Updated: Feb 2022).</p>
@@ -658,9 +658,9 @@ These are the summary of datasets from various sources (Updated: Feb 2022).</p>
 </table>
 </div>
 </div>
-<h1 id="_usecases" class="sect0">Usecases</h1>
-<div class="openblock partintro">
-<div class="content">
+<div class="sect1">
+<h2 id="_usecases">Usecases</h2>
+<div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
@@ -676,9 +676,9 @@ These are the summary of datasets from various sources (Updated: Feb 2022).</p>
 </div>
 </div>
 </div>
-<h1 id="_cli_usage" class="sect0">CLI Usage</h1>
-<div class="openblock partintro">
-<div class="content">
+<div class="sect1">
+<h2 id="_cli_usage">CLI Usage</h2>
+<div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
@@ -689,7 +689,8 @@ These are the summary of datasets from various sources (Updated: Feb 2022).</p>
 </li>
 </ul>
 </div>
-<h3 id="_mtdata_list" class="discrete"><code>mtdata list</code></h3>
+<div class="sect2">
+<h3 id="_mtdata_list"><code>mtdata list</code></h3>
 <div class="paragraph">
 <p>Lists datasets that are known to this tool.</p>
 </div>
@@ -742,7 +743,9 @@ mtdata list -n europarl news_commentary
 mtdata list -l deu-eng -n newstest_deen --full</code></pre>
 </div>
 </div>
-<h3 id="_dataset_id" class="discrete">Dataset ID</h3>
+</div>
+<div class="sect2">
+<h3 id="_dataset_id">Dataset ID</h3>
 <div class="paragraph">
 <p>Dataset IDs are standardized to this format:<br>
 <code>&lt;Group&gt;-&lt;name&gt;-&lt;version&gt;-&lt;lang1&gt;-&lt;lang2&gt;</code></p>
@@ -763,7 +766,9 @@ mtdata list -l deu-eng -n newstest_deen --full</code></pre>
 </li>
 </ul>
 </div>
-<h3 id="_mtdata_get" class="discrete"><code>mtdata get</code></h3>
+</div>
+<div class="sect2">
+<h3 id="_mtdata_get"><code>mtdata get</code></h3>
 <div class="paragraph">
 <p>This command downloads datasets specified by names for languages to a directory.
 You will have to make definite choice for <code>--train</code> and <code>--test</code> arguments</p>
@@ -794,6 +799,7 @@ optional arguments:
   --compress            Keep the files compressed (default: False)
   -o OUT_DIR, --out OUT_DIR
                         Output directory name (default: None)</pre>
+</div>
 </div>
 </div>
 </div>
@@ -1315,7 +1321,7 @@ We request all the users of this tool to cite the original creators of the datse
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-11-24 19:27:44 -0800
+Last updated 2022-11-29 07:32:11 -0800
 </div>
 </div>
 </body>

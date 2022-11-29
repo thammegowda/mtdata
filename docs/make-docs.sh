@@ -31,8 +31,9 @@ echo "Extracting dataset IDs to $ver_dir/dids.txt"
 python -m mtdata -ri list -id | sort > "$ver_dir/dids.txt"
 
 # link version files to top level dir
-for fname in index.html dids.txt asciidoctor.css rouge-github.css; do
-  [[ -e "$DOCS_DIR/$fname" ]] && rm "$DOCS_DIR/$fname"
+for fname in index.html dids.txt; do
+   # asciidoctor.css rouge-github.css
+  [[ -e "$DOCS_DIR/$fname" || -h "$DOCS_DIR/$fname" ]] && rm "$DOCS_DIR/$fname"
   ln -s "v$version/$fname" "$DOCS_DIR/$fname"
 done
 
