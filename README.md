@@ -30,10 +30,14 @@ This tool knows:
 
 ## Installation
 ```bash
-# from pypi
-pip install mtdata
+# Option 1: from pypi
+pip install -I mtdata
 
-# from the source code on github
+# Option 2: install from latest master branch
+pip install -I git+https://github.com/thammegowda/mtdata
+
+
+# Option 3: for development/editable mode
 git clone https://github.com/thammegowda/mtdata
 cd mtdata
 pip install --editable .
