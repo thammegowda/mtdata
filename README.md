@@ -32,6 +32,8 @@ This tool knows:
 ```bash
 # Option 1: from pypi
 pip install -I mtdata
+# To install a specific version, get version number from https://pypi.org/project/mtdata/#history
+pip install mtdata==[version]
 
 # Option 2: install from latest master branch
 pip install -I git+https://github.com/thammegowda/mtdata
@@ -41,8 +43,6 @@ pip install -I git+https://github.com/thammegowda/mtdata
 git clone https://github.com/thammegowda/mtdata
 cd mtdata
 pip install --editable .
-
-# from develop branch
 ```
 
 
@@ -80,7 +80,7 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 
 
 ## Usecases
-* USC ISI's 500-to-English MT: http://rtg.isi.edu/many-eng/
+* USC ISI's 500-to-English MT: ~http://rtg.isi.edu/many-eng/~ http://gowda.ai/006-many-to-eng/)
 * WMT 2022 General (News) Translation Task: https://www.statmt.org/wmt22/mtdata/ 
 * Meta AI's 200-to-200 MT: [Whitepaper](https://research.facebook.com/file/585831413174038/No-Language-Left-Behind--Scaling-Human-Centered-Machine-Translation.pdf)
 
