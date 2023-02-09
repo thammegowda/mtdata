@@ -4,7 +4,7 @@
 # Created: 4/4/20
 
 
-__version__ = '0.3.8'
+__version__ = '0.3.9-dev'
 __description__ = 'mtdata is a tool to download datasets for machine translation'
 __author__ = 'Thamme Gowda'
 

@@ -1,6 +1,8 @@
 # Change Log
 
-## v0.3.8 - WIP/20221124
+## v0.3.9 - WIP
+
+## v0.3.8 - 20221124
 
 * CLI arg `--log-level` with default set to `WARNING`
 * progressbar can be disabled from CLI `--no-pbar`; default is enabled `--pbar`
