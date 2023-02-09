@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Author: Thamme Gowda [tg (at) isi (dot) edu] 
+# Author: Thamme Gowda [tg (at) isi (dot) edu]
 # Created: 4/8/20
 import collections
 import pickle
@@ -14,16 +14,16 @@ from mtdata import log, cached_index_file, __version__
 from mtdata.entry import Entry, DatasetId
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
 
-REFS_FILE = Path(__file__).parent / 'refs.bib'
+REFS_FILE = Path(__file__).parent / "refs.bib"
 
 
 class Index:
 
-    obj = None   # singleton object
+    obj = None  # singleton object
 
     def __init__(self):
         self.entries: Dict[DatasetId, Entry] = {}  # unique dids
-        self.papers = {}                            # unique
+        self.papers = {}  # unique
         self.ref_db = ReferenceDb()
         self.version = __version__
 
@@ -34,48 +34,64 @@ class Index:
                 log.info("Creating a fresh index object")
                 cached_index_file.parent.mkdir(exist_ok=True)
                 lock_file = cached_index_file.with_suffix("._lock")
-                with portalocker.Lock(lock_file, 'w', timeout=60) as fh:
+                with portalocker.Lock(lock_file, "w", timeout=60) as fh:
                     # got lock, check cache is not created by parallel processes while we waited
                     if not cached_index_file.exists():
                         obj = Index()
                         log.info("Indexing all datasets...")
                         obj.load_all()
                         log.info(f"Caching my index file at {cached_index_file}")
-                        with open(cached_index_file, 'wb') as out:
+                        with open(cached_index_file, "wb") as out:
                             pickle.dump(obj, out)
 
             assert cached_index_file.exists()
             log.info(f"Loading index from cache {cached_index_file}")
-            with open(cached_index_file, 'rb') as inp:
+            with open(cached_index_file, "rb") as inp:
                 obj = pickle.load(inp)
 
-            assert isinstance(obj, cls), f'{cached_index_file} isnt valid. please move or remove it'
+            assert isinstance(obj, cls), f"{cached_index_file} isnt valid. please move or remove it"
             cls.obj = obj
         return cls.obj
 
     def load_all(self):
         from mtdata.index import (
-            statmt, paracrawl, tilde, joshua_indian, unitednations, wikimatrix, other, neulab_tedtalks,
-            elrc_share, ai4bharat, eu, linguatools, anuvaad, allenai_nllb)
+            statmt,
+            paracrawl,
+            tilde,
+            joshua_indian,
+            unitednations,
+            wikimatrix,
+            other,
+            neulab_tedtalks,
+            elrc_share,
+            ai4bharat,
+            eu,
+            linguatools,
+            anuvaad,
+            allenai_nllb,
+            flores,
+        )
         from mtdata.index.opus import opus_index, jw300, opus100
+
         subsets = [
-            ('Statmt.org', statmt.load),
-            ('Paracrawl', paracrawl.load),
-            ('Tilde', tilde.load),
-            ('JoshuaIndianCoprus', joshua_indian.load_all),
-            ('UnitedNations', unitednations.load_all),
-            ('OPUS', opus_index.load_all),
+            ("Statmt.org", statmt.load),
+            ("Paracrawl", paracrawl.load),
+            ("Tilde", tilde.load),
+            ("JoshuaIndianCoprus", joshua_indian.load_all),
+            ("UnitedNations", unitednations.load_all),
+            ("OPUS", opus_index.load_all),
             # ('OPUS_JW300', jw300.load_all), # JW300 is taken down
-            ('OPUS100', opus100.load_all),
-            ('WikiMatrix', wikimatrix.load_all),
-            ('Other', other.load_all),
-            ('Neulab_TEDTalksv1', neulab_tedtalks.load_all),
-            ('ELRC-SHARE', elrc_share.load_all),
-            ('AI4Bharat', ai4bharat.load_all),
-            ('EU', eu.load_all),
-            ('LinguaTools', linguatools.load_all),
-            ('Anuvaad', anuvaad.load_all),
-            ('AllenAi_NLLB', allenai_nllb.load_all),
+            ("OPUS100", opus100.load_all),
+            ("WikiMatrix", wikimatrix.load_all),
+            ("Other", other.load_all),
+            ("Neulab_TEDTalksv1", neulab_tedtalks.load_all),
+            ("ELRC-SHARE", elrc_share.load_all),
+            ("AI4Bharat", ai4bharat.load_all),
+            ("EU", eu.load_all),
+            ("LinguaTools", linguatools.load_all),
+            ("Anuvaad", anuvaad.load_all),
+            ("AllenAi_NLLB", allenai_nllb.load_all),
+            ("Flores", flores.load_all),
         ]
         for name, loader in subsets:
             loader(self)
@@ -84,8 +100,8 @@ class Index:
         for e in self.entries.values():
             counts[e.did.group] += 1
         items = list(sorted(counts.items(), key=lambda x: x[1], reverse=True))
-        items += [('Total', len(self))]
-        counts = '\n'.join([f'| {n} | {c:,}|' for n, c in items])
+        items += [("Total", len(self))]
+        counts = "\n".join([f"| {n} | {c:,}|" for n, c in items])
         log.info(f"Index status:\n{counts}")
 
     @property
@@ -95,7 +111,7 @@ class Index:
     def add_entry(self, entry: Entry):
         assert isinstance(entry, Entry)
         key = entry.did
-        assert key not in self.entries, f'{key} is a duplicate'
+        assert key not in self.entries, f"{key} is a duplicate"
         self.entries[key] = entry
 
     def get_entries(self):
@@ -139,8 +155,8 @@ class ReferenceDb:
     def __new__(cls, file=REFS_FILE):
         if cls._instance is None:
             cls._instance = super(ReferenceDb, cls).__new__(cls)
-            assert file.exists(), f'{file} does not exist'
-            cls._instance.db = parse_bib_file(file, bib_format='bibtex')
+            assert file.exists(), f"{file} does not exist"
+            cls._instance.db = parse_bib_file(file, bib_format="bibtex")
             log.debug(f"loaded {len(cls._instance)} references from {file}")
         return cls._instance
 
@@ -154,7 +170,7 @@ class ReferenceDb:
         return len(self.db.entries)
 
     def get_bibtex(self, key: str) -> str:
-        return self[key].to_string(bib_format='bibtex')
+        return self[key].to_string(bib_format="bibtex")
 
     def keys(self):
         return self.db.entries.keys()
