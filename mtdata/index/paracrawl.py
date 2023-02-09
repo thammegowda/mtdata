@@ -89,3 +89,10 @@ def load(index: Index):
                     in_paths=['en-ja/en-ja.bicleaner05.txt'], in_ext='tsv', cols=cols, cite='',
                     url=f'http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/{version}.0/bitext/en-ja.tar.gz')
         index.add_entry(ent)
+        
+        # JParaCrawl Chinese-Japanese, only version 2 is available
+        if version == '2':
+            ent = Entry(did=DatasetId(group='KECL', name=f'paracrawl', version=version, langs=('zho', 'jpn')),
+                            in_paths=['zh-ja/zh-ja.bicleaner05.txt'], in_ext='tsv', cols=cols, cite='',
+                            url=f'http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/{version}.0/bitext/zh-ja.tar.gz')
+            index.add_entry(ent)
