@@ -127,6 +127,10 @@ class ArchivedPath:
     root: Path
     name: str
     fd = None
+    
+    @property
+    def suffix(self):
+        return self.root.suffix
 
     def __post_init__(self):
         assert self.root.exists()
