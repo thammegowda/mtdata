@@ -11,7 +11,7 @@ from mtdata import log
 from mtdata.utils import IO
 import time
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
-from mtdata.main import lang_pair
+from mtdata.main import Langs
 from html import unescape
 import datetime
 
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     p.add_argument('-i', '--inp', type=Path, required=True, help='Input file path')
     p.add_argument('-o', '--out', type=Path, default=Path('/dev/stdout'),
                    help='Output file path')
-    p.add_argument('-l', '--langs', type=lang_pair, default=None,
+    p.add_argument('-l', '--langs', type=Langs, default=None,
                    help='Languages from TMX. example: eng-fra or en-fr')
 
     args = vars(p.parse_args())
