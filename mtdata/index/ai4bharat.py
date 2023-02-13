@@ -8,7 +8,7 @@ from mtdata.index import Index, Entry, DatasetId
 
 def load_all(index: Index):
     group = 'AI4Bharath'
-    cite = index.ref_db.get_bibtex('ramesh2021samanantar')
+    cite = ('ramesh2021samanantar',)
     pairs = ('en-as en-bn en-gu en-hi en-kn en-ml en-mr en-or en-pa en-ta en-te as-bn as-gu as-hi'
              ' as-kn as-ml as-mr as-or as-pa as-ta as-te bn-gu bn-hi bn-kn bn-ml bn-mr bn-or bn-pa'
              ' bn-ta bn-te gu-hi gu-kn gu-ml gu-mr gu-or gu-pa gu-ta gu-te hi-kn hi-ml hi-mr hi-or'

@@ -87,7 +87,7 @@ def load_all(index: Index):
  sl-sv sl-ta sl-te sl-tl sl-tr sl-uk sl-vi sl-zh sq-sr sq-sv sq-ta sq-te sq-tl sq-tr sq-uk sq-vi sq-zh sr-sv sr-ta sr-te
  sr-tl sr-tr sr-uk sr-vi sr-zh sv-sw sv-ta sv-te sv-tl sv-tr sv-tt sv-uk sv-vi sv-zh sw-tr sw-uk sw-vi sw-zh ta-tr ta-uk
  ta-vi ta-zh te-tr te-uk te-vi te-zh tl-tr tl-uk tl-vi tl-zh tr-tt tr-uk tr-vi tr-zh tt-uk tt-zh uk-vi uk-zh vi-zh wuu-zh"""
-    cite = index.ref_db.get_bibtex('wikimatrix1')
+    cite = ('wikimatrix1',)
     url_pat = "https://dl.fbaipublicfiles.com/laser/WikiMatrix/v1/WikiMatrix.%s-%s.tsv.gz"
     skips = {'nds_nl', 'simple'}
     for pair in data.split():

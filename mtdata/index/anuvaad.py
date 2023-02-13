@@ -21,7 +21,7 @@ def load_all(index: Index):
     lines = data_file.read_text(encoding='utf-8').splitlines()
     langs = set('hi bn ta ml te kn mr pa gu as ur or'.split())       # other than en
     group_id = 'Anuvaad'
-    cite_txt = index.ref_db.get_bibtex('project-anuvaad')
+    cite_txt = ('project-anuvaad',)
     for url in lines:
         url = url.strip()
         assert url.startswith('http') and url.endswith('.zip')

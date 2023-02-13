@@ -7,7 +7,7 @@ from mtdata.index import Index, Entry, DatasetId
 
 def load_all(index: Index):
 
-    cite = index.ref_db.get_bibtex(key='post-etal-2012-constructing')
+    cite = ('post-etal-2012-constructing',)
     url = 'https://github.com/joshua-decoder/indian-parallel-corpora/archive/a2cd1a99.tar.gz'
     l2 = 'en'
     langs = ['ml', 'hi', 'ur', 'bn', 'te', 'ta']

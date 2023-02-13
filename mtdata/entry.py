@@ -5,7 +5,7 @@
 
 from typing import Tuple, List, Optional, Union, Any
 from dataclasses import dataclass
-
+import json
 
 from mtdata import log
 from mtdata.iso.bcp47 import BCP47Tag, bcp47
@@ -131,6 +131,20 @@ class Entry:
         noisy = seg1 is None or seg2 is None or not seg1.strip() or not seg2.strip()
         return noisy
 
+    class JSONEncoder(json.JSONEncoder):
+        def default(self, obj: Any) -> Any:
+            if isinstance(obj, Entry):
+                state = {}
+                for field in obj.__slots__:
+                    val = getattr(obj, field)
+                    if not val:
+                        continue
+                    if field == 'did':
+                        val = str(val)
+                    state[field] = val
+                return state
+            else:
+                return super().default(obj)
 
 class JW300Entry(Entry):
     url: Tuple[str, str, str]  # (align.xml, src.xml, tgt.xml)

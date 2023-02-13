@@ -22,7 +22,7 @@ def load_all(index: Index):
 
     url_pat = 'https://object.pouta.csc.fi/OPUS-{corpus}/{version}/moses/{l1}-{l2}.txt.zip'
     group_id = 'OPUS'
-    citation = index.ref_db.get_bibtex('tiedemann2012parallel')
+    citation = ('tiedemann2012parallel',)
     skip_counts = defaultdict(int)
     dupes = defaultdict(set)
     assert data_file.exists()

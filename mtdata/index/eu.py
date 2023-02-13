@@ -10,7 +10,7 @@ def load_all(index: Index):
     group = 'europa'
     # === ECDC ===
     # https://ec.europa.eu/jrc/en/language-technologies/ecdc-translation-memory
-    cite = index.ref_db.get_bibtex('Steinberger2014')
+    cite = ('Steinberger2014',)
     langs = 'en bg cs da de el es et fi fr ga hu is it lt lv mt nl no pl pt ro sk sl sv'.split()
     for i, l1 in enumerate(langs):
         for l2 in langs[i+1:]:
@@ -41,7 +41,7 @@ def load_all(index: Index):
     # https://ec.europa.eu/jrc/en/language-technologies/dcep
     # This was annoying to process so I ended up rehosting it.
     # Don't bother with TR; it doesn't have sentences anyway.
-    cite = index.ref_db.get_bibtex('dcep')
+    cite = ('dcep',)
     langs = 'BG CS DA DE EL EN ES ET FI FR GA HU IT LT LV MT NL PL PT RO SK SL SV'.split()
     for i, l1 in enumerate(langs):
         for l2 in langs[i+1:]:

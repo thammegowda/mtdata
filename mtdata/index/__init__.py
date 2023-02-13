@@ -6,6 +6,7 @@ import collections
 import pickle
 from pathlib import Path
 from typing import List, Dict, Union
+import json
 
 import portalocker
 from pybtex.database import parse_file as parse_bib_file
@@ -43,6 +44,7 @@ class Index:
                         log.info(f"Caching my index file at {cached_index_file}")
                         with open(cached_index_file, "wb") as out:
                             pickle.dump(obj, out)
+                        obj.store_index(cached_index_file.with_suffix('.jsonl'))
 
             assert cached_index_file.exists()
             log.info(f"Loading index from cache {cached_index_file}")
@@ -52,7 +54,19 @@ class Index:
             assert isinstance(obj, cls), f"{cached_index_file} isnt valid. please move or remove it"
             cls.obj = obj
         return cls.obj
+    
+    def store_index(self, path, format='jsonl'):
+        assert format in ('jsonl',) #TODO support tsv
+        with open(path, 'w', encoding='utf8') as out:
+            count = 0
+            for ent in self.entries.values():
+                line = json.dumps(ent, cls=Entry.JSONEncoder) 
+                out.write(line)
+                out.write('\n')
+                count += 1
 
+        log.info(f'Wrote {count:,} entries to {path}')
+            
     def load_all(self):
         from mtdata.index import (
             statmt,
@@ -70,6 +84,7 @@ class Index:
             anuvaad,
             allenai_nllb,
             flores,
+            monoling
         )
         from mtdata.index.opus import opus_index, jw300, opus100
 
@@ -93,6 +108,9 @@ class Index:
             ("AllenAi_NLLB", allenai_nllb.load_all),
             ("Flores", flores.load_all),
         ]
+        #subsets = [
+        #    ("Statmt.org", statmt.load),
+        #    ("monoling", monoling.load_all)]
         for name, loader in subsets:
             loader(self)
 
@@ -112,6 +130,10 @@ class Index:
         assert isinstance(entry, Entry)
         key = entry.did
         assert key not in self.entries, f"{key} is a duplicate"
+        if entry.cite:
+            assert isinstance(entry.cite, tuple), 'cite field expected to be a tuple of bib keys'
+            for bib_key in entry.cite:
+                assert bib_key in self.ref_db, f'Bib key "{bib_key}" not found in refs.bib database'
         self.entries[key] = entry
 
     def get_entries(self):

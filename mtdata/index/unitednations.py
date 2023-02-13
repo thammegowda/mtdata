@@ -8,7 +8,7 @@ import itertools
 
 
 def load_all(index: Index):
-    cite = index.ref_db.get_bibtex('ziemski-etal-2016-united')
+    cite = ('ziemski-etal-2016-united',)
     url = "https://stuncorpusprod.blob.core.windows.net/corpusfiles/UNv1.0.testsets.tar.gz"
     url = "https://drive.google.com/uc?export=download&id=13GI1F1hvwpMUGBSa0QC6ov4eE57GC_Zx"  # they changed it!
     langs = ['en', 'ar', 'fr', 'es', 'ru', 'zh']

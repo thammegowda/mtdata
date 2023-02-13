@@ -226,8 +226,7 @@ def ad_hoc_fix(lang):
 def load_all(index: Index):
 
     # these bib keys are as per listed on https://github.com/facebookresearch/flores/tree/main/flores200
-    bibkeys = ["nllb-2022", "goyal2021", "guzman2019"]
-    cite_text = "\n".join(index.ref_db.get_bibtex(x) for x in bibkeys)
+    bibkeys = ("nllb-2022", "goyal2021", "guzman2019")
 
     for i, lang1 in enumerate(_FLORES200_LANGS):
         for lang2 in _FLORES200_LANGS[i + 1 :]:
@@ -238,7 +237,7 @@ def load_all(index: Index):
             # dev set
             ent = Entry(
                 did=DatasetId(group="Flores", name="flores200_dev", version="1", langs=(l1, l2)),
-                cite=cite_text,
+                cite=bibkeys,
                 ext="tar.gz",
                 url=_FLORES200_URL,
                 filename="flores200_dataset.tar.gz",
@@ -250,7 +249,7 @@ def load_all(index: Index):
             # devtest set
             ent = Entry(
                 did=DatasetId(group="Flores", name="flores200_devtest", version="1", langs=(l1, l2)),
-                cite=cite_text,
+                cite=bibkeys,
                 ext="tar.gz",
                 url=_FLORES200_URL,
                 filename="flores200_dataset.tar.gz",

@@ -258,6 +258,7 @@ a4iffiidjb8he13,trzh"""
 def load_all(index: Index):
     url_ptn = 'https://www.dropbox.com/s/{uid}/wikititles-2014_{l1}{l2}.tgz?dl=1'
     rows = [row.split(',') for row in wiki_titles.splitlines()]
+    # TODO: find bibtex keys. They dont have it on https://linguatools.org/tools/corpora/wikipedia-parallel-titles-corpora/
     for row in rows:
         uid, pair = row
         assert len(pair) == 4

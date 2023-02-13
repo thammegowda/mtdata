@@ -19,7 +19,7 @@ class NoisyEntry(Entry):
 
 def load_all(index: Index):
     url = "http://phontron.com/data/ted_talks.tar.gz"
-    cite = index.ref_db.get_bibtex('Ye2018WordEmbeddings')
+    cite = ('Ye2018WordEmbeddings',)
     header = (
         "-,en,es,pt-br,fr,ru,he,ar,ko,zh-cn,it,ja,zh-tw,nl,ro,tr,de,vi,pl,pt,bg,el,fa,sr,hu,hr,"
         "uk,cs,id,th,sv,sk,sq,lt,da,calv-,my,sl,mk,fr-ca,fi,hy,hi,nor,ka,mn,et,ku,gl,mr,zh,ur,"

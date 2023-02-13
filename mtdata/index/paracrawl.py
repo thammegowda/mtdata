@@ -8,8 +8,7 @@ from mtdata.index import Entry, Index, DatasetId
 
 def load(index: Index):
     URL_PREFIX = 'https://s3.amazonaws.com/web-language-models/paracrawl'
-    cite = index.ref_db.get_bibtex('espla-etal-2019-paracrawl')
-    cite += '\n' + index.ref_db.get_bibtex('banon-etal-2020-paracrawl')
+    cite = ('espla-etal-2019-paracrawl', 'banon-etal-2020-paracrawl')
     group_id = 'ParaCrawl'
     # === Para crawl corpus
     PARACRAWL_v3 = f'{URL_PREFIX}/release3/%s-%s.bicleaner07.tmx.gz'
