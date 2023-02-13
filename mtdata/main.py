@@ -10,7 +10,7 @@ import json
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
 from mtdata import pbar_man
-from mtdata.entry import DatasetId, lang_pair
+from mtdata.entry import DatasetId, Langs
 from mtdata.utils import IO, format_byte_size
 
 DEF_N_JOBS = 1
@@ -172,8 +172,8 @@ def parse_args():
 ''')
 
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
-    list_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
-                        help='Language pairs; e.g.: deu-eng')
+    list_p.add_argument('-l', '--langs', metavar='L1/L1-L2', type=Langs,
+                        help='Language ID e.g. eng (monolingual) or a pair, e.g.: deu-eng (bitext)')
     list_p.add_argument('-id', '--id', action='store_true', help="Show dataset ID only", default=False)
     list_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
                         help='Name of dataset set; eg europarl_v9.')
@@ -185,7 +185,7 @@ def parse_args():
                                                        ' but added here for convenience of switching b/w get and list')
 
     get_p = sub_ps.add_parser('get', formatter_class=MyFormatter)
-    get_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
+    get_p.add_argument('-l', '--langs', metavar='L1-L2', type=Langs,
                        help='Language pairs; e.g.: deu-eng', required=True)
     get_p.add_argument('-tr', '--train', metavar='ID', dest='train_dids', nargs='*', type=DatasetId.parse,
                        help='''R|Names of datasets separated by space, to be used for *training*.
@@ -219,7 +219,7 @@ def parse_args():
     add_getter_args(get_p)
 
     report_p = sub_ps.add_parser('report', formatter_class=MyFormatter)
-    report_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair, help='Language pairs; e.g.: deu-eng')
+    report_p.add_argument('-l', '--langs', metavar='L1-L2', type=Langs, help='Language pairs; e.g.: deu-eng')
     report_p.add_argument('-n', '--names', metavar='NAME', nargs='*', help='Name of dataset set; eg europarl_v9.')
     report_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
 

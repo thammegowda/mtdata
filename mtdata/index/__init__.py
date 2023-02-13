@@ -88,6 +88,7 @@ class Index:
             ".opus.opus_index",
             ".opus.opus100"
         ]
+        #sub_modules = ['.statmt']
         for mod_name in sub_modules:
             module = importlib.import_module(mod_name, package=__name__)
             log.info(f'Loading module {mod_name}' )
@@ -192,7 +193,8 @@ def bitext_lang_match(pair1, pair2, fuzzy_match=False) -> bool:
         return x1 == x2 and y1 == y2
 
 
-def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False, groups=None, not_groups=None) -> List[Entry]:
+def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False, 
+                groups=None, not_groups=None) -> List[Entry]:
     """
     :param langs: language pairs  to select eg ('en', 'de')
     :param names:  names to select
@@ -214,9 +216,14 @@ def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False, group
         names = set(n.lower() for n in names)
         select = [e for e in select if e.did.name in names]
     if langs:
-        assert len(langs) == 2
-        langs = sorted(langs)
-        select = [e for e in select if bitext_lang_match(langs, e.did.langs, fuzzy_match=fuzzy_match)]
+        if len(langs) == 2:
+            select = [e for e in select if 2 == len(e.did.langs)\
+                and bitext_lang_match(langs, e.did.langs, fuzzy_match=fuzzy_match)]
+        else: # monolingual
+            assert len(langs) == 1
+            lang: BCP47Tag = langs[0]
+            select = [e for e in select if 1 == len(e.did.langs) and lang.is_compatible(e.did.langs[0])]
+
     if not_names:
         if not isinstance(not_names, set):
             not_names = set(not_names)

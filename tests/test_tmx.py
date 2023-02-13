@@ -3,7 +3,7 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 1/26/21
 
-from mtdata.main import get_data, lang_pair, DatasetId
+from mtdata.main import get_data, Langs as lang_pair, DatasetId
 from pathlib import Path
 from tempfile import TemporaryDirectory
 

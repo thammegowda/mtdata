@@ -6,15 +6,21 @@ from mtdata.index import Entry, Index, DatasetId, bcp47
 import itertools
 
 
+GROUP_ID = 'Statmt'
+
 def load_all(index: Index):
-    group_id = 'Statmt'
+    load_parallel(index)
+    load_mono(index)
+
+
+def load_parallel(index: Index):
     WMT13_CCRAWL = "http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz"
     WMT14_CITE = ('ws-2014-statistical',)
     for l1 in ['de', 'cs', 'fr', 'ru', 'es']:
         l2 = 'en'
         f1 = f'commoncrawl.{l1}-en.{l1}'
         f2 = f'commoncrawl.{l1}-en.en'
-        data_id = DatasetId(group=group_id, name='commoncrawl_wmt13', version='1', langs=(l1, l2))
+        data_id = DatasetId(group=GROUP_ID, name='commoncrawl_wmt13', version='1', langs=(l1, l2))
         index.add_entry(Entry(did=data_id, url=WMT13_CCRAWL,
                               filename='wmt13_parallel_commoncrawl.tgz',
                               in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
@@ -24,7 +30,7 @@ def load_all(index: Index):
         l2 = 'en'
         f1 = f'training/europarl-v7.{l1}-{l2}.{l1}'
         f2 = f'training/europarl-v7.{l1}-{l2}.{l2}'
-        data_id = DatasetId(group=group_id, name='europarl_wmt13', version='7', langs=(l1, l2))
+        data_id = DatasetId(group=GROUP_ID, name='europarl_wmt13', version='7', langs=(l1, l2))
         index.add_entry(Entry(did=data_id, url="http://www.statmt.org/wmt13/training-parallel-europarl-v7.tgz",
                               filename="wmt13_europarl_v7.tgz",
                               in_paths=[f1, f2], in_ext='txt', cite=WMT14_CITE))
@@ -34,7 +40,7 @@ def load_all(index: Index):
         l2 = 'en'
         f1 = f'training-parallel-nc-v13/news-commentary-v13.{l1}-{l2}.{l1}'
         f2 = f'training-parallel-nc-v13/news-commentary-v13.{l1}-{l2}.{l2}'
-        data_id = DatasetId(group=group_id, name='news_commentary_wmt18', version='13', langs=(l1, l2))
+        data_id = DatasetId(group=GROUP_ID, name='news_commentary_wmt18', version='13', langs=(l1, l2))
         index.add_entry(Entry(did=data_id,
                               url="http://data.statmt.org/wmt18/translation-task/training-parallel-nc-v13.tgz",
                               filename="wmt18_news_commentary_v13.tgz",
@@ -45,7 +51,7 @@ def load_all(index: Index):
     cite = ('koehn2005europarl',)
     for pair in ['de en', 'cs en', 'cs pl', 'es pt', 'fi en', 'lt en']:
         l1, l2 = pair.split()
-        index.add_entry(Entry(did=DatasetId(group=group_id, name='europarl', version='9', langs=(l1, l2)),
+        index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name='europarl', version='9', langs=(l1, l2)),
                               url=EUROPARL_v9 % (l1, l2), cite=cite))
 
     # === Europarl V7 corpus
@@ -56,14 +62,14 @@ def load_all(index: Index):
         src = f'europarl-v7.{l1}-{l2}.{l1}'
         ref = f'europarl-v7.{l1}-{l2}.{l2}'
         index.add_entry(Entry(
-            did=DatasetId(group=group_id, name='europarl', version='7', langs=(l1, l2)), in_paths=[src, ref],
+            did=DatasetId(group=GROUP_ID, name='europarl', version='7', langs=(l1, l2)), in_paths=[src, ref],
                               url=EUROPARL_v7 % (l1, l2), in_ext='txt', cite=cite))
 
     # === Digital Corpus of European Parliament
-    index.add_entry(Entry(did=DatasetId(group=group_id, name='dcep_wmt17', version='1', langs=(l1, l2)),
+    index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name='dcep_wmt17', version='1', langs=(l1, l2)),
                           in_paths=['*/*.lv', f'*/*.en'], cite=cite, in_ext='txt',
                           url='http://data.statmt.org/wmt17/translation-task/dcep.lv-en.v1.tgz'))
-    index.add_entry(Entry(did=DatasetId(group=group_id, name='books_wmt17', version='1', langs=(l1, l2)),
+    index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name='books_wmt17', version='1', langs=(l1, l2)),
                           in_paths=['*/*.lv', f'*/*.en'], cite=cite, in_ext='txt',
                           url='http://data.statmt.org/wmt17/translation-task/books.lv-en.v1.tgz'))
 
@@ -83,7 +89,7 @@ def load_all(index: Index):
                  'kk pt', 'kk ru', 'kk zh', 'nl pt', 'nl ru', 'nl zh', 'pt ru', 'pt zh', 'ru zh']:
         l1, l2 = pair.split()
         index.add_entry(Entry(
-            did=DatasetId(group=group_id, name='news_commentary', version='14', langs=(l1, l2)),
+            did=DatasetId(group=GROUP_ID, name='news_commentary', version='14', langs=(l1, l2)),
             url=NEWSCOM_v14 % (l1, l2), cite=cite))
 
     for v in [15, 16]:
@@ -100,7 +106,7 @@ def load_all(index: Index):
                      'ja ru', 'ja zh', 'kk nl', 'kk pt', 'kk ru', 'kk zh', 'nl pt', 'nl ru', 'nl zh', 'pt ru', 'pt zh',
                      'ru zh']:
             l1, l2 = pair.split()
-            index.add_entry(Entry(did=DatasetId(group=group_id, name='news_commentary', version=f'{v}', langs=(l1, l2)),
+            index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name='news_commentary', version=f'{v}', langs=(l1, l2)),
                 url=url % (l1, l2), cite=cite))
 
 
@@ -110,7 +116,7 @@ def load_all(index: Index):
     for pair in ['cs en', 'cs pl', 'de en', 'es pt', 'fi en', 'gu en', 'hi ne', 'kk en', 'lt en',
                  'ru en', 'zh en']:
         l1, l2 = pair.split()
-        index.add_entry(Entry(did=DatasetId(group=group_id, name='wiki_titles', version='1', langs=(l1, l2)),
+        index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name='wiki_titles', version='1', langs=(l1, l2)),
                               url=WIKI_TITLES_v1 % (l1, l2), cite=cite))
 
     # ===== Wiki Titles V2
@@ -118,7 +124,7 @@ def load_all(index: Index):
     for pair in ['ca es', 'cs en', 'de en', 'de fr', 'es pt', 'iu en', 'ja en', 'pl en', 'ps en',
                  'ru en', 'ta en', 'zh en']:
         l1, l2 = pair.split()
-        index.add_entry(Entry(did=DatasetId(group=group_id, name='wiki_titles', version='2', langs=(l1, l2)),
+        index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name='wiki_titles', version='2', langs=(l1, l2)),
                               url=WIKI_TITLES_v2 % (l1, l2), cite=cite))
 
     WIKI_TITLES_v3 = 'http://data.statmt.org/wikititles/v3/wikititles-v3.{pair}.tsv'
@@ -126,7 +132,7 @@ def load_all(index: Index):
     for pair in langs.split():
         l1, l2 = pair.split('-')
         url = WIKI_TITLES_v3.format(pair=pair)
-        ent = Entry(did=DatasetId(group=group_id, name=f'wikititles', version='3', langs=(l1, l2)), url=url, cite=cite)
+        ent = Entry(did=DatasetId(group=GROUP_ID, name=f'wikititles', version='3', langs=(l1, l2)), url=url, cite=cite)
         index.add_entry(ent)
 
     # ==== WMT  Dev and Tests
@@ -162,7 +168,7 @@ def load_all(index: Index):
             src = f'dev/{set_name}-{l1}{l2}-src.{l1}.sgm'
             ref = f'dev/{set_name}-{l1}{l2}-ref.{l2}.sgm'
             name = f'{sub_name}_{l1}{l2}'
-            index.add_entry(Entry(did=DatasetId(group=group_id, name=name, version=year, langs=(l1, l2)),
+            index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name=name, version=year, langs=(l1, l2)),
                                   filename='wmt20dev.tgz', in_paths=[src, ref], in_ext='sgm',
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
                                   cite=cite))
@@ -180,7 +186,7 @@ def load_all(index: Index):
         for l1, l2 in itertools.combinations(langs, 2):
             f1 = f'dev/{name}{year}.{l1}'
             f2 = f'dev/{name}{year}.{l2}'
-            index.add_entry(Entry(did=DatasetId(group=group_id, name=name, version=year, langs=(l1, l2)),
+            index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name=name, version=year, langs=(l1, l2)),
                                     filename='wmt20dev.tgz', in_paths=[f1, f2], in_ext='txt', cite=cite,
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz'))
 
@@ -189,7 +195,7 @@ def load_all(index: Index):
             src = f'dev/{set_name}.{l1}-{l2}.{l1}'
             ref = f'dev/{set_name}.{l1}-{l2}.{l2}'
             name = f'{set_name.replace(".", "_")}_{l1}{l2}'
-            index.add_entry(Entry(did=DatasetId(group=group_id, name=name, version='1', langs=(l1, l2)),
+            index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name=name, version='1', langs=(l1, l2)),
                                  filename='wmt20dev.tgz', in_paths=[src, ref], in_ext='txt', cite=cite,
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz'))
 
@@ -207,7 +213,7 @@ def load_all(index: Index):
             l1, l2 = pair[:2], pair[2:]
             f1 = f'sgm/{name}{year}-{pair}-src.{l1}.sgm'
             f2 = f'sgm/{name}{year}-{pair}-ref.{l2}.sgm'
-            index.add_entry(Entry(did=DatasetId(group=group_id, name=f'{name}_{pair}'.lower(), version=year, langs=(l1, l2)),
+            index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name=f'{name}_{pair}'.lower(), version=year, langs=(l1, l2)),
                 filename='wmt20tests.tgz', in_paths=[f1, f2], in_ext='sgm', cite=wmt20_cite, url=url))
 
     # WMT 21 Dev
@@ -216,7 +222,7 @@ def load_all(index: Index):
     for pair in pairs:
         l1, l2 = pair.split('-')
         in_path = f'dev/xml/newsdev2021.{l1}-{l2}.xml'
-        ent = Entry(did=DatasetId(group=group_id, name=f'newsdev_{l1}{l2}', version='2021', langs=(l1, l2)),
+        ent = Entry(did=DatasetId(group=GROUP_ID, name=f'newsdev_{l1}{l2}', version='2021', langs=(l1, l2)),
                     filename='wmt21dev.tgz', in_paths=[in_path], in_ext='wmt21xml', cite=wmt20_cite, url=url)
         index.add_entry(ent)
 
@@ -228,19 +234,19 @@ def load_all(index: Index):
         if pair in 'bn-hi hi-bn xh-zu zu-xh':
             name = 'florestest'
         in_path = f'test/{name}2021.{l1}-{l2}.xml'
-        ent = Entry(did=DatasetId(group=group_id, name=f'{name}_{l1}{l2}', version='2021', langs=(l1, l2)),
+        ent = Entry(did=DatasetId(group=GROUP_ID, name=f'{name}_{l1}{l2}', version='2021', langs=(l1, l2)),
                     filename='wmt21tests.tgz', in_paths=[in_path], in_ext='wmt21xml', cite=wmt20_cite, url=url)
         index.add_entry(ent)
 
     # ==== TED Talks 2.0 ar-en
-    index.add_entry(Entry(did=DatasetId(group=group_id, name='tedtalks', version='2_clean', langs=('en', 'ar')),
+    index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name='tedtalks', version='2_clean', langs=('en', 'ar')),
                          ext='tsv.xz', url='http://data.statmt.org/ted-talks/en-ar.v2.aligned.clean.xz'))
 
     # ==== Europarl v10
     EP_v10 = "http://www.statmt.org/europarl/v10/training/europarl-v10.%s-%s.tsv.gz"
     for pair in ['cs en', 'cs pl', 'de en', 'de fr', 'es pt', 'fi en', 'fr en', 'lt en', 'pl en']:
         l1, l2 = pair.split()
-        index.add_entry(Entry(did=DatasetId(group=group_id, name=f'europarl', version='10', langs=(l1, l2)),
+        index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name=f'europarl', version='10', langs=(l1, l2)),
                 url=EP_v10 % (l1, l2), cite=wmt20_cite))
 
     # ==== PMIndia V1
@@ -250,11 +256,11 @@ def load_all(index: Index):
                  "pa en", "ta en", "te en", "ur en"]:
         l1, l2 = pair.split()
         # Note: listed as xx-en in URL but actually en-xx in the tsv; and its not compressed!
-        index.add_entry(Entry(did=DatasetId(group=group_id, name=f'pmindia', version='1', langs=(l2, l1)),
+        index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name=f'pmindia', version='1', langs=(l2, l1)),
                               url=PMINDIA_v1 % (l1, l2), cite=cite))
 
     # Pashto - English  pseudo parallel dataset for alignment
-    index.add_entry(Entry(did=DatasetId(group=group_id, name=f'wmt20_enps_aligntask', version='1', langs=('en', 'ps')),
+    index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name=f'wmt20_enps_aligntask', version='1', langs=('en', 'ps')),
                           url='http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-ps.xz',
                           cite=wmt20_cite, ext='tsv.xz'))
 
@@ -265,19 +271,19 @@ def load_all(index: Index):
         en = f'ps-parallel/{name}.en'
         url = 'http://data.statmt.org/wmt20/translation-task/ps-km/ps-parallel.tgz'
         name = name.replace('.en-ps', '').replace('.', '_').replace('-', '_').lower()
-        entry = Entry(did=DatasetId(group=group_id, name=name, version='1', langs=('ps', 'en')), url=url,
+        entry = Entry(did=DatasetId(group=GROUP_ID, name=name, version='1', langs=('ps', 'en')), url=url,
                       cite=wmt20_cite, in_paths=[ps, en], filename='wmt20-psen-parallel.tgz', in_ext='txt')
         index.add_entry(entry)
 
     for l2 in ['ps', 'km']:
         url = f"http://data.statmt.org/wmt20/translation-task/ps-km/wmt20-sent.en-{l2}.xz"
-        entry = Entry(did=DatasetId(group=group_id, name='paracrawl', version='5.1', langs=('en', l2)),
+        entry = Entry(did=DatasetId(group=GROUP_ID, name='paracrawl', version='5.1', langs=('en', l2)),
                     url=url, cite=wmt20_cite, ext='tsv.xz', cols=(0, 1))
         index.add_entry(entry)
 
     # for ja-en only TED was available
     index.add_entry(Entry(url="http://data.statmt.org/wmt20/translation-task/ja-en/ted.en-ja.tgz",
-                    did=DatasetId(group=group_id, name='ted', version='wmt20', langs=('en', 'ja')),
+                    did=DatasetId(group=GROUP_ID, name='ted', version='wmt20', langs=('en', 'ja')),
                     cite=wmt20_cite, ext='tgz', in_ext='txt',
                     in_paths=['en-ja/train.tags.en-ja.en', 'en-ja/train.tags.en-ja.ja']))
 
@@ -297,23 +303,23 @@ def load_all(index: Index):
         if src[:2] in dont_know or tgt[:2] in dont_know:   # I dont know what language these are
             continue
         url = CC_ALIGNED.format(src=src, tgt=tgt)
-        entry = Entry(did=DatasetId(group=group_id, name='ccaligned', version='1', langs=(src, tgt)), url=url,
+        entry = Entry(did=DatasetId(group=GROUP_ID, name='ccaligned', version='1', langs=(src, tgt)), url=url,
                       cite=ccalign_cite, ext='tsv.xz', cols=(0, 1))
         index.add_entry(entry)
 
     wmt21_cite = ('akhbardeh-etal-2021-findings',)
     index.add_entry(Entry(
-        did=DatasetId(group=group_id, name=f'khamenei', version='wmt21', langs=('ha','en')), cite=wmt21_cite,
+        did=DatasetId(group=GROUP_ID, name=f'khamenei', version='wmt21', langs=('ha','en')), cite=wmt21_cite,
         url='http://data.statmt.org/wmt21/translation-task/ha-en/khamenei.v1.ha-en.tsv', ext='tsv', cols=(2, 3)))
     index.add_entry(Entry(
-        did=DatasetId(group=group_id, name=f'opus', version='wmt21', langs=('ha', 'en')), cite=wmt21_cite,
+        did=DatasetId(group=GROUP_ID, name=f'opus', version='wmt21', langs=('ha', 'en')), cite=wmt21_cite,
         url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=(1, 0)))
     index.add_entry(Entry(
-        did=DatasetId(group=group_id, name=f'paracrawl', version='8.wmt21', langs=('en', 'ha')), cite=wmt21_cite,
+        did=DatasetId(group=GROUP_ID, name=f'paracrawl', version='8.wmt21', langs=('en', 'ha')), cite=wmt21_cite,
         url='http://data.statmt.org/wmt21/translation-task/paracrawl8/paracrawl-release8.en-ha.bifixed.dedup.laser.filter-0.9.xz',
         ext='tsv.xz', cols=[1, 2]))
     index.add_entry(Entry(
-        did=DatasetId(group=group_id, name=f'paracrawl', version='8.wmt21', langs=('en', 'ru')), cite=wmt21_cite,
+        did=DatasetId(group=GROUP_ID, name=f'paracrawl', version='8.wmt21', langs=('en', 'ru')), cite=wmt21_cite,
         url='http://data.statmt.org/wmt21/translation-task/paracrawl8/paracrawl-release8.en-ru.bifixed.dedup.filter-1.1.xz',
         ext='tsv.xz', cols=[0, 1]))
 
@@ -321,7 +327,7 @@ def load_all(index: Index):
         l1, l2 = pair.split('-')
         url = f'http://data.statmt.org/wmt21/translation-task/cc-aligned/{pair}.tsv.xz'
         index.add_entry(Entry(
-            did=DatasetId(group=group_id, name=f'ccaligned', version='wmt21', langs=(l1, l2)), cite=wmt21_cite,
+            did=DatasetId(group=GROUP_ID, name=f'ccaligned', version='wmt21', langs=(l1, l2)), cite=wmt21_cite,
             url='http://data.statmt.org/wmt21/translation-task/ha-en/opus.ha-en.tsv', ext='tsv', cols=(1, 0)))
 
     # https://data.statmt.org/wmt19/translation-task/fr-de/bitexts/de-fr.bicleaner07.de.gz
@@ -331,30 +337,80 @@ def load_all(index: Index):
         ('europarl_v7', 'europarl-v7')]:
         l1, l2 = 'fr', 'de'
         prefix = 'https://data.statmt.org/wmt19/translation-task/fr-de/bitexts'
-        index.add_entry(Entry(did=DatasetId(group=group_id, name=cln_name, version='wmt19', langs=(l1, l2)), in_ext='txt',
+        index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name=cln_name, version='wmt19', langs=(l1, l2)), in_ext='txt',
                               ext='txt.gz', url=(f'{prefix}/{file_name}.{l1}.gz', f'{prefix}/{file_name}.{l2}.gz')))
 
     # Back Translation
     prefix = 'https://data.statmt.org/wmt20/translation-task/back-translation/zh-en'
     index.add_entry(Entry(
-        did=DatasetId(group=group_id, name='backtrans_enzh', version='wmt20', langs=('en', 'zh')),
+        did=DatasetId(group=GROUP_ID, name='backtrans_enzh', version='wmt20', langs=('en', 'zh')),
         ext='txt.gz', url=(f'{prefix}/news.en.gz', f'{prefix}/news.translatedto.zh.gz')))
 
     prefix = 'https://data.statmt.org/wmt20/translation-task/back-translation/ru-en'
     index.add_entry(Entry(
-        did=DatasetId(group=group_id, name='backtrans_enru', version='wmt20', langs=('en', 'ru')),
+        did=DatasetId(group=GROUP_ID, name='backtrans_enru', version='wmt20', langs=('en', 'ru')),
                       ext='txt.gz', url=(f'{prefix}/news.en.gz', f'{prefix}/news.en.translatedto.ru.gz')))
     index.add_entry(Entry(
-        did=DatasetId(group=group_id, name='backtrans_ruen', version='wmt20', langs=('ru', 'en')),
+        did=DatasetId(group=GROUP_ID, name='backtrans_ruen', version='wmt20', langs=('ru', 'en')),
         ext='txt.gz', url=(f'{prefix}/news.ru.gz', f'{prefix}/news.ru.translatedto.en.gz')))
 
     wmt22_cite = ('kocmi-etal-2022-findings',)
     index.add_entry(Entry(
-        did=DatasetId(group=group_id, name='yandex', version='wmt22', langs=('en', 'ru')), cite=wmt22_cite,
+        did=DatasetId(group=GROUP_ID, name='yandex', version='wmt22', langs=('en', 'ru')), cite=wmt22_cite,
         ext='zip', in_ext='tsv', cols=(0,1), in_paths=[f'WMT2022-data-main/en-ru/en-ru.1m_{i}.tsv' for i in range(1, 11)], 
         url='https://github.com/mashashma/WMT2022-data/archive/refs/heads/main.zip'))
 
     index.add_entry(Entry(
-        did=DatasetId(group=group_id, name='yakut', version='wmt22', langs=('sah', 'rus')), cite=wmt22_cite,
-        ext='zip', in_ext='tsv', cols=(0,1), in_paths=['yakut/sah-ru.parallel.uniq.tsv'], 
+        did=DatasetId(group=GROUP_ID, name='yakut', version='wmt22', langs=('sah', 'rus')), cite=wmt22_cite,
+        ext='zip', in_ext='tsv', cols=(0, 1), in_paths=['yakut/sah-ru.parallel.uniq.tsv'], 
         url='http://data.statmt.org/wmt22/translation-task/yakut.zip'))
+
+
+def load_mono(index: Index):
+    
+    wmt22_cite = ('kocmi-etal-2022-findings',)
+    # 1. News Crawl
+    # 2. News Discussions
+    for lang, years in [('en', range(2011, 2019+1)),
+                        ('fr', range(2006, 2019+1))]:
+        for year in years:
+            index.add_entry(Entry(DatasetId(GROUP_ID, 'news_discussions', str(year), (lang,)),
+                url=f'https://data.statmt.org/news-discussions/{lang}/news-discuss.{year}.{lang}.filtered.gz',
+                in_ext='txt', cite=wmt22_cite))
+
+    # 3. Europarl 10 
+    for lang in 'cs de en es fi fr lt pl pt'.split():
+         index.add_entry(Entry(DatasetId(GROUP_ID, 'europarl', 'v10', (lang,)),
+                url=f'https://www.statmt.org/europarl/v10/training-monolingual/europarl-v10.{lang}.tsv.gz',
+                in_ext='tsv', cols=(0,), cite=wmt22_cite))
+    
+    # 4. News Commentary
+    # 5. Common Crawl
+    prefix = 'http://web-language-models.s3-website-us-east-1.amazonaws.com'
+    for lang, path in [
+        ('cs', 'wmt16/deduped/cs.xz'),
+        ('de', 'wmt16/deduped/de.xz'),
+        ('en', 'wmt16/deduped/en-new.xz'),
+        ('fr', 'ngrams/fr/deduped/fr.deduped.xz'),
+        ('ja', 'ngrams/ja/deduped/ja.deduped.xz'),
+        ('ru', 'wmt16/deduped/ru.xz'),
+        ('zh', 'ngrams/zh/deduped/zh.deduped.xz')]:
+        index.add_entry(Entry(DatasetId(GROUP_ID, 'commoncrawl', 'wmt22', (lang,)),
+                url=f'{prefix}/{path}', in_ext='txt', cite=wmt22_cite))
+    # 6.  Extended Common Crawl
+    #   these files are too large and are split into parts. 
+    # 7. Uber Text Corpus
+    for filename in ["news.tokenized.shuffled.txt.bz2",
+                 "wiki_dump.tokenized.txt.bz2",
+                 "fiction.tokenized.shuffled.txt.bz2",
+                 "ubercorpus.tokenized.shuffled.txt.bz2",
+                 "laws.txt.tokenized.bz2"]:
+        name = filename.split('.')[0]
+        index.add_entry(Entry(DatasetId('LangUk', name, '1', ('uk',)),
+                    url=f'https://lang.org.ua/static/downloads/corpora/{filename}',
+                    in_ext='txt', cite=wmt22_cite))
+    
+    # 8. Leipzig Corpora
+    # lot of files, should move to a separate module
+    # 9. Legal Ukrainian 
+    

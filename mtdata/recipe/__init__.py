@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Dict, Optional
 
 from mtdata import yaml, cache_dir, recipes_dir, log
-from mtdata.entry import lang_pair, LangPair, DatasetId, BCP47Tag, bcp47
+from mtdata.entry import Langs, LangPair, DatasetId, BCP47Tag, bcp47
 
 
 _def_recipes: Path = Path(__file__).parent / 'recipes.yml'
@@ -32,7 +32,7 @@ class Recipe:
     def parse(cls, langs, train, test=None, dev=None, **kwargs):
         train, dev, test = [None if not x else
                             isinstance(x, list) and x or x.split(',') for x in (train, dev, test)]
-        langs = lang_pair(langs)
+        langs = Langs(langs)
         train = train and [DatasetId.parse(i) for i in train]
         test = test and [DatasetId.parse(i) for i in test]
         dev = dev and [DatasetId.parse(i) for i in dev]
