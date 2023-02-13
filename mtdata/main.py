@@ -53,6 +53,22 @@ def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, mer
         w.write(sig)
 
 
+def echo_data(did:DatasetId, delim='\t'):
+    from mtdata.data import INDEX, Cache, Parser
+    assert did in INDEX
+    entry = INDEX[did]
+    cache = Cache(CACHE_DIR)
+    path = cache.get_entry(entry)
+    parser = Parser(path, ext=entry.in_ext or None, ent=entry)
+    count = 0
+    for rec in parser.read_segs():
+        if isinstance(rec, list):
+            rec = delim.join(rec) 
+        print(rec)
+        count += 1
+    log.info(f'Total rows={count:,}')
+
+
 def generate_report(langs, names, not_names=None, format='plain'):
     from mtdata.index import get_entries
     entries = get_entries(langs, names, not_names)
@@ -132,23 +148,24 @@ def parse_args():
     p = argparse.ArgumentParser(formatter_class=MyFormatter, epilog=f'Loaded from {my_path} (v{__version__})')
     p.add_argument('-vv', '--verbose', action='store_true', help='verbose mode')
     p.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__} \n{my_path}')
-    p.add_argument('-ll', '--log-level', help='Set log level', default='WARNING',
-                   choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+    log_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+    p.add_argument('-ll', '--log-level', default='WARNING', metavar='LEVEL',
+                   choices=log_levels, help=f'Set log level. Choices={log_levels}')
     p.add_argument('-ri', '--reindex', action='store_true',
                    help=f"Invalidate index of entries and recreate it. This deletes"
                         f" {cached_index_file} only and not the downloaded files. "
-                        f"Use this if you're using in developer mode and modifying mtdata index.")
+                        f"Use this if you've modifying mtdata source code and want to force reload.")
     grp = p.add_mutually_exclusive_group()
     grp.add_argument('-pb', '--pbar', action='store_true', dest='progressbar',
                      help=f"Show progressbar", default=True)
     grp.add_argument('-no-pb', '--no-pbar', action='store_false', dest='progressbar',
                     help=f"Do not show progressbar", default=False)
 
-
-    sub_ps = p.add_subparsers(required=True, dest='task',
+    sub_ps = p.add_subparsers(required=True, dest='task', metavar='<task>',
                               help='''R|
 "list" - List the available entries
 "get" - Downloads the entry files and prepares them for experiment
+"echo" - Print contents of a dataset into STDOUT.
 "list-recipe" - List the (well) known papers and dataset recipes used in their experiments
 "get-recipe" - Get the datasets used in the specified experiment from "list-recipe"
 "stats" - Get stats of dataset"
@@ -186,6 +203,9 @@ def parse_args():
     add_boolean_arg(get_p, 'fail', dest='fail_on_error', default=True,
                     help='Fail if an error occurs on any one of dataset pars')
     get_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs", default=DEF_N_JOBS)
+
+    echo_p = sub_ps.add_parser('echo', formatter_class=MyFormatter)
+    echo_p.add_argument('dataset_id', type=DatasetId.parse, help='Dataset ID')
 
     def add_getter_args(parser):
         parser.add_argument(f'--compress', action='store_true', default=False, help="Keep the files compressed")
@@ -242,6 +262,8 @@ def main():
                   groups=args.groups, not_groups=args.not_groups, id_only=args.id)
     elif args.task == 'get':
         get_data(**vars(args))
+    elif args.task == 'echo':
+        echo_data(did=args.dataset_id)
     elif args.task == 'list-recipe':
         list_recipes()
     elif args.task == 'get-recipe':
@@ -251,7 +273,7 @@ def main():
     elif args.task == 'report':
         generate_report(args.langs, names=args.names, not_names=args.not_names)
     else:
-        raise Exception(f'{args.task} not implemented')
+        raise Exception(f'task={args.task} not implemented')
 
 
 if __name__ == '__main__':
