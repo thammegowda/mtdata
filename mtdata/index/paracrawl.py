@@ -6,7 +6,7 @@
 from mtdata.index import Entry, Index, DatasetId
 
 
-def load(index: Index):
+def load_all(index: Index):
     URL_PREFIX = 'https://s3.amazonaws.com/web-language-models/paracrawl'
     cite = ('espla-etal-2019-paracrawl', 'banon-etal-2020-paracrawl')
     group_id = 'ParaCrawl'

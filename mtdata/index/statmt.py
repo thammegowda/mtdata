@@ -6,7 +6,7 @@ from mtdata.index import Entry, Index, DatasetId, bcp47
 import itertools
 
 
-def load(index: Index):
+def load_all(index: Index):
     group_id = 'Statmt'
     WMT13_CCRAWL = "http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz"
     WMT14_CITE = ('ws-2014-statistical',)

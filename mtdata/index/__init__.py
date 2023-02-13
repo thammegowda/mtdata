@@ -7,6 +7,7 @@ import pickle
 from pathlib import Path
 from typing import List, Dict, Union
 import json
+import importlib
 
 import portalocker
 from pybtex.database import parse_file as parse_bib_file
@@ -68,51 +69,29 @@ class Index:
         log.info(f'Wrote {count:,} entries to {path}')
             
     def load_all(self):
-        from mtdata.index import (
-            statmt,
-            paracrawl,
-            tilde,
-            joshua_indian,
-            unitednations,
-            wikimatrix,
-            other,
-            neulab_tedtalks,
-            elrc_share,
-            ai4bharat,
-            eu,
-            linguatools,
-            anuvaad,
-            allenai_nllb,
-            flores,
-            monoling
-        )
-        from mtdata.index.opus import opus_index, jw300, opus100
-
-        subsets = [
-            ("Statmt.org", statmt.load),
-            ("Paracrawl", paracrawl.load),
-            ("Tilde", tilde.load),
-            ("JoshuaIndianCoprus", joshua_indian.load_all),
-            ("UnitedNations", unitednations.load_all),
-            ("OPUS", opus_index.load_all),
-            # ('OPUS_JW300', jw300.load_all), # JW300 is taken down
-            ("OPUS100", opus100.load_all),
-            ("WikiMatrix", wikimatrix.load_all),
-            ("Other", other.load_all),
-            ("Neulab_TEDTalksv1", neulab_tedtalks.load_all),
-            ("ELRC-SHARE", elrc_share.load_all),
-            ("AI4Bharat", ai4bharat.load_all),
-            ("EU", eu.load_all),
-            ("LinguaTools", linguatools.load_all),
-            ("Anuvaad", anuvaad.load_all),
-            ("AllenAi_NLLB", allenai_nllb.load_all),
-            ("Flores", flores.load_all),
+        sub_modules = [
+            ".statmt",
+            ".paracrawl",
+            ".tilde",
+            ".joshua_indian",
+            ".unitednations",
+            ".wikimatrix",
+            ".other",
+            ".neulab_tedtalks",
+            ".elrc_share",
+            ".ai4bharat",
+            ".eu",
+            ".linguatools",
+            ".anuvaad",
+            ".allenai_nllb",
+            ".flores",
+            ".opus.opus_index",
+            ".opus.opus100"
         ]
-        #subsets = [
-        #    ("Statmt.org", statmt.load),
-        #    ("monoling", monoling.load_all)]
-        for name, loader in subsets:
-            loader(self)
+        for mod_name in sub_modules:
+            module = importlib.import_module(mod_name, package=__name__)
+            log.info(f'Loading module {mod_name}' )
+            getattr(module, 'load_all')(self)
 
         counts = collections.defaultdict(int)
         for e in self.entries.values():
