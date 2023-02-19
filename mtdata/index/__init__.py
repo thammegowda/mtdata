@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List, Dict, Union
 import json
 import importlib
+import os
 
 import portalocker
 from pybtex.database import parse_file as parse_bib_file
@@ -69,6 +70,7 @@ class Index:
         log.info(f'Wrote {count:,} entries to {path}')
             
     def load_all(self):
+       
         sub_modules = [
             ".statmt",
             ".paracrawl",
@@ -86,13 +88,21 @@ class Index:
             ".allenai_nllb",
             ".flores",
             ".opus.opus_index",
-            ".opus.opus100"
+            ".opus.opus100",
+            ".leipzig",
         ]
+        # modules from CWD
+        for p in Path('.').glob('mtdata*.py'):
+            module = p.name.replace('.py', '')
+            sub_modules.append(module)
         #sub_modules = ['.statmt']
         for mod_name in sub_modules:
             module = importlib.import_module(mod_name, package=__name__)
             log.info(f'Loading module {mod_name}' )
-            getattr(module, 'load_all')(self)
+            if hasattr(module, 'load_all'):
+                getattr(module, 'load_all')(self)
+            else:
+                log.warning(f'skipping {module}.. no load_all() found')
 
         counts = collections.defaultdict(int)
         for e in self.entries.values():
@@ -115,6 +125,13 @@ class Index:
             for bib_key in entry.cite:
                 assert bib_key in self.ref_db, f'Bib key "{bib_key}" not found in refs.bib database'
         self.entries[key] = entry
+
+    def __add__(self, e):
+        if isinstance(e, Entry):
+            self.add_entry(e)
+            return self
+        else:
+            raise Exception(f'Expected instance of Entry, but given {type(e)}')
 
     def get_entries(self):
         return self.entries.values()
