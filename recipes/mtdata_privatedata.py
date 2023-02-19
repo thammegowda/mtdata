@@ -10,4 +10,3 @@ def load_all(index: Index):
          index.add_entry(Entry(DatasetId(group, 'dataset', 'v1', (lang,)),
                 url=f'https://www.statmt.org/europarl/v10/training-monolingual/europarl-v10.{lang}.tsv.gz',
                 in_ext='tsv', cols=(0,)))
-    

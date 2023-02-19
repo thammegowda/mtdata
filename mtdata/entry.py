@@ -122,7 +122,29 @@ class Entry:
         if self.in_ext == 'tmx':
             return False
         return tuple(reversed(langs)) == tuple(self.lang_str)
-
+    
+    def is_compatible(self, langs: Union[LangPair, Tuple[BCP47Tag]]):
+        """
+        Checks if the entry is compatible with given languages
+        :param: langs 
+        """
+        if len(self.did.langs) == 2 and len(langs) == 2: # bitext bitext
+            compat, _swap = BCP47Tag.check_compat_swap(pair1=langs, pair2=self.did.langs)
+            return compat
+        elif len(self.did.langs) == 1 and len(langs) == 1: # mono mono
+            return self.did.langs[0].is_compatible(langs[0])
+        else: 
+            assert len(self.did.langs) + len(langs) == 3 
+            if len(self.did.langs) == 2 and len(langs) == 1: # bitext mono
+                pair = self.did.langs
+                mono = langs[0]
+            elif len(self.did.langs) == 1 and len(langs) == 2: # mono bitext
+                mono = self.did.langs[0]
+                pair = langs
+            else:
+                raise Exception(f'Compat check for {self.did.langs} x {langs} is not implemented')
+            return mono.is_compatible(pair[0]) or mono.is_compatible(pair[1])  # either side
+        
     def __str__(self):
         return self.format(delim=' ')
 

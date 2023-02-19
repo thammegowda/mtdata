@@ -6,10 +6,11 @@
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, ClassVar, Tuple
 
 from mtdata import yaml, cache_dir, recipes_dir, log, resource_dir
 from mtdata.entry import Langs, LangPair, DatasetId, BCP47Tag, bcp47
+from mtdata.data import DATA_FIELDS
 
 
 _def_recipes: Path = resource_dir / 'recipes.yml'
@@ -22,28 +23,41 @@ class Recipe:
 
     id: str
     langs: LangPair
-    train: List[DatasetId]
+    train: List[DatasetId] = None
     test: Optional[List[DatasetId]] = None
     dev: Optional[List[DatasetId]] = None
+    mono_train: Optional[List[DatasetId]] = None
+    mono_dev: Optional[List[DatasetId]] = None
+    mono_test: Optional[List[DatasetId]] = None
     desc: Optional[str] = ''
     url: str = ''
+    # class variables below
+    _id_field_names: ClassVar[Tuple] = DATA_FIELDS
 
     @classmethod
-    def parse(cls, langs, train, test=None, dev=None, **kwargs):
-        train, dev, test = [None if not x else
-                            isinstance(x, list) and x or x.split(',') for x in (train, dev, test)]
+    def parse(cls, id:str, langs, **kwargs):
         langs = Langs(langs)
-        train = train and [DatasetId.parse(i) for i in train]
-        test = test and [DatasetId.parse(i) for i in test]
-        dev = dev and [DatasetId.parse(i) for i in dev]
-        return cls(langs=langs, train=train, test=test, dev=dev, **kwargs)
+        data_fields = {}
+        for name in cls._id_field_names:
+            if name in kwargs:
+                data_ids = kwargs.pop(name)
+                if not data_ids:
+                    continue
+                if isinstance(data_ids, str):
+                    data_ids = data_ids.split(',')
+                data_fields[name] = [DatasetId.parse(i.strip()) for i in data_ids]
+        return cls(id=id, langs=langs, **data_fields, **kwargs)
+
+    @property
+    def data_fields(self) -> Dict:
+        return {name: getattr(self, name) for name in self._id_field_names}
 
     def format(self):
         rec = vars(self)
         rec['langs'] = '-'.join(map(str, self.langs))
-        rec['train'] = self.train and ','.join(str(did) for did in self.train)
-        rec['test'] = self.test and ','.join(str(did) for did in self.test)
-        rec['dev'] = self.dev and ','.join(str(did) for did in self.dev)
+        for name, dids in self.data_fields.items():
+            if dids:
+                rec[name] = ','.join(str(did) for did in dids)
         return rec
 
     @classmethod
@@ -75,17 +89,4 @@ class Recipe:
             paths.extend(_cwd_recipes)
         return cls.load(*paths)
 
-
-def print_all(recipes: List[Recipe], delim='\t', out=sys.stdout):
-    for i, val in enumerate(recipes):
-        kvs = val.format().items()
-        if i == 0:
-            out.write(delim.join([kv[0] or '' for kv in kvs]) + '\n')
-        out.write(delim.join([kv[1] or '' for kv in kvs]) + '\n')
-
-
 RECIPES = Recipe.load_all()
-
-
-if __name__ == '__main__':
-    print_all(list(RECIPES.values()))

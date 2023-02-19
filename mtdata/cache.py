@@ -41,10 +41,10 @@ class Cache:
         try:
             if isinstance(entry.url, (list, tuple)):
                 assert isinstance(entry.url[0], str)
-                local = [self.get_local_path(url, fix_missing=fix_missing) for url in entry.url]
+                local = [self.get_local_path(url, fix_missing=fix_missing, entry=entry) for url in entry.url]
             else:
                 assert isinstance(entry.url, str)
-                local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing)
+                local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing, entry=entry)
                 if zipfile.is_zipfile(local) or tarfile.is_tarfile(local):
                     # look inside the archives and get the desired files
                     local = self.get_local_in_paths(path=local, entry=entry)
@@ -131,14 +131,18 @@ class Cache:
     def get_flag_file(self, file: Path):
         return file.with_name(file.name + '._valid')
 
-    def get_local_path(self, url, filename=None, fix_missing=True):
+    def get_local_path(self, url, filename=None, fix_missing=True, entry=None):
         hostname = urlparse(url).hostname or 'nohost'
         filename = filename or url.split('/')[-1]
         assert hostname and filename
         mdf5_sum = md5(url.encode('utf-8')).hexdigest()
         local = self.root / hostname / mdf5_sum[:4] / mdf5_sum[4:] / filename
         if fix_missing:
-            self.download(url, local)
+            try:
+                self.download(url, local, entry=entry)
+            except:
+                log.error(f'Error downloading {entry and entry.did}\nURL: {url}\nPath:{local}')
+                raise
         return local
 
     @classmethod
@@ -154,9 +158,9 @@ class Cache:
     def opus_xces_format(self, entry, fix_missing=True) -> List[Path]:
         assert entry.in_ext == OPUS_XCES
         l1_url, l2_url = entry.in_paths
-        align_file = self.get_local_path(entry.url, fix_missing=fix_missing)
-        l1_path = self.get_local_path(l1_url, fix_missing=fix_missing)
-        l2_path = self.get_local_path(l2_url, fix_missing=fix_missing)
+        align_file = self.get_local_path(entry.url, fix_missing=fix_missing, entry=entry)
+        l1_path = self.get_local_path(l1_url, fix_missing=fix_missing, entry=entry)
+        l2_path = self.get_local_path(l2_url, fix_missing=fix_missing, entry=entry)
         return [align_file, l1_path, l2_path]
 
     def get_local_in_paths(self, path: Path, entry: Entry,):
@@ -170,7 +174,7 @@ class Cache:
         else:
             raise MTDataException(f'Unable to read {entry.did}; the file is neither zip nor tar')
 
-    def download(self, url: str, save_at: Path, timeout=(5, 10)):
+    def download(self, url: str, save_at: Path, timeout=(5, 10), entry=None):
         valid_flag = self.get_flag_file(save_at)
         lock_file = valid_flag.with_suffix("._lock")
         if valid_flag.exists() and save_at.exists():
@@ -188,9 +192,12 @@ class Cache:
             buf_size = 2 ** 14
             tot_bytes = int(resp.headers.get('Content-Length', '0'))
             n_buffers = math.ceil(tot_bytes / buf_size) or None
-            desc = url
-            if len(desc) > 60:
-                desc = desc[:30] + '...' + desc[-28:]
+            parts = url.split('/')  
+            desc = [entry and f'{entry.did} |' or '',
+                    tot_bytes and (format_byte_size(tot_bytes) + "|") or "",
+                    parts[2][:24], '...', parts[-1][-24:], # host ... filename
+                    ]
+            desc = ''.join(desc) 
             with pbar_man.counter(color='green', total=tot_bytes//2**10, unit='KiB', leave=False, position=2,
                                   desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):

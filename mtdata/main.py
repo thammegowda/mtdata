@@ -5,6 +5,7 @@
 import argparse
 from pathlib import Path
 from collections import defaultdict
+from typing import List, Dict, Mapping, Tuple, Optional
 import json
 
 import mtdata
@@ -29,19 +30,26 @@ def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=
     log.info(f"Total {len(entries)} entries")
 
 
-def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, merge_train=False, compress=False,
+def get_data(langs, out_dir, merge_train=False, compress=False,
              drop_dupes=False, drop_tests=False, fail_on_error=False, n_jobs=DEF_N_JOBS, **kwargs):
     if kwargs:
         log.info(f"Args are ignored: {kwargs}")
-    from mtdata.data import Dataset
-    assert train_dids or test_dids, 'Required --train or --test or both'
+    from mtdata.data import Dataset, DATA_FIELDS
+    dataset_ids: Dict[str, List] = {}
+    for name in DATA_FIELDS:
+        if kwargs.get(name):
+            dataset_ids[name] = kwargs[name]
+    assert any(bool(ids) for ids in dataset_ids.values()),\
+        'Required at least one of --train --test --dev --mono-train --mono-test --mono-dev '
     dataset = Dataset.prepare(
-        langs, train_dids=train_dids, test_dids=test_dids, out_dir=out_dir,
-        dev_dids=dev_dids, cache_dir=CACHE_DIR, merge_train=merge_train, compress=compress,
+        langs, dataset_ids=dataset_ids, out_dir=out_dir, cache_dir=CACHE_DIR,
+        merge_train=merge_train, compress=compress,
         drop_dupes=drop_dupes, drop_tests=drop_tests, fail_on_error=fail_on_error, n_jobs=n_jobs)
     cli_sig = f'-l {"-".join(str(l) for l in langs)}'
-    for flag, dids in [('-tr', train_dids), ('-ts', test_dids), ('-dv', dev_dids)]:
+
+    for name, dids in dataset_ids.items():
         if dids:
+            flag = '--' + name.replace('_', '-')
             cli_sig += f' {flag} {" ".join(map(str, dids))}'
     for flag, val in [('--merge', merge_train), ('--compress', compress), ('-dd', drop_dupes), ('-dt', drop_tests)]:
         if val:
@@ -94,10 +102,17 @@ def generate_report(langs, names, not_names=None, format='plain'):
     print(f'[Total]\t{sum(group_stats.values()):,}')
 
 
-def list_recipes():
-    from mtdata.recipe import print_all, RECIPES
+def list_recipes(id_only=False, delim='\t'):
+    from mtdata.recipe import RECIPES
     log.info(f"Found {len(RECIPES)} recipes")
-    print_all(RECIPES.values())
+    for i, recipe in enumerate(RECIPES.values()):
+        if id_only:
+            print(recipe.id)
+        else:
+            kvs = recipe.format().items()
+            if i == 0:
+                print(delim.join([kv[0] or '' for kv in kvs]))
+            print(delim.join([kv[1] or '' for kv in kvs]))
 
 
 def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False,
@@ -109,9 +124,9 @@ def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_
     if not recipe:
         raise ValueError(f'recipe {recipe_id} not found. See "mtdata list-recipe"')
 
-    get_data(langs=recipe.langs, train_dids=recipe.train, dev_dids=recipe.dev, test_dids=recipe.test,
-             merge_train=merge_train, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes, drop_tests=drop_tests,
-             fail_on_error=fail_on_error, n_jobs=n_jobs)
+    data_fields = recipe.data_fields
+    get_data(langs=recipe.langs, merge_train=merge_train, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes,
+             drop_tests=drop_tests, fail_on_error=fail_on_error, n_jobs=n_jobs, **data_fields)
 
 
 def show_stats(*dids: DatasetId, quick=False):
@@ -224,8 +239,9 @@ def parse_args():
     report_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
 
     listr_p = sub_ps.add_parser('list-recipe', formatter_class=MyFormatter)
+    listr_p.add_argument('-id', '--id', action='store_true', help="List recipe IDs only", default=False)
     getr_p = sub_ps.add_parser('get-recipe', formatter_class=MyFormatter)
-    getr_p.add_argument('-ri', '--recipe-id', type=str, help='Recipe ID', required=True)
+    getr_p.add_argument('-ri', '-i', '--recipe-id', type=str, help='Recipe ID', required=True)
     getr_p.add_argument('-f', '--fail-on-error', action='store_true', help='Fail on error')
     getr_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs (processes)", default=DEF_N_JOBS)
     add_boolean_arg(getr_p, 'merge', dest='merge_train', default=True, help='Merge train into a single file')
@@ -265,7 +281,7 @@ def main():
     elif args.task == 'echo':
         echo_data(did=args.dataset_id)
     elif args.task == 'list-recipe':
-        list_recipes()
+        list_recipes(id_only=args.id)
     elif args.task == 'get-recipe':
         get_recipe(**vars(args))
     elif args.task == 'stats':
