@@ -2,9 +2,10 @@
 # Parallel data scraped from ELRC-SHARE using https://github.com/kpu/elrc-scrape
 # Author: Kenneth Heafield [mtdata (at) kheafield (dot) com] 
 
-from pathlib import Path
+
+from mtdata import resource_dir
 from mtdata.index import Index, Entry, DatasetId
-REFS_FILE = Path(__file__).parent / 'elrc_share.tsv'
+REFS_FILE = resource_dir / 'elrc_share.tsv'
 ELRC_CEF = [
     'https://elrc-share.eu/repository/download/365a8b821aa011eb913100155d02670611118e05e423402bb729137ecf6ac864/',
     5192

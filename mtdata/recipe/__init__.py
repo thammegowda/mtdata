@@ -8,11 +8,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict, Optional
 
-from mtdata import yaml, cache_dir, recipes_dir, log
+from mtdata import yaml, cache_dir, recipes_dir, log, resource_dir
 from mtdata.entry import Langs, LangPair, DatasetId, BCP47Tag, bcp47
 
 
-_def_recipes: Path = Path(__file__).parent / 'recipes.yml'
+_def_recipes: Path = resource_dir / 'recipes.yml'
 _home_recipes: Path = cache_dir / 'mtdata.recipes.yml'
 _cwd_recipes: List[Path] = list(recipes_dir.glob('mtdata.recipes*.yml'))
 

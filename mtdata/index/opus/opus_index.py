@@ -6,12 +6,12 @@
 
 
 from pathlib import Path
-from mtdata import log
+from mtdata import log, resource_dir
 from mtdata.index import Index, Entry, DatasetId
 from collections import defaultdict
 from mtdata.iso.bcp47 import bcp47
 
-data_file = Path(__file__).parent / 'opus_index.tsv'
+data_file = resource_dir / 'opus_index.tsv'
 """ To refresh the data_file from OPUS: 
 $ curl "https://opus.nlpl.eu/opusapi/?preprocessing=moses" > opus_all.json 
 $ cat opus_all.json |  jq -r  '.corpora[] | [.corpus, .version, .source, .target] | @tsv'  | sort  > opus_all.tsv 

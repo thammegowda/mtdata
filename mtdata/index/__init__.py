@@ -13,11 +13,11 @@ import os
 import portalocker
 from pybtex.database import parse_file as parse_bib_file
 
-from mtdata import log, cached_index_file, __version__
+from mtdata import log, cached_index_file, __version__, resource_dir
 from mtdata.entry import Entry, DatasetId
 from mtdata.iso.bcp47 import bcp47, BCP47Tag
 
-REFS_FILE = Path(__file__).parent / "refs.bib"
+REFS_FILE = resource_dir / "refs.bib"
 
 
 class Index:

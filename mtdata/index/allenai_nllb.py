@@ -1,6 +1,7 @@
 # AllenAi version of NLLB dataset
 # Originally published on HF dataset hub https://huggingface.co/datasets/allenai/nllb
 
+from mtdata import resource_dir
 from mtdata.index import Index, Entry, DatasetId
 
 import json
@@ -11,7 +12,7 @@ _LICENSE = "https://opendatacommons.org/licenses/by/1-0/"
 
 def load_all(index: Index):
 
-    nllb_pairs = json.load(open(Path(__file__).parent / "allenai_nllb.json"))
+    nllb_pairs = json.load(open(resource_dir / "allenai_nllb.json"))
     # these bib keys are as per listed on https://huggingface.co/datasets/allenai/nllb 
     bibkeys = ('schwenk-etal-2021-ccmatrix', 'heffernan2022bitext', 'nllb-2022')
 

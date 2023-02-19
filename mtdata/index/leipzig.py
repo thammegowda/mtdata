@@ -1,10 +1,9 @@
-from pathlib import Path
 
-from mtdata import log
+from mtdata import log, resource_dir
 from mtdata.index import Index, Entry, bcp47, DatasetId
 
 GROUP_ID = 'Leipzig'
-dataset_ids = Path(__file__).parent / 'leipzig_de.txt'
+dataset_ids = resource_dir / 'leipzig_de.txt'
 
 """
 curl https://wortschatz.uni-leipzig.de/en/download |
@@ -41,4 +40,4 @@ def load_all(index: Index):
         index += Entry(did=DatasetId(GROUP_ID, name, version, langs=(lang,)),
                        url=URL % data_id, in_ext='tsv', in_paths=['*/*-sentences.txt'], cols=[1], cite=cites)
     if errors:
-        log.warning(f'Error loading Leipzig corpus: {errors}')
+        log.info(f'Could not load these Leipzig corpora: {errors}')

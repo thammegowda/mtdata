@@ -21,10 +21,10 @@ log.basicConfig(level=log.INFO, datefmt='%Y-%m-%d %H:%M:%S', format=_log_format)
 cache_dir = Path(os.environ.get('MTDATA', '~/.mtdata')).expanduser()
 recipes_dir = Path(os.getenv('MTDATA_RECIPES', '.')).resolve()
 cached_index_file = cache_dir / f'mtdata.index.{__version__}.pkl'
+resource_dir:Path = Path(__file__).parent / 'resource'
 
 FILE_LOCK_TIMEOUT = 2 * 60 * 60  # 2 hours
 pbar_man = enlighten.get_manager()
-
 
 class MTDataException(Exception):
     pass

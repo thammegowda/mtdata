@@ -10,11 +10,12 @@ curl https://raw.githubusercontent.com/project-anuvaad/anuvaad-parallel-corpus/m
    grep -o 'http[^ ]*zip' > anuvad.tsv
 """
 from pathlib import Path
-from mtdata.index import Index, Entry, DatasetId, log
+from mtdata import resource_dir
+from mtdata.index import Index, Entry, DatasetId, log 
 import collections as coll
 
 
-data_file = Path(__file__).parent / 'anuvaad.tsv'
+data_file = resource_dir / 'anuvaad.tsv'
 
 
 def load_all(index: Index):
