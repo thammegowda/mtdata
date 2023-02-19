@@ -397,9 +397,8 @@ def load_mono(index: Index):
     news_crawl = [line.strip().split() for line in news_crawl.splitlines() if line.strip()]
     for year, *langs in news_crawl:
         for lang in langs:
-            ent = Entry(DatasetId(GROUP_ID, 'news_crawl', str(year), (lang,)),
-                        url=f'https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.filtered.deduped.gz',
-                        in_ext='txt', cite=wmt22_cite)
+            url = f'https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz'
+            ent = Entry(DatasetId(GROUP_ID, 'news_crawl', str(year), (lang,)), url=url, in_ext='txt', cite=wmt22_cite)
             index.add_entry(ent)
     # 2. News Discussions
     for lang, years in [('en', range(2011, 2019+1)), ('fr', range(2006, 2019+1))]:
