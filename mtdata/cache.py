@@ -37,17 +37,22 @@ class Cache:
     def get_entry(self, entry: Entry, fix_missing=True) -> Union[Path, List[Path]]:
         if entry.in_ext == OPUS_XCES:
             return self.opus_xces_format(entry=entry, fix_missing=fix_missing)
-
-        if isinstance(entry.url, (list, tuple)):
-            assert isinstance(entry.url[0], str)
-            local = [self.get_local_path(url, fix_missing=fix_missing) for url in entry.url]
-        else:
-            assert isinstance(entry.url, str)
-            local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing)
-            if zipfile.is_zipfile(local) or tarfile.is_tarfile(local):
-                # look inside the archives and get the desired files
-                local = self.get_local_in_paths(path=local, entry=entry)
-        return local
+        local = None
+        try:
+            if isinstance(entry.url, (list, tuple)):
+                assert isinstance(entry.url[0], str)
+                local = [self.get_local_path(url, fix_missing=fix_missing) for url in entry.url]
+            else:
+                assert isinstance(entry.url, str)
+                local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing)
+                if zipfile.is_zipfile(local) or tarfile.is_tarfile(local):
+                    # look inside the archives and get the desired files
+                    local = self.get_local_in_paths(path=local, entry=entry)
+            return local
+        except:
+            if local:
+                log.warning(f'Error while accessing {entry.did} --> {local}')
+            raise
 
     def get_content_length(self, entry: Entry) -> Dict[str, Any]:
         urls = []
