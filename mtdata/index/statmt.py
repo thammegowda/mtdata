@@ -370,9 +370,39 @@ def load_mono(index: Index):
     
     wmt22_cite = ('kocmi-etal-2022-findings',)
     # 1. News Crawl
+    """
+    base=https://data.statmt.org/news-crawl
+    langs=$(curl $base/ | grep -o 'href="[a-z][a-z]\+/"' | cut -f2 -d \")
+    for i in $langs; do
+        curl $base/$i | grep -o 'href="news[^"]*.gz"' | cut -f2 -d\"; sleep 1;
+    done | tee news.txt
+    cat news.txt | grep '^news.[0-9]\+.[a-z]\+.shuffled.deduped.gz$' | awk -F '.' '{if ($2 != last) {printf "\n"$2}; printf " "$3; last=$2}'
+    """
+    news_crawl = """2007 cs de en es fr hu
+    2008 bn cs de en es fa fr hi hu it ky mk ps pt ru so sr sw ta uk zh
+    2009 bn cs de en es fr hi hu it ky mk ps pt ru so sr sw ta uk
+    2010 bn cs de en es fa fr hi hu it ky mk ps pt ru so sr sw ta tr uk zh
+    2011 bn cs de en es fa fr hi hu it ky mk ps pt ru so sr sw ta uk zh
+    2012 bn cs de en es fa fr hi hu it ky ps pt ru so sw ta uk zh
+    2013 bg bn cs de en es fa fr hi hu it ky mk ps pt ru so sr sw ta tr uk zh
+    2014 bg bn cs de el en es et fa fi fr hi hr hu it ky lv ps pt ru so sw ta uk zh
+    2015 bg cs de el en es et fi fr hi hr hu it lv pt ro ru uk zh
+    2016 bg cs de el en es et fi fr hi hr hu it lv pt ro ru tr uk zh
+    2017 bg cs de el en es et fi fr hi hr hu it lv pt ro ru tr zh
+    2018 am bg bn bs cs de el en es et fa fi fr gu hi hr hu it kk kn ko ky lt lv mr nl pa pl ps pt ro ru so sr sw ta te tr uk zh
+    2019 am bg bn bs cs de el en es et fa fi fr gu hi hr hu it ja kk kn ko ky lt lv mk ml mr nl or pa pl ps pt ro ru so sr sw ta te tr uk zh
+    2020 af am ar bg bm bn bs cs de el en es et fa fi fr gu ha hi hr hu id ig is it ja kk kn ko ky lt lv mk ml mr nl nr om or pa pl ps pt ro ru rw sn so sr sw ta te tig ti tl tr uk yo zh
+    2021 af am ar bg bm bn bs cs de el en es et fa fi fr gu ha hi hr hu id ig is it ja kk kn ko ky lt lv mk ml mr nl nr om or pa pl ps pt ro ru rw sn so sr sw ta te tig ti tl tr uk yo zh
+    """
+    news_crawl = [line.strip().split() for line in news_crawl.splitlines() if line.strip()]
+    for year, *langs in news_crawl:
+        for lang in langs:
+            ent = Entry(DatasetId(GROUP_ID, 'news_crawl', str(year), (lang,)),
+                        url=f'https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.filtered.deduped.gz',
+                        in_ext='txt', cite=wmt22_cite)
+            index.add_entry(ent)
     # 2. News Discussions
-    for lang, years in [('en', range(2011, 2019+1)),
-                        ('fr', range(2006, 2019+1))]:
+    for lang, years in [('en', range(2011, 2019+1)), ('fr', range(2006, 2019+1))]:
         for year in years:
             index.add_entry(Entry(DatasetId(GROUP_ID, 'news_discussions', str(year), (lang,)),
                 url=f'https://data.statmt.org/news-discussions/{lang}/news-discuss.{year}.{lang}.filtered.gz',
@@ -399,6 +429,7 @@ def load_mono(index: Index):
                 url=f'{prefix}/{path}', in_ext='txt', cite=wmt22_cite))
     # 6.  Extended Common Crawl
     #   these files are too large and are split into parts. 
+    
     # 7. Uber Text Corpus
     for filename in ["news.tokenized.shuffled.txt.bz2",
                  "wiki_dump.tokenized.txt.bz2",
@@ -410,7 +441,6 @@ def load_mono(index: Index):
                     url=f'https://lang.org.ua/static/downloads/corpora/{filename}',
                     in_ext='txt', cite=wmt22_cite))
     
-    # 8. Leipzig Corpora
-    # lot of files, should move to a separate module
+    # 8. Leipzig Corpora: lot of files, moved to a separate module
     # 9. Legal Ukrainian 
     
