@@ -37,10 +37,11 @@ def get_data(langs, out_dir, merge_train=False, compress=False,
     from mtdata.data import Dataset, DATA_FIELDS
     dataset_ids: Dict[str, List] = {}
     for name in DATA_FIELDS:
-        if kwargs.get(name):
-            dataset_ids[name] = kwargs[name]
+        old_name = f'{name}_dids'  # previously, "train_dids" was used. now "train"
+        if kwargs.get(old_name):
+            dataset_ids[name] = kwargs[old_name]
     assert any(bool(ids) for ids in dataset_ids.values()),\
-        'Required at least one of --train --test --dev --mono-train --mono-test --mono-dev '
+        f'Required at least one of --train --test --dev --mono-train --mono-test --mono-dev \n given={dataset_ids.keys()}'
     dataset = Dataset.prepare(
         langs, dataset_ids=dataset_ids, out_dir=out_dir, cache_dir=CACHE_DIR,
         merge_train=merge_train, compress=compress,
@@ -124,7 +125,7 @@ def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_
     if not recipe:
         raise ValueError(f'recipe {recipe_id} not found. See "mtdata list-recipe"')
 
-    data_fields = recipe.data_fields
+    data_fields = {f'{k}_dids': v for k, v in recipe.data_fields.items()}
     get_data(langs=recipe.langs, merge_train=merge_train, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes,
              drop_tests=drop_tests, fail_on_error=fail_on_error, n_jobs=n_jobs, **data_fields)
 

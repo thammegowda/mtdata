@@ -87,13 +87,13 @@ class Dataset:
                       fail_on_error=fail_on_error, n_jobs=n_jobs)
 
         dev_entries, test_entries = [], []
-        if dataset_ids['test']:  # tests are smaller so quicker; no merging needed
+        if dataset_ids.get('test'):  # tests are smaller so quicker; no merging needed
             test_entries = cls.resolve_entries(dataset_ids['test'])
             dataset.add_test_entries(test_entries)
-        if dataset_ids['dev']:
+        if dataset_ids.get('dev'):
             dev_entries = cls.resolve_entries(dataset_ids['dev'])
             dataset.add_dev_entries(dev_entries)
-        if dataset_ids['train']:  # this might take some time
+        if dataset_ids.get('train'):  # this might take some time
             train_entries = cls.resolve_entries(dataset_ids['train'])
             drop_hashes = None
             if drop_tests:
