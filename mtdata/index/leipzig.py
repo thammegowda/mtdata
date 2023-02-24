@@ -16,7 +16,7 @@ done | sort | uniq > leipzig_de.txt
 def load_all(index: Index):
     assert dataset_ids.exists()
     URL = 'https://downloads.wortschatz-leipzig.de/corpora/%s.tar.gz'
-    cites = ('leipzig-corpus',)
+    cites = ('goldhahn-etal-2012-building',)
     errors = []
     for data_id in dataset_ids.read_text().splitlines():
         data_id = data_id.strip()
