@@ -104,17 +104,23 @@ def generate_report(langs, names, not_names=None, format='plain'):
     print(f'[Total]\t{sum(group_stats.values()):,}')
 
 
-def list_recipes(id_only=False, delim='\t'):
+def list_recipes(id_only=False, delim='\t', format='plain'):
     from mtdata.recipe import RECIPES
     log.info(f"Found {len(RECIPES)} recipes")
     for i, recipe in enumerate(RECIPES.values()):
         if id_only:
             print(recipe.id)
         else:
-            kvs = recipe.format().items()
-            if i == 0:
-                print(delim.join([kv[0] or '' for kv in kvs]))
-            print(delim.join([kv[1] or '' for kv in kvs]))
+            if format == 'plain':
+                kvs = recipe.format(compact=True).items()
+                if i == 0:
+                    print(delim.join([kv[0] or '' for kv in kvs]))
+                print(delim.join([kv[1] or '' for kv in kvs]))
+            elif format == 'json':
+                kvs = recipe.format(compact=False).items()
+                print(json.dumps({k:v for k, v in kvs if v}))
+            else:
+                raise f'{format} not supported'
 
 
 def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False,
@@ -242,6 +248,7 @@ def parse_args():
 
     listr_p = sub_ps.add_parser('list-recipe', formatter_class=MyFormatter)
     listr_p.add_argument('-id', '--id', action='store_true', help="List recipe IDs only", default=False)
+    listr_p.add_argument('-f', '--format',  help="Format", default='plain', choices=['plain', 'json'])
     getr_p = sub_ps.add_parser('get-recipe', formatter_class=MyFormatter)
     getr_p.add_argument('-ri', '-i', '--recipe-id', type=str, help='Recipe ID', required=True)
     getr_p.add_argument('-f', '--fail-on-error', action='store_true', help='Fail on error')
@@ -283,7 +290,7 @@ def main():
     elif args.task == 'echo':
         echo_data(did=args.dataset_id)
     elif args.task == 'list-recipe':
-        list_recipes(id_only=args.id)
+        list_recipes(id_only=args.id, format=args.format)
     elif args.task == 'get-recipe':
         get_recipe(**vars(args))
     elif args.task == 'stats':
