@@ -3,7 +3,7 @@
 #
 # Author: Thamme Gowda
 # Created: 10/27/21
-import sys
+import copy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict, Optional, ClassVar, Tuple
@@ -44,20 +44,33 @@ class Recipe:
                 if not data_ids:
                     continue
                 if isinstance(data_ids, str):
-                    data_ids = data_ids.split(',')
-                data_fields[name] = [DatasetId.parse(i.strip()) for i in data_ids]
+                    data_ids = [data_ids]
+                res = []
+                assert isinstance(data_ids, list)
+                for data_id in data_ids:
+                    if isinstance(data_id, str):
+                        res += data_id.split(',')
+                    else:     # nested list
+                        assert isinstance(data_id, list)
+                        res += data_id
+                res = [i.strip() for i in res if i.strip()]  # drop emtpy
+                assert len(res) == len(set(res)), f'Duplicate ids found in {id}.{name}; expected unique ids'
+                data_fields[name] = [DatasetId.parse(i.strip()) for i in res]
         return cls(id=id, langs=langs, **data_fields, **kwargs)
 
     @property
     def data_fields(self) -> Dict:
         return {name: getattr(self, name) for name in self._id_field_names}
 
-    def format(self):
-        rec = vars(self)
+    def format(self, compact=True):
+        rec = copy.copy(vars(self))
         rec['langs'] = '-'.join(map(str, self.langs))
         for name, dids in self.data_fields.items():
             if dids:
-                rec[name] = ','.join(str(did) for did in dids)
+                dids = [str(did) for did in dids]
+                if compact:
+                    dids = ','.join(dids)
+                rec[name] = dids
         return rec
 
     @classmethod
@@ -73,7 +86,7 @@ class Recipe:
                 try:
                     r = cls.parse(**r)
                 except:
-                    log.error(f"Error while parsing recipe:\n{r}")
+                    log.error(f"Error while parsing recipe: {path}\n{r.get('id') or r}")
                     raise
                 assert r.id not in recipes, f'{r} is a duplicate'
                 recipes[r.id] = r

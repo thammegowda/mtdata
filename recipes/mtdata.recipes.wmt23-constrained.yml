@@ -1,0 +1,236 @@
+# pip install mtdata==0.4.0
+#TODO: 1. Double check Leipzig corpora selection; there are too many
+#      2. Extended commoncrawl 
+#      3. Create separate recipes for enx->xxx and xxx->eng
+
+# To list/view all available datasets:
+#   mtdata list -id -l <lang1>-<lang2>   # parallel
+#   mtdata list -id -l <lang>            # monolingual
+
+- id: wmt23-csen
+  langs: ces-eng
+  dev:
+    - Statmt-newstest_csen-2020-ces-eng
+    - Statmt-newstest_encs-2020-eng-ces
+  test:
+    #- Statmt-newstest_csen-2021-ces-eng
+    #- Statmt-newstest_encs-2021-eng-ces
+  train:
+    - Statmt-europarl-10-ces-eng
+    - ParaCrawl-paracrawl-9-eng-ces
+    - Statmt-commoncrawl_wmt13-1-ces-eng
+    - Statmt-news_commentary-16-ces-eng
+    - Statmt-wikititles-3-ces-eng
+    - Facebook-wikimatrix-1-ces-eng
+    - Tilde-eesc-2017-ces-eng
+    - Tilde-ema-2016-ces-eng
+    - Tilde-ecb-2017-ces-eng
+    - Tilde-rapid-2019-ces-eng
+    # TODO: CzEng2.0 and backtranslated news require login
+
+  mono_train:
+    - Statmt-news_crawl-2021-ces
+    - Statmt-europarl-10-ces
+    - Statmt-news_commentary-17-ces
+    - Statmt-commoncrawl-wmt22-ces
+    # TODO extended common crawl
+    - Leipzig-news-2022_1m-ces 
+    - Leipzig-newscrawl-2019_1m-ces
+    - Leipzig-wikipedia-2021_1m-ces
+    - Leipzig-web_public-2019_1m-ces_CZ
+    - &mono_eng       # a nested list to group and anchor ids.. it will be flattened my mtdata
+      - Statmt-news_crawl-2021-eng
+      - Statmt-news_discussions-2019-eng
+      - Statmt-news_commentary-17-eng
+      - Statmt-commoncrawl-wmt22-eng
+      - Statmt-europarl-10-eng
+      - Leipzig-news-2020_1m-eng
+      - Leipzig-ukweb_public-2018_1m-eng
+      - Leipzig-simplewikipedia-2021_300k-eng
+
+- id: wmt23-deen
+  langs: deu-eng
+  dev:
+    - Statmt-newstest_deen-2020-deu-eng
+    - Statmt-newstest_ende-2020-eng-deu
+  test:
+    #- Statmt-newstest_deen-2021-deu-eng
+    #- Statmt-newstest_ende-2021-eng-deu
+  train:
+    - Statmt-europarl-10-deu-eng
+    - ParaCrawl-paracrawl-9-eng-deu
+    - Statmt-commoncrawl_wmt13-1-deu-eng
+    - Statmt-news_commentary-16-deu-eng
+    - Statmt-wikititles-3-deu-eng
+    - Facebook-wikimatrix-1-deu-eng
+    - Tilde-eesc-2017-deu-eng
+    - Tilde-ema-2016-deu-eng
+    - Tilde-airbaltic-1-deu-eng
+    - Tilde-czechtourism-1-deu-eng
+    - Tilde-ecb-2017-deu-eng
+    - Tilde-rapid-2016-deu-eng
+    - Tilde-rapid-2019-deu-eng
+  mono_train:
+    - Statmt-commoncrawl-wmt22-deu
+    - Statmt-europarl-10-deu
+    - Statmt-news_commentary-17-deu
+    - Statmt-news_crawl-2021-deu
+    # TODO extended common crawl
+    - Leipzig-wikipedia-2021_1m-deu
+    - Leipzig-comweb-2021_1m-deu
+    - Leipzig-mixed_typical-2011_1m-deu
+    - Leipzig-news-2022_30k-deu
+    - Leipzig-newscrawl-2020_1m-deu
+    - Leipzig-web-2021_100k-deu_DE
+    - *mono_eng
+
+- id: wmt23-jaen
+  langs: jpn-eng
+  dev:
+    - Statmt-newstest_enja-2020-eng-jpn
+    - Statmt-newstest_jaen-2020-jpn-eng
+  test:
+    #- Statmt-newstest_enja-2021-eng-jpn
+    #- Statmt-newstest_jaen-2021-jpn-eng
+  train:
+    - Statmt-news_commentary-16-eng-jpn
+    - KECL-paracrawl-3-eng-jpn
+    - Statmt-wikititles-3-jpn-eng
+    - Facebook-wikimatrix-1-eng-jpn
+    - Statmt-ted-wmt20-eng-jpn
+    - StanfordNLP-jesc_train-1-eng-jpn
+    - Phontron-kftt_train-1-eng-jpn
+  mono_train:
+    - Statmt-news_crawl-2021-jpn
+    - Statmt-news_commentary-17-jpn
+    - Statmt-commoncrawl-wmt22-jpn
+    - Leipzig-web-2020_1m-jpn_JP
+    - Leipzig-comweb-2018_1m-jpn
+    - Leipzig-web_public-2019_1m-jpn_JP
+    - Leipzig-news-2020_100k-jpn
+    - Leipzig-newscrawl-2019_1m-jpn
+    - Leipzig-wikipedia-2021_1m-jpn
+    - *mono_eng
+
+- id: wmt23-ruen
+  langs: rus-eng
+  dev:
+    - Statmt-newstest_enru-2020-eng-rus
+    - Statmt-newstest_ruen-2020-rus-eng
+  test:
+    #- Statmt-newstest_enru-2021-eng-rus
+    #- Statmt-newstest_ruen-2021-rus-eng
+  train:
+    - ParaCrawl-paracrawl-1_bonus-eng-rus
+    - Statmt-commoncrawl_wmt13-1-rus-eng
+    - Statmt-news_commentary-16-eng-rus
+    - Statmt-yandex-wmt22-eng-rus
+    - Statmt-wikititles-3-rus-eng
+    - OPUS-unpc-v1.0-eng-rus
+    - Facebook-wikimatrix-1-eng-rus
+    - Statmt-backtrans_ruen-wmt20-rus-eng
+    - Statmt-backtrans_enru-wmt20-eng-rus   # for eng-rus
+    - Tilde-airbaltic-1-eng-rus
+    - Tilde-czechtourism-1-eng-rus
+    - Tilde-worldbank-1-eng-rus
+  mono_train:
+    - Statmt-news_crawl-2021-rus
+    - Statmt-news_commentary-17-rus
+    - Statmt-commoncrawl-wmt22-rus
+    - Leipzig-news-2022_1m-rus
+    - Leipzig-newscrawl_public-2018_1m-rus
+    - Leipzig-web-2017_1m-rus_GE
+    - Leipzig-wikipedia-2021_1m-rus
+    - *mono_eng
+
+- id: wmt23-zhen
+  langs: zho-eng
+  dev:
+    - Statmt-newstest_enzh-2020-eng-zho
+    - Statmt-newstest_zhen-2020-zho-eng
+  test:
+    #- Statmt-newstest_enzh-2021-eng-zho
+    #- Statmt-newstest_zhen-2021-zho-eng
+  train:
+    - ParaCrawl-paracrawl-1_bonus-eng-zho
+    - Statmt-news_commentary-16-eng-zho
+    - Statmt-wikititles-3-zho-eng
+    - OPUS-unpc-v1.0-eng-zho
+    # TODO: CCMT
+    - Facebook-wikimatrix-1-eng-zho
+    - Statmt-backtrans_enzh-wmt20-eng-zho
+  mono_train: 
+    - Statmt-news_crawl-2021-zho
+    - Statmt-news_commentary-17-zho
+    - Statmt-commoncrawl-wmt22-zho
+    - Leipzig-wikipedia-2018_1m-zho
+    - Leipzig-web-2016_1m-zho_MO
+    - Leipzig-tradnewscrawl-2011_1m-zho
+    - Leipzig-news-2020_300k-zho
+    - *mono_eng
+
+- id: wmt23-hren
+  langs: hrv-eng
+  #dev:
+  #test:
+  train:
+    - ParaCrawl-paracrawl-9-eng-hrv
+    - Tilde-eesc-2017-eng-hrv
+    - Tilde-ema-2016-eng-hrv
+    - Tilde-ecb-2017-eng-hrv
+    - Tilde-rapid-2016-eng-hrv
+    - Tilde-worldbank-1-eng-hrv
+    - OPUS-ccaligned-v1-eng-hrv
+    - OPUS-ccmatrix-v1-eng-hrv
+    - OPUS-dgt-v2019-eng-hrv
+    - OPUS-elitr_eca-v1-eng-hrv
+    - OPUS-elra_w0131-v1-eng-hrv
+    - OPUS-elra_w0135-v1-eng-hrv
+    - OPUS-elra_w0142-v1-eng-hrv
+    - OPUS-elra_w0204-v1-eng-hrv
+    - OPUS-elra_w0226-v1-eng-hrv
+    - OPUS-elra_w0238-v1-eng-hrv
+    - OPUS-elra_w0264-v1-eng-hrv
+    - OPUS-elra_w0266-v1-eng-hrv
+    - OPUS-elra_w0273-v1-eng-hrv
+    - OPUS-elra_w0291-v1-eng-hrv
+    - OPUS-elra_w0292-v1-eng-hrv
+    - OPUS-elra_w0293-v1-eng-hrv
+    - OPUS-elra_w0294-v1-eng-hrv
+    - OPUS-elrc_2922-v1-eng-hrv
+    - OPUS-elrc_2923-v1-eng-hrv
+    - OPUS-elrc_3382-v1-eng-hrv
+    - OPUS-eubookshop-v2-eng-hrv
+    - OPUS-europat-v2-eng-hrv
+    - OPUS-europat-v3-eng-hrv
+    - OPUS-gnome-v1-eng-hrv
+    - OPUS-kde4-v2-eng-hrv
+    - OPUS-multiccaligned-v1-eng-hrv
+    - OPUS-multiparacrawl-v7.1-eng-hrv
+    - OPUS-opensubtitles-v2018-eng-hrv
+    #- OPUS-paracrawl-v4-eng-hrv
+    #- OPUS-paracrawl-v5-eng-hrv
+    #- OPUS-paracrawl-v7.1-eng-hrv
+    #- OPUS-paracrawl-v8-eng-hrv
+    - OPUS-qed-v2.0a-eng-hrv
+    #- OPUS-setimes-v1-eng-hrv
+    - OPUS-setimes-v2-eng-hrv
+    #- OPUS-ted2020-v1-eng-hrv
+    #- OPUS-tatoeba-v2-eng-hrv
+    - OPUS-tatoeba-v20210722-eng-hrv
+    - OPUS-tedtalks-v1-eng-hrv
+    - OPUS-tildemodel-v2018-eng-hrv
+    - OPUS-ubuntu-v14.10-eng-hrv
+    - OPUS-wikimatrix-v1-eng-hrv
+    - OPUS-xlent-v1.1-eng-hrv
+    - OPUS-bible_uedin-v1-eng-hrv
+    - OPUS-hrenwac-v1-eng-hrv
+    #- OPUS-wikimedia-v20190628-eng-hrv
+    - OPUS-wikimedia-v20210402-eng-hrv
+  mono_train:
+    - Statmt-news_crawl-2021-hrv
+    - Leipzig-wikipedia-2021_1m-hrv
+    - Leipzig-web-2015_1m-hrv_HR
+    - Leipzig-newscrawl-2016_1m-hrv
+    - Leipzig-news-2020_1m-hrv
+    - *mono_eng
