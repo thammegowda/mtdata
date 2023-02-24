@@ -71,8 +71,9 @@ def echo_data(did:DatasetId, delim='\t'):
     parser = Parser(path, ext=entry.in_ext or None, ent=entry)
     count = 0
     for rec in parser.read_segs():
-        if isinstance(rec, list):
-            rec = delim.join(rec) 
+        if isinstance(rec, (list, tuple)):
+            rec = (col.replace(delim, ' ').replace('\n', ' ') for col in rec)
+            rec = delim.join(rec)
         print(rec)
         count += 1
     log.info(f'Total rows={count:,}')

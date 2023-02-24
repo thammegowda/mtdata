@@ -22,7 +22,7 @@ def Langs(string) -> Union[BCP47Tag, LangPair]:
     std_codes = tuple([bcp47(part) for part in parts])
     std_form = '-'.join(str(lang) for lang in std_codes)
     if std_form != string:
-        log.info(f"Suggestion: Use codes {std_form} instead of {string}.")
+        log.info(f"Suggestion: consider using '{std_form}' instead of '{string}'.")
     return std_codes
 
 
