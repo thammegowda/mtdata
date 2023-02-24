@@ -398,22 +398,27 @@ def load_mono(index: Index):
     for year, *langs in news_crawl:
         for lang in langs:
             url = f'https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz'
-            ent = Entry(DatasetId(GROUP_ID, 'news_crawl', str(year), (lang,)), url=url, in_ext='txt', cite=wmt22_cite)
-            index.add_entry(ent)
+            index += Entry(DatasetId(GROUP_ID, 'news_crawl', str(year), (lang,)), url=url, in_ext='txt', cite=wmt22_cite)
     # 2. News Discussions
     for lang, years in [('en', range(2011, 2019+1)), ('fr', range(2006, 2019+1))]:
         for year in years:
-            index.add_entry(Entry(DatasetId(GROUP_ID, 'news_discussions', str(year), (lang,)),
+            index += Entry(DatasetId(GROUP_ID, 'news_discussions', str(year), (lang,)),
                 url=f'https://data.statmt.org/news-discussions/{lang}/news-discuss.{year}.{lang}.filtered.gz',
-                in_ext='txt', cite=wmt22_cite))
+                in_ext='txt', cite=wmt22_cite)
 
-    # 3. Europarl 10 
+    # 3. Europarl 10
     for lang in 'cs de en es fi fr lt pl pt'.split():
-         index.add_entry(Entry(DatasetId(GROUP_ID, 'europarl', 'v10', (lang,)),
-                url=f'https://www.statmt.org/europarl/v10/training-monolingual/europarl-v10.{lang}.tsv.gz',
-                in_ext='tsv', cols=(0,), cite=wmt22_cite))
+        version = '10'
+        url = f'https://www.statmt.org/europarl/v{version}/training-monolingual/europarl-v{version}.{lang}.tsv.gz'
+        index += Entry(DatasetId(GROUP_ID, 'europarl', version, (lang,)), url=url, in_ext='tsv', cols=(0,), cite=wmt22_cite)
     
     # 4. News Commentary
+    for version in '14 15 16 17'.split():
+        langs = "ar cs de en es fr hi id it ja kk nl pt ru zh".split()
+        for lang in langs:
+            url = f'https://data.statmt.org/news-commentary/v{version}/training-monolingual/news-commentary-v{version}.{lang}.gz' 
+            index += Entry(DatasetId(GROUP_ID, 'news_commentary', version, (lang,)), url=url, in_ext='txt', cite=wmt22_cite)
+
     # 5. Common Crawl
     prefix = 'http://web-language-models.s3-website-us-east-1.amazonaws.com'
     for lang, path in [
@@ -440,6 +445,7 @@ def load_mono(index: Index):
                     url=f'https://lang.org.ua/static/downloads/corpora/{filename}',
                     in_ext='txt', cite=wmt22_cite))
     
-    # 8. Leipzig Corpora: lot of files, moved to a separate module
+    # 8. Leipzig Corpora: lot of files, so we moved to a separate module
     # 9. Legal Ukrainian 
+    
     
