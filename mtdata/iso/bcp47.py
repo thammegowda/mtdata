@@ -201,7 +201,9 @@ data_file = Path(__file__).parent / "bcp47.json"
 bcp47_data = load_json(data_file)
 bcp47 = BCP47Parser(data=bcp47_data)
 
-if __name__ == '__main__':
+
+def main():
+
     import argparse
 
     p = argparse.ArgumentParser(prog='python -m mtdata.iso.bcp47', description="BCP47 lookup tool")
@@ -213,3 +215,6 @@ if __name__ == '__main__':
         for inp in args['langs']:
             tag = bcp47(inp)
             print(f'{inp}\t{tag}\t{tag.lang}\t{tag.script}\t{tag.region}')
+
+if __name__ == '__main__':
+    main()
