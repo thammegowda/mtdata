@@ -49,7 +49,7 @@ class Index:
                         obj.store_index(cached_index_file.with_suffix('.jsonl'))
 
             assert cached_index_file.exists()
-            log.info(f"Loading index from cache {cached_index_file}")
+            log.debug(f"Loading index from cache {cached_index_file}")
             with open(cached_index_file, "rb") as inp:
                 obj = pickle.load(inp)
 

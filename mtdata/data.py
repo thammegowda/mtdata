@@ -176,7 +176,7 @@ class Dataset:
         train_hashes = set()
 
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
-            with pbar_man.counter(color='green', total=len(paired_files), unit='it', desc="Merging",
+            with pbar_man.counter(color='green', total=len(paired_files), unit='it', desc="Merging", leave=False,
                                   min_delta=Defaults.PBAR_REFRESH_INTERVAL, autorefresh=True) as pbar:
                 for name, (if1, if2) in paired_files.items():
                     for seg1, seg2 in self.read_parallel(if1, if2):
@@ -326,7 +326,7 @@ class Dataset:
         of1, of2 = out_paths
         of1.parent.mkdir(exist_ok=True)
         of2.parent.mkdir(exist_ok=True)
-        with pbar_man.counter(color='green', total=len(in_paths), unit='it', desc="Merging", 
+        with pbar_man.counter(color='green', total=len(in_paths), unit='it', desc="Merging", leave=False,
                               min_delta=Defaults.PBAR_REFRESH_INTERVAL, autorefresh=True) as pbar, \
                 IO.writer(of1) as w1, IO.writer(of2) as w2:
             for if1, if2 in in_paths:
