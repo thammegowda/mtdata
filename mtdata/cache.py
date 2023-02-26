@@ -8,7 +8,7 @@ import fnmatch
 from dataclasses import dataclass
 from pathlib import Path
 from mtdata.index import Entry
-from mtdata import log, __version__, pbar_man, MTDataException, FILE_LOCK_TIMEOUT
+from mtdata import log, __version__, pbar_man, MTDataException, Defaults
 from mtdata.utils import ZipPath, TarPath, format_byte_size
 from mtdata.parser import Parser
 from typing import List, Union, Dict, Any
@@ -32,7 +32,7 @@ class Cache:
     def __post_init__(self):
         if isinstance(self.root, str):
             self.root = Path(self.root)
-        log.info(f"Local cache is at {self.root}")
+        log.debug(f"Local cache is at {self.root}")
 
     def get_entry(self, entry: Entry, fix_missing=True) -> Union[Path, List[Path]]:
         if entry.in_ext == OPUS_XCES:
@@ -175,18 +175,19 @@ class Cache:
             raise MTDataException(f'Unable to read {entry.did}; the file is neither zip nor tar')
 
     def download(self, url: str, save_at: Path, timeout=(5, 10), entry=None):
+        
         valid_flag = self.get_flag_file(save_at)
         lock_file = valid_flag.with_suffix("._lock")
         if valid_flag.exists() and save_at.exists():
             return save_at
         save_at.parent.mkdir(parents=True, exist_ok=True)
-
-        log.info(f"Acquiring lock on {lock_file}")
-        with portalocker.Lock(lock_file, 'w', timeout=FILE_LOCK_TIMEOUT) as fh:
+        log.info(f"Download: {url} → {save_at}")
+        log.debug(f"Acquiring lock on {lock_file}")
+        with portalocker.Lock(lock_file, 'w', timeout=Defaults.FILE_LOCK_TIMEOUT) as fh:
             # check if downloaded by  other parallel process
             if valid_flag.exists() and save_at.exists():
                 return save_at
-            log.info(f"GET {url} → {save_at}")
+            log.debug(f"GET {url} → {save_at}")
             resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True, timeout=timeout)
             assert resp.status_code == 200, resp.status_code
             buf_size = 2 ** 14
@@ -199,7 +200,8 @@ class Cache:
                     ]
             desc = ''.join(desc) 
             with pbar_man.counter(color='green', total=tot_bytes//2**10, unit='KiB', leave=False, position=2,
-                                  desc=f"{desc}") as pbar, open(save_at, 'wb', buffering=2**24) as out:
+                                  min_delta=Defaults.PBAR_REFRESH_INTERVAL, desc=f"{desc}"
+                                  ) as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):
                     out.write(chunk)
                     pbar.update(incr=buf_size//2**10)

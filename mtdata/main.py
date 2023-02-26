@@ -32,14 +32,14 @@ def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=
 
 def get_data(langs, out_dir, merge_train=False, compress=False,
              drop_dupes=False, drop_tests=False, fail_on_error=False, n_jobs=DEF_N_JOBS, **kwargs):
-    if kwargs:
-        log.info(f"Args are ignored: {kwargs}")
     from mtdata.data import Dataset, DATA_FIELDS
     dataset_ids: Dict[str, List] = {}
     for name in DATA_FIELDS:
         old_name = f'{name}_dids'  # previously, "train_dids" was used. now "train"
         if kwargs.get(old_name):
-            dataset_ids[name] = kwargs[old_name]
+            dataset_ids[name] = kwargs.pop(old_name)
+    if kwargs:
+        log.info(f"Args are ignored: {kwargs}")
     assert any(bool(ids) for ids in dataset_ids.values()),\
         f'Required at least one of --train --test --dev --mono-train --mono-test --mono-dev \n given={dataset_ids.keys()}'
     dataset = Dataset.prepare(
@@ -172,7 +172,7 @@ def parse_args():
     p.add_argument('-vv', '--verbose', action='store_true', help='verbose mode')
     p.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__} \n{my_path}')
     log_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
-    p.add_argument('-ll', '--log-level', default='WARNING', metavar='LEVEL',
+    p.add_argument('-ll', '--log-level', default='INFO', metavar='LEVEL',
                    choices=log_levels, help=f'Set log level. Choices={log_levels}')
     p.add_argument('-ri', '--reindex', action='store_true',
                    help=f"Invalidate index of entries and recreate it. This deletes"

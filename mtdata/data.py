@@ -11,7 +11,7 @@ from typing import Optional, List, Tuple, Dict, Union
 
 import portalocker
 
-from mtdata import log, pbar_man, cache_dir as CACHE_DIR, FILE_LOCK_TIMEOUT
+from mtdata import log, pbar_man, cache_dir as CACHE_DIR, Defaults
 from mtdata.cache import Cache
 from mtdata.entry import Entry, DatasetId, LangPair
 from mtdata.index import INDEX
@@ -122,14 +122,15 @@ class Dataset:
             refs_file.rename(refs_file.with_suffix('.bib.bak'))
         with refs_file.open('w', encoding='utf-8', errors='ignore') as fh:
             for ent in all_entries:
-                cite = f'%% UNKNOWN'
-                if ent.cite:
+                cite = ent.cite
+                if cite:
                     try:
                         if isinstance(cite, str):
                             cite = [cite]
                         cite = '\n'.join(INDEX.ref_db.get_bibtex(key) for key in cite)
                     except:
                         log.exception(f'Error reading citation for {ent.did}: {cite}', exc_info=True)
+                cite = cite or '%% UNKNOWN'
                 fh.write(f"%% {ent.did}\n{cite}\n\n")
         log.info(f"Created references at {refs_file}")
         return dataset
@@ -154,7 +155,7 @@ class Dataset:
         # paired_files = self.find_bitext_pairs(self.train_parts_dir, lang1, lang2)
         paired_files = {}
         for ent in entries:
-            e1, e2 = self.get_paths(self.train_parts_dir, ent)
+            e1, e2 = self.get_paths(self.train_parts_dir, ent, compress=compress)
             _, swapped = BCP47Tag.check_compat_swap(self.langs, ent.did.langs, fail_on_incompat=True)
             if swapped:
                 e1, e2 = e2, e1
@@ -176,7 +177,7 @@ class Dataset:
 
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
             with pbar_man.counter(color='green', total=len(paired_files), unit='it', desc="Merging",
-                                  autorefresh=False) as pbar:
+                                  min_delta=Defaults.PBAR_REFRESH_INTERVAL, autorefresh=True) as pbar:
                 for name, (if1, if2) in paired_files.items():
                     for seg1, seg2 in self.read_parallel(if1, if2):
                         counts['total'][name] += 1
@@ -215,11 +216,14 @@ class Dataset:
         cache_path = self.cache.get_entry(entry)
         parser = Parser(cache_path, ext=entry.in_ext or None, ent=entry)
         out_path = self.get_paths(dirpath, entry, compress=compress)
+        log.info("Writing %s to %s", entry.did, out_path)
         io_args = dict(encoding='utf-8', errors='ignore')
         with IO.writer(out_path, **io_args) as out:
             count, skips = 0, 0
             for sentence in parser.read_segs():
-                assert isinstance(sentence, str), f'str sentence expected. found: {type(str)}'
+                if isinstance(sentence, (list, tuple)) and len(sentence) == 1:
+                    sentence = sentence[0]   # flatten list
+                assert isinstance(sentence, str), f'str sentence expected. found: {type(sentence)}; entry: {entry.did}'
                 sentence = sentence and sentence.strip()
                 if not sentence:
                     skips += 1
@@ -322,7 +326,8 @@ class Dataset:
         of1, of2 = out_paths
         of1.parent.mkdir(exist_ok=True)
         of2.parent.mkdir(exist_ok=True)
-        with pbar_man.counter(color='green', total=len(in_paths), unit='it', desc="Merging") as pbar, \
+        with pbar_man.counter(color='green', total=len(in_paths), unit='it', desc="Merging", 
+                              min_delta=Defaults.PBAR_REFRESH_INTERVAL, autorefresh=True) as pbar, \
                 IO.writer(of1) as w1, IO.writer(of2) as w2:
             for if1, if2 in in_paths:
                 assert if1.exists()
@@ -345,7 +350,7 @@ class Dataset:
             if fail_on_error:
                 raise e
             msg = str(e).replace('\n', '\t')
-            with portalocker.Lock(self.errors_file, 'a', timeout=FILE_LOCK_TIMEOUT) as fh:
+            with portalocker.Lock(self.errors_file, 'a', timeout=Defaults.FILE_LOCK_TIMEOUT) as fh:
                 # self.errors_file.open('a').write(f"{ent.did}\t{msg}\n")
                 fh.write(f"{ent.did}\t{msg}\n")
 
@@ -359,13 +364,13 @@ class Dataset:
                       fail_on_error=fail_on_error) for ent in entries]
         pool = Pool(self.n_jobs)
         with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
-                              autorefresh=True, position=3) as pbar:
+                              autorefresh=True, min_delta=Defaults.PBAR_REFRESH_INTERVAL, position=3) as pbar:
             for _ in pool.imap_unordered(self.add_part_thread, tasks):
                 pbar.update(force=True)
 
     def add_parts_sequential(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
         with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
-                              autorefresh=True, position=3) as pbar:
+                              min_interval=Defaults.PBAR_REFRESH_INTERVAL, autorefresh=True, position=3) as pbar:
             for ent in entries:
                 try:
                     n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
