@@ -8,7 +8,7 @@ It provides CLI and python APIs, which can be used for preparing MT experiments.
 
 * <<quickstart--example,Quickstart Example>>
 * https://thammegowda.github.io/mtdata/[Docs]
-* Search datasets: https://thammegowda.github.io/mtdata/search.html
+* https://thammegowda.github.io/mtdata/search.html[Search datasets]
 
 This tool knows:
 
@@ -33,15 +33,19 @@ https://github.com/thammegowda/mtdata[MTData] is here to:
 
 [,bash]
 ----
-# from pypi
-pip install mtdata
+# Option 1: from pypi
+pip install -I mtdata
+# To install a specific version, get version number from https://pypi.org/project/mtdata/#history
+pip install mtdata==[version]
 
-# from the source code on github
+# Option 2: install from latest master branch
+pip install -I git+https://github.com/thammegowda/mtdata
+
+
+# Option 3: for development/editable mode
 git clone https://github.com/thammegowda/mtdata
 cd mtdata
 pip install --editable .
-
-# from develop branch
 ----
 
 == Current Status:
@@ -128,8 +132,9 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 
 == Usecases
 
-* USC ISI's 500-to-English MT: http://rtg.isi.edu/many-eng/
+* WMT 2023 General (News) Translation Task: https://www.statmt.org/wmt23/mtdata/
 * WMT 2022 General (News) Translation Task: https://www.statmt.org/wmt22/mtdata/
+* USC ISI's 500-to-English MT: ~http://rtg.isi.edu/many-eng/~ http://gowda.ai/006-many-to-eng/)
 * Meta AI's 200-to-200 MT: https://research.facebook.com/file/585831413174038/No-Language-Left-Behind--Scaling-Human-Centered-Machine-Translation.pdf[Whitepaper]
 
 == CLI Usage
@@ -444,7 +449,7 @@ To inspect parsing/mapping, use `python -m mtdata.iso.bcp47 <args>`
 
 [,bash]
 ----
-python -m mtdata.iso.bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin-Deva kan-Latn
+mtdata-bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin-Deva kan-Latn
 ----
 
 |===
