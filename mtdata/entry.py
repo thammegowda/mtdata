@@ -5,7 +5,7 @@
 
 from typing import Tuple, List, Optional, Union, Any
 from dataclasses import dataclass
-
+import json
 
 from mtdata import log
 from mtdata.iso.bcp47 import BCP47Tag, bcp47
@@ -16,16 +16,13 @@ DID_DELIM = '-'  # I  wanted to use ":", but Windows, they dont like ":" in path
 LangPair = Tuple[BCP47Tag, BCP47Tag]
 
 
-def lang_pair(string) -> LangPair:
+def Langs(string) -> Union[BCP47Tag, LangPair]:
     parts = string.strip().split('-')
-    if len(parts) != 2:
-        msg = f'expected value of form "xxx-yyz" eg "deu-eng"; given {string}'
-        raise Exception(msg)
-    std_codes = (bcp47(parts[0]), bcp47(parts[1]))
+    assert 1 <= len(parts) <= 2, f'Expected at most two language IDs where one for monolingual and two for bitexts, but given {string}'
+    std_codes = tuple([bcp47(part) for part in parts])
     std_form = '-'.join(str(lang) for lang in std_codes)
     if std_form != string:
-        log.info(f"Suggestion: Use codes {std_form} instead of {string}."
-                 f" Let's make a little space for all languages of our planet 😢.")
+        log.info(f"Suggestion: consider using '{std_form}' instead of '{string}'.")
     return std_codes
 
 
@@ -34,7 +31,7 @@ class DatasetId:
     group: str
     name: str
     version: str
-    langs: Union[Tuple[str, str], LangPair]  # one=monolingual, two=bitext; many=multi
+    langs: Union[Tuple[str], Tuple[BCP47Tag], Tuple[str, str], LangPair]  # one=monolingual, two=bitext; many=multi
 
     def __post_init__(self):
         assert self.group
@@ -45,10 +42,21 @@ class DatasetId:
             for ch in '-/*|[](){}<>?&:;,!^$"\' ':
                 assert ch not in name, f"Character '{ch}' is not permitted in name {name}"
         # ensure lang ID is BCP47 tag
-        assert isinstance(self.langs, tuple), f'Expected tuple (l1, l2); given={self.langs}'
+        
+        assert isinstance(self.langs, tuple),\
+            f'Expected tuple (l1, l2) for parallel or tuple(str,) for mono; given={self.langs}'
         langs = tuple(lang if isinstance(lang, BCP47Tag) else bcp47(lang) for lang in self.langs)
         if langs != self.langs:
             object.__setattr__(self, 'langs', langs)  # bypass frozen=True
+
+    @property
+    def type(self):
+        if len(self.langs) == 1:
+            return 'mono'
+        elif len(self.langs) == 2:
+            return 'bitext'
+        else:
+            raise Exception(f'Not supported. langs={self.langs}')
 
     @property
     def lang_str(self):
@@ -62,28 +70,28 @@ class DatasetId:
 
     @classmethod
     def parse(cls, string, delim=DID_DELIM) -> 'DatasetId':
-        expected_format = f"<group>{delim}<name>{delim}<version>{delim}<l1>{delim}<l2>"
+        expected_format = f"<group>{delim}<name>{delim}<version>{delim}<l1>[{delim}<l2>]"
         parts = string.strip().split(delim)
-        if len(parts) != 5:
-            raise Exception(f'Dataset ID expected in format: {expected_format}; but given {string}.'
-                            f' If you are unsure, run "mtdata list | cut -f1 | grep -i <name>" and copy its id.')
-        group, name, version, lang1, lang2 = parts
-        return cls(group=group, name=name, version=version, langs=(lang1, lang2))
+        if len(parts) < 4 or len(parts) > 5:
+            raise Exception(f'Dataset ID expected in format: {expected_format}; but given {string} ({len(parts)}).'
+                            f' If you are unsure, run "mtdata list -id | grep -i <name>" and copy its id.')
+        group, name, version, *langs = parts
+        return cls(group=group, name=name, version=version, langs=tuple(langs))
 
 
 class Entry:
     __slots__ = ('did', 'url', 'filename', 'ext', 'in_paths', 'in_ext', 'cite', 'cols', 'is_archive')
 
-    def __init__(self, did: DatasetId,
+    def __init__(self, did: Union[str, DatasetId],
                  url: Union[str, Tuple[str, str]],
                  filename: Optional[str] = None,
                  ext: Optional[str] = None,
                  in_paths: Optional[List[str]] = None,
                  in_ext: Optional[str] = None,
-                 cite: Optional[str] = None,
+                 cite: Optional[Tuple[str]] = None,
                  cols: Optional[Tuple[int, int]] = None):
-
-        assert isinstance(did, DatasetId)
+        if not isinstance(did, DatasetId):
+            did = DatasetId.parse(did)
         self.did = did
         self.url = url
         self.filename = filename
@@ -114,7 +122,29 @@ class Entry:
         if self.in_ext == 'tmx':
             return False
         return tuple(reversed(langs)) == tuple(self.lang_str)
-
+    
+    def is_compatible(self, langs: Union[LangPair, Tuple[BCP47Tag]]):
+        """
+        Checks if the entry is compatible with given languages
+        :param: langs 
+        """
+        if len(self.did.langs) == 2 and len(langs) == 2: # bitext bitext
+            compat, _swap = BCP47Tag.check_compat_swap(pair1=langs, pair2=self.did.langs)
+            return compat
+        elif len(self.did.langs) == 1 and len(langs) == 1: # mono mono
+            return self.did.langs[0].is_compatible(langs[0])
+        else: 
+            assert len(self.did.langs) + len(langs) == 3 
+            if len(self.did.langs) == 2 and len(langs) == 1: # bitext mono
+                pair = self.did.langs
+                mono = langs[0]
+            elif len(self.did.langs) == 1 and len(langs) == 2: # mono bitext
+                mono = self.did.langs[0]
+                pair = langs
+            else:
+                raise Exception(f'Compat check for {self.did.langs} x {langs} is not implemented')
+            return mono.is_compatible(pair[0]) or mono.is_compatible(pair[1])  # either side
+        
     def __str__(self):
         return self.format(delim=' ')
 
@@ -131,6 +161,20 @@ class Entry:
         noisy = seg1 is None or seg2 is None or not seg1.strip() or not seg2.strip()
         return noisy
 
+    class JSONEncoder(json.JSONEncoder):
+        def default(self, obj: Any) -> Any:
+            if isinstance(obj, Entry):
+                state = {}
+                for field in obj.__slots__:
+                    val = getattr(obj, field)
+                    if not val:
+                        continue
+                    if field == 'did':
+                        val = str(val)
+                    state[field] = val
+                return state
+            else:
+                return super().default(obj)
 
 class JW300Entry(Entry):
     url: Tuple[str, str, str]  # (align.xml, src.xml, tgt.xml)

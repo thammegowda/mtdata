@@ -5,12 +5,13 @@
 import argparse
 from pathlib import Path
 from collections import defaultdict
+from typing import List, Dict, Mapping, Tuple, Optional
 import json
 
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
 from mtdata import pbar_man
-from mtdata.entry import DatasetId, lang_pair
+from mtdata.entry import DatasetId, Langs
 from mtdata.utils import IO, format_byte_size
 
 DEF_N_JOBS = 1
@@ -29,19 +30,27 @@ def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=
     log.info(f"Total {len(entries)} entries")
 
 
-def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, merge_train=False, compress=False,
+def get_data(langs, out_dir, merge_train=False, compress=False,
              drop_dupes=False, drop_tests=False, fail_on_error=False, n_jobs=DEF_N_JOBS, **kwargs):
+    from mtdata.data import Dataset, DATA_FIELDS
+    dataset_ids: Dict[str, List] = {}
+    for name in DATA_FIELDS:
+        old_name = f'{name}_dids'  # previously, "train_dids" was used. now "train"
+        if kwargs.get(old_name):
+            dataset_ids[name] = kwargs.pop(old_name)
     if kwargs:
         log.info(f"Args are ignored: {kwargs}")
-    from mtdata.data import Dataset
-    assert train_dids or test_dids, 'Required --train or --test or both'
+    assert any(bool(ids) for ids in dataset_ids.values()),\
+        f'Required at least one of --train --test --dev --mono-train --mono-test --mono-dev \n given={dataset_ids.keys()}'
     dataset = Dataset.prepare(
-        langs, train_dids=train_dids, test_dids=test_dids, out_dir=out_dir,
-        dev_dids=dev_dids, cache_dir=CACHE_DIR, merge_train=merge_train, compress=compress,
+        langs, dataset_ids=dataset_ids, out_dir=out_dir, cache_dir=CACHE_DIR,
+        merge_train=merge_train, compress=compress,
         drop_dupes=drop_dupes, drop_tests=drop_tests, fail_on_error=fail_on_error, n_jobs=n_jobs)
     cli_sig = f'-l {"-".join(str(l) for l in langs)}'
-    for flag, dids in [('-tr', train_dids), ('-ts', test_dids), ('-dv', dev_dids)]:
+
+    for name, dids in dataset_ids.items():
         if dids:
+            flag = '--' + name.replace('_', '-')
             cli_sig += f' {flag} {" ".join(map(str, dids))}'
     for flag, val in [('--merge', merge_train), ('--compress', compress), ('-dd', drop_dupes), ('-dt', drop_tests)]:
         if val:
@@ -51,6 +60,23 @@ def get_data(langs, out_dir, train_dids=None, test_dids=None, dev_dids=None, mer
     log.info(f'mtdata args for reproducing this dataset:\n {sig}')
     with IO.writer(out_dir / 'mtdata.signature.txt', append=True) as w:
         w.write(sig)
+
+
+def echo_data(did:DatasetId, delim='\t'):
+    from mtdata.data import INDEX, Cache, Parser
+    assert did in INDEX
+    entry = INDEX[did]
+    cache = Cache(CACHE_DIR)
+    path = cache.get_entry(entry)
+    parser = Parser(path, ext=entry.in_ext or None, ent=entry)
+    count = 0
+    for rec in parser.read_segs():
+        if isinstance(rec, (list, tuple)):
+            rec = (col.replace(delim, ' ').replace('\n', ' ') for col in rec)
+            rec = delim.join(rec)
+        print(rec)
+        count += 1
+    log.info(f'Total rows={count:,}')
 
 
 def generate_report(langs, names, not_names=None, format='plain'):
@@ -78,10 +104,23 @@ def generate_report(langs, names, not_names=None, format='plain'):
     print(f'[Total]\t{sum(group_stats.values()):,}')
 
 
-def list_recipes():
-    from mtdata.recipe import print_all, RECIPES
+def list_recipes(id_only=False, delim='\t', format='plain'):
+    from mtdata.recipe import RECIPES
     log.info(f"Found {len(RECIPES)} recipes")
-    print_all(RECIPES.values())
+    for i, recipe in enumerate(RECIPES.values()):
+        if id_only:
+            print(recipe.id)
+        else:
+            if format == 'plain':
+                kvs = recipe.format(compact=True).items()
+                if i == 0:
+                    print(delim.join([kv[0] or '' for kv in kvs]))
+                print(delim.join([kv[1] or '' for kv in kvs]))
+            elif format == 'json':
+                kvs = recipe.format(compact=False).items()
+                print(json.dumps({k:v for k, v in kvs if v}))
+            else:
+                raise f'{format} not supported'
 
 
 def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False,
@@ -93,9 +132,9 @@ def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_
     if not recipe:
         raise ValueError(f'recipe {recipe_id} not found. See "mtdata list-recipe"')
 
-    get_data(langs=recipe.langs, train_dids=recipe.train, dev_dids=recipe.dev, test_dids=recipe.test,
-             merge_train=merge_train, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes, drop_tests=drop_tests,
-             fail_on_error=fail_on_error, n_jobs=n_jobs)
+    data_fields = {f'{k}_dids': v for k, v in recipe.data_fields.items()}
+    get_data(langs=recipe.langs, merge_train=merge_train, out_dir=out_dir, compress=compress, drop_dupes=drop_dupes,
+             drop_tests=drop_tests, fail_on_error=fail_on_error, n_jobs=n_jobs, **data_fields)
 
 
 def show_stats(*dids: DatasetId, quick=False):
@@ -132,31 +171,32 @@ def parse_args():
     p = argparse.ArgumentParser(formatter_class=MyFormatter, epilog=f'Loaded from {my_path} (v{__version__})')
     p.add_argument('-vv', '--verbose', action='store_true', help='verbose mode')
     p.add_argument('-v', '--version', action='version', version=f'%(prog)s {__version__} \n{my_path}')
-    p.add_argument('-ll', '--log-level', help='Set log level', default='WARNING',
-                   choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+    log_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+    p.add_argument('-ll', '--log-level', default='INFO', metavar='LEVEL',
+                   choices=log_levels, help=f'Set log level. Choices={log_levels}')
     p.add_argument('-ri', '--reindex', action='store_true',
                    help=f"Invalidate index of entries and recreate it. This deletes"
                         f" {cached_index_file} only and not the downloaded files. "
-                        f"Use this if you're using in developer mode and modifying mtdata index.")
+                        f"Use this if you've modifying mtdata source code and want to force reload.")
     grp = p.add_mutually_exclusive_group()
     grp.add_argument('-pb', '--pbar', action='store_true', dest='progressbar',
                      help=f"Show progressbar", default=True)
     grp.add_argument('-no-pb', '--no-pbar', action='store_false', dest='progressbar',
                     help=f"Do not show progressbar", default=False)
 
-
-    sub_ps = p.add_subparsers(required=True, dest='task',
+    sub_ps = p.add_subparsers(required=True, dest='task', metavar='<task>',
                               help='''R|
 "list" - List the available entries
 "get" - Downloads the entry files and prepares them for experiment
+"echo" - Print contents of a dataset into STDOUT.
 "list-recipe" - List the (well) known papers and dataset recipes used in their experiments
 "get-recipe" - Get the datasets used in the specified experiment from "list-recipe"
 "stats" - Get stats of dataset"
 ''')
 
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
-    list_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
-                        help='Language pairs; e.g.: deu-eng')
+    list_p.add_argument('-l', '--langs', metavar='L1/L1-L2', type=Langs,
+                        help='Language ID e.g. eng (monolingual) or a pair, e.g.: deu-eng (bitext)')
     list_p.add_argument('-id', '--id', action='store_true', help="Show dataset ID only", default=False)
     list_p.add_argument('-n', '--names', metavar='NAME', nargs='*',
                         help='Name of dataset set; eg europarl_v9.')
@@ -168,7 +208,7 @@ def parse_args():
                                                        ' but added here for convenience of switching b/w get and list')
 
     get_p = sub_ps.add_parser('get', formatter_class=MyFormatter)
-    get_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair,
+    get_p.add_argument('-l', '--langs', metavar='L1-L2', type=Langs,
                        help='Language pairs; e.g.: deu-eng', required=True)
     get_p.add_argument('-tr', '--train', metavar='ID', dest='train_dids', nargs='*', type=DatasetId.parse,
                        help='''R|Names of datasets separated by space, to be used for *training*.
@@ -187,6 +227,9 @@ def parse_args():
                     help='Fail if an error occurs on any one of dataset pars')
     get_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs", default=DEF_N_JOBS)
 
+    echo_p = sub_ps.add_parser('echo', formatter_class=MyFormatter)
+    echo_p.add_argument('dataset_id', type=DatasetId.parse, help='Dataset ID')
+
     def add_getter_args(parser):
         parser.add_argument(f'--compress', action='store_true', default=False, help="Keep the files compressed")
         parser.add_argument('-dd', f'--dedupe', '--drop-dupes', dest='drop_dupes', action='store_true', default=False,
@@ -199,13 +242,15 @@ def parse_args():
     add_getter_args(get_p)
 
     report_p = sub_ps.add_parser('report', formatter_class=MyFormatter)
-    report_p.add_argument('-l', '--langs', metavar='L1-L2', type=lang_pair, help='Language pairs; e.g.: deu-eng')
+    report_p.add_argument('-l', '--langs', metavar='L1-L2', type=Langs, help='Language pairs; e.g.: deu-eng')
     report_p.add_argument('-n', '--names', metavar='NAME', nargs='*', help='Name of dataset set; eg europarl_v9.')
     report_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
 
     listr_p = sub_ps.add_parser('list-recipe', formatter_class=MyFormatter)
+    listr_p.add_argument('-id', '--id', action='store_true', help="List recipe IDs only", default=False)
+    listr_p.add_argument('-f', '--format',  help="Format", default='plain', choices=['plain', 'json'])
     getr_p = sub_ps.add_parser('get-recipe', formatter_class=MyFormatter)
-    getr_p.add_argument('-ri', '--recipe-id', type=str, help='Recipe ID', required=True)
+    getr_p.add_argument('-ri', '-i', '--recipe-id', type=str, help='Recipe ID', required=True)
     getr_p.add_argument('-f', '--fail-on-error', action='store_true', help='Fail on error')
     getr_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs (processes)", default=DEF_N_JOBS)
     add_boolean_arg(getr_p, 'merge', dest='merge_train', default=True, help='Merge train into a single file')
@@ -242,8 +287,10 @@ def main():
                   groups=args.groups, not_groups=args.not_groups, id_only=args.id)
     elif args.task == 'get':
         get_data(**vars(args))
+    elif args.task == 'echo':
+        echo_data(did=args.dataset_id)
     elif args.task == 'list-recipe':
-        list_recipes()
+        list_recipes(id_only=args.id, format=args.format)
     elif args.task == 'get-recipe':
         get_recipe(**vars(args))
     elif args.task == 'stats':
@@ -251,7 +298,7 @@ def main():
     elif args.task == 'report':
         generate_report(args.langs, names=args.names, not_names=args.not_names)
     else:
-        raise Exception(f'{args.task} not implemented')
+        raise Exception(f'task={args.task} not implemented')
 
 
 if __name__ == '__main__':

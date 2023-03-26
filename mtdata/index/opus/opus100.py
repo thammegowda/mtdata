@@ -18,8 +18,7 @@ zeroshot_v1 = (
 
 def load_all(index: Index):
     URL = "https://object.pouta.csc.fi/OPUS-100/v1.0/opus-100-corpus-v1.0.tar.gz"
-    cite = index.ref_db.get_bibtex('zhang-etal-2020-improving')
-    cite += '\n\n' + index.ref_db.get_bibtex('tiedemann2012parallel')
+    cite = ('zhang-etal-2020-improving', 'tiedemann2012parallel')
     filename = 'opus-100-corpus-v1.0.tar.gz'
     code_map = dict(nb='nob', sh='hbs')  # these arent obvious to iso lookup function, so helping
     group, name = 'OPUS', 'opus100'

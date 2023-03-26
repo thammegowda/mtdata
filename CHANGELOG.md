@@ -1,6 +1,29 @@
 # Change Log
 
-## v0.3.8 - WIP/20221124
+## v0.4.0 - 20230326
+
+* Fix: allenai_nllb.json is now included in MANIFEST.in [#137](https://github.com/thammegowda/mtdata/issues/137). Also fixed CI: Travis -> github actions
+* Update ELRC datasets [#138](https://github.com/thammegowda/mtdata/pull/138). Thanks [@AlexUmnov](https://github.com/AlexUmnov)
+* Add Jparacrawl Chinese-Japanese subset  [#143](https://github.com/thammegowda/mtdata/pull/143 ). Thanks [@BrightXiaoHan](https://github.com/BrightXiaoHan)
+* Add Flores200 dev and devtests [#145](https://github.com/thammegowda/mtdata/pull/145). Thanks [@ZenBel](https://github.com/ZenBel)
+* Add support for `mtdata echo <ID>`
+* dataset entries only store bibtext keys and not full citation text
+   * creates index cache as JSONLine file. (WIP towards dataset statistics)
+* Simplified index loading 
+* simplified  compression format handlers. Added support for opening .bz2 files without creating temp files.
+* all resources are moved to `mtdata/resource` dir and any new additions to that dir are automatically included in python package (Fail proof for future issues like #137 ) 
+
+**New and exciting features:**
+* Support for adding new datasets at runtime (`mtdata*.py` from run dir). Note: you have to reindex by calling  `mtdata -ri list`
+* Monolingual datasets support in progress (currently testing)
+   * Dataset IDs are now `Group-name-version-lang1-lang2` for bitext and `Group-name-version-lang` for monolingual
+   * `mtdata list` is updated.  `mtdata list -l eng-deu` for bitext and `mtdata list -l eng` for monolingual   
+   * Added: Statmt Newscrawl, news-discussions, Leipzig corpus, ... 
+   
+
+> _skipped 0.3.9 because the chages are significant_ 
+
+## v0.3.8 - 20221124
 
 * CLI arg `--log-level` with default set to `WARNING`
 * progressbar can be disabled from CLI `--no-pbar`; default is enabled `--pbar`

@@ -7,7 +7,7 @@ It provides CLI and python APIs, which can be used for preparing MT experiments.
 
 * [Quickstart Example](#quickstart--example)
 * [Docs](https://thammegowda.github.io/mtdata/)
-* Search datasets: https://thammegowda.github.io/mtdata/search.html
+* [Search datasets](https://thammegowda.github.io/mtdata/search.html)
 
 
 This tool knows:
@@ -80,8 +80,9 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 
 
 ## Usecases
-* USC ISI's 500-to-English MT: ~http://rtg.isi.edu/many-eng/~ http://gowda.ai/006-many-to-eng/)
+* WMT 2023 General (News) Translation Task: https://www.statmt.org/wmt23/mtdata/ 
 * WMT 2022 General (News) Translation Task: https://www.statmt.org/wmt22/mtdata/ 
+* USC ISI's 500-to-English MT: ~http://rtg.isi.edu/many-eng/~ http://gowda.ai/006-many-to-eng/)
 * Meta AI's 200-to-200 MT: [Whitepaper](https://research.facebook.com/file/585831413174038/No-Language-Left-Behind--Scaling-Human-Centered-Machine-Translation.pdf)
 
 ## CLI Usage
@@ -346,7 +347,7 @@ Notes:
 To inspect parsing/mapping, use `python -m mtdata.iso.bcp47 <args>` 
 
 ```bash
-python -m mtdata.iso.bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin-Deva kan-Latn
+mtdata-bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin-Deva kan-Latn
 ```
 
 | INPUT	        | STD	      | LANG	 | SCRIPT	 | REGION |

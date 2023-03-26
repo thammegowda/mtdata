@@ -35,3 +35,20 @@
     #- AI4Bharath-wat_test-2021-eng-tel
     - JoshuaDec-indian_test-1-tel-eng
     - WAT-alt_test-2020-mya-eng
+
+- id: test_02_with_mono
+  desc: Testing monolingual downloads
+  langs: eng-deu
+  train:
+    - Statmt-europarl-10-deu-eng
+    #- Statmt-news_commentary-16-deu-eng
+    #- Statmt-wikititles-3-deu-eng
+  dev:
+    - Statmt-newstest_deen-2020-deu-eng
+  test:
+    - Statmt-newstest_ende-2020-eng-deu
+  mono_train:
+    - Statmt-news_crawl-2021-eng
+    - Statmt-news_discussions-2019-eng
+    - Statmt-news_crawl-2021-deu
+    - Statmt-europarl-v10-deu

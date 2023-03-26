@@ -6,7 +6,7 @@
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from mtdata.main import get_data, DatasetId, lang_pair
+from mtdata.main import get_data, DatasetId, Langs as lang_pair
 
 
 def check_parallel(path1:Path, path2: Path):

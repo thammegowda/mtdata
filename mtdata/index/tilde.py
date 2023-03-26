@@ -6,7 +6,7 @@ from mtdata.entry import Entry
 from mtdata.index import Index, DatasetId
 
 
-def load(index: Index):
+def load_all(index: Index):
     content = """EESC;2017::bg-de bg-en bg-fr cs-de cs-en cs-fr da-de da-en da-fr de-el de-en de-es de-et de-fi de-fr de-hr de-hu de-is de-it de-lt de-lv de-mt de-nl de-pl de-pt de-ro de-sk de-sl de-sv el-en el-fr en-es en-et en-fi en-fr en-hr en-hu en-is en-it en-lt en-lv en-mt en-nl en-pl en-pt en-ro en-sk en-sl en-sv es-fr et-fr fi-fr fr-hr fr-hu fr-is fr-it fr-lt fr-lv fr-mt fr-nl fr-pl fr-pt fr-ro fr-sk fr-sl fr-sv
     EMA;2016::bg-de bg-en bg-fr cs-de cs-en cs-fr da-de da-en da-fr de-el de-en de-es de-et de-fi de-fr de-hr de-hu de-is de-it de-lt de-lv de-mt de-nl de-no de-pl de-pt de-ro de-sk de-sl de-sv el-en el-fr en-es en-et en-fi en-fr en-hr en-hu en-is en-it en-lt en-lv en-mt en-nl en-no en-pl en-pt en-ro en-sk en-sl en-sv es-fr et-fr fi-fr fr-hr fr-hu fr-is fr-it fr-lt fr-lv fr-mt fr-nl fr-no fr-pl fr-pt fr-ro fr-sk fr-sl fr-sv
     airbaltic;::de-en de-et de-fi de-lt de-lv de-ru en-et en-fi en-lt en-lv en-ru et-fi et-lt et-lv et-ru fi-lt fi-lv fi-ru lt-lv lt-ru lv-ru
@@ -16,7 +16,7 @@ def load(index: Index):
     rapid;2016::bg-de bg-en bg-fr cs-de cs-fr da-de da-en da-fr de-el de-en de-es de-et de-fi de-fr de-hr de-hu de-is de-it de-lt de-lv de-mt de-nl de-no de-pl de-pt de-ro de-sk de-sl de-sv el-en el-fr en-es en-et en-fi en-fr en-hr en-hu en-is en-it en-lt en-lv en-mt en-nl en-no en-pt en-ro en-sk en-sl en-sv es-fr et-fr fi-fr fr-hr fr-hu fr-is fr-it fr-lt fr-lv fr-mt fr-nl fr-no fr-pl fr-pt fr-ro fr-sk fr-sl fr-sv
     rapid;2019::cs-en de-en en-pl
     worldbank;::en-es en-fr en-hr en-pl en-pt en-ro en-ru en-sq en-sr en-tr en-uk"""
-    cite = index.ref_db.get_bibtex('rozis-skadins-2017-tilde')
+    cite = ('rozis-skadins-2017-tilde',)
     TILDE = 'https://tilde-model.s3-eu-west-1.amazonaws.com/%s.%s-%s.tmx.zip'
     for line in content.splitlines():
         line = line.strip()

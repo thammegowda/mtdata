@@ -10,18 +10,19 @@ curl https://raw.githubusercontent.com/project-anuvaad/anuvaad-parallel-corpus/m
    grep -o 'http[^ ]*zip' > anuvad.tsv
 """
 from pathlib import Path
-from mtdata.index import Index, Entry, DatasetId, log
+from mtdata import resource_dir
+from mtdata.index import Index, Entry, DatasetId, log 
 import collections as coll
 
 
-data_file = Path(__file__).parent / 'anuvaad.tsv'
+data_file = resource_dir / 'anuvaad.tsv'
 
 
 def load_all(index: Index):
     lines = data_file.read_text(encoding='utf-8').splitlines()
     langs = set('hi bn ta ml te kn mr pa gu as ur or'.split())       # other than en
     group_id = 'Anuvaad'
-    cite_txt = index.ref_db.get_bibtex('project-anuvaad')
+    cite_txt = ('project-anuvaad',)
     for url in lines:
         url = url.strip()
         assert url.startswith('http') and url.endswith('.zip')

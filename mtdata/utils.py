@@ -8,18 +8,27 @@ import tarfile
 import zipfile
 from dataclasses import dataclass
 import portalocker
+import gzip
+import bz2
+import lzma
 
-
-from mtdata import log, FILE_LOCK_TIMEOUT
+from mtdata import log, Defaults
 import shutil
 from datetime import datetime
 from pathlib import Path
+
+COMPRESSORS = {
+    '.gz': gzip.open,
+    '.bz2': bz2.open,
+    '.xz': lzma.open
+}
 
 
 class IO:
     """File opener and automatic closer
     Copied from my other project https://github.com/isi-nlp/rtg/blob/master/rtg/utils.py
     """
+    
     def __init__(self, path, mode='r', encoding=None, errors=None, smart_ext=True):
         """
 
@@ -46,15 +55,12 @@ class IO:
         self.errors = errors or 'replace'
 
     def __enter__(self):
-        if not self.path and self.fd is not None:
-            # already opened
+        if not self.path and self.fd is not None: # already opened
             return self.fd
 
-        if self.smart_ext and self.path.name.endswith(".gz"):   # gzip mode
-            self.fd = gzip.open(self.path, self.mode, encoding=self.encoding, errors=self.errors)
-        elif self.smart_ext and self.path.name.endswith(".xz"):
-            import lzma
-            self.fd = lzma.open(self.path, self.mode, encoding=self.encoding, errors=self.errors)
+        if self.smart_ext and self.path.suffix in COMPRESSORS:
+            open_func = COMPRESSORS[self.path.suffix]
+            self.fd = open_func(self.path, self.mode, encoding=self.encoding, errors=self.errors)
         else:
             if 'b' in self.mode:  # binary mode doesnt take encoding or errors
                 self.fd = self.path.open(self.mode)
@@ -121,6 +127,10 @@ class ArchivedPath:
     root: Path
     name: str
     fd = None
+    
+    @property
+    def suffix(self):
+        return self.root.suffix
 
     def __post_init__(self):
         assert self.root.exists()
@@ -193,7 +203,7 @@ class TarPath(ArchivedPath):
         valid_path = self.root.parent / (dir_name + '.valid')
         lock_path = self.root.parent / (dir_name + '.lock')
         if not valid_path.exists():
-            with portalocker.Lock(lock_path, 'w', timeout=FILE_LOCK_TIMEOUT) as _:
+            with portalocker.Lock(lock_path, 'w', timeout=Defaults.FILE_LOCK_TIMEOUT) as _:
                 if valid_path.exists():
                     return   # extracted by parallel process
                 log.info(f"extracting {self.root}")

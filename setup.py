@@ -52,6 +52,7 @@ setup(
         'console_scripts': [
             'mtdata=mtdata.__main__:main',
             'mtdata-iso=mtdata.iso.__main__:main',
+            'mtdata-bcp47=mtdata.iso.bcp47:main',
                             ],
     },
     install_requires=[

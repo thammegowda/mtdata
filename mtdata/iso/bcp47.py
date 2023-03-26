@@ -16,7 +16,7 @@ from typing import Optional, Union, Tuple
 from functools import lru_cache
 from mtdata.iso import iso3_code
 
-MULTI_LANG = 'mul'  # multilang
+MULTI_LANG = 'mul'      # multilang; compatible with any lang
 
 
 def load_json(path: Path):
@@ -59,6 +59,8 @@ class BCP47Tag(namedtuple('BCP47Tag', ('lang', 'script', 'region', 'tag'))):
         # one of them is general, other is a variant of region
         # e.g. eng vs eng_US
         if not self.region or not lang2.region:
+            return True
+        if self.lang == MULTI_LANG or lang2.lang == MULTI_LANG:
             return True
         return False
 
@@ -199,7 +201,9 @@ data_file = Path(__file__).parent / "bcp47.json"
 bcp47_data = load_json(data_file)
 bcp47 = BCP47Parser(data=bcp47_data)
 
-if __name__ == '__main__':
+
+def main():
+
     import argparse
 
     p = argparse.ArgumentParser(prog='python -m mtdata.iso.bcp47', description="BCP47 lookup tool")
@@ -211,3 +215,6 @@ if __name__ == '__main__':
         for inp in args['langs']:
             tag = bcp47(inp)
             print(f'{inp}\t{tag}\t{tag.lang}\t{tag.script}\t{tag.region}')
+
+if __name__ == '__main__':
+    main()

@@ -1,9 +1,4 @@
 include README.md
-include mtdata/index/refs.bib
-include mtdata/index/elrc_share.tsv
-include mtdata/index/anuvaad.tsv
-include mtdata/index/opus/opus_index.tsv
-include mtdata/index/allenai_nllb.json
+graft mtdata/resource
 include mtdata/iso/bcp47.json
-include mtdata/recipe/recipes.yml
 global-exclude *.pyc

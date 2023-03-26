@@ -6,7 +6,7 @@
 from typing import Optional, Union, Tuple, List
 from dataclasses import dataclass
 from pathlib import Path
-from mtdata import log, pbar_man
+from mtdata import log, pbar_man, Defaults
 from mtdata.entry import Entry
 from itertools import zip_longest
 
@@ -100,7 +100,8 @@ class Parser:
             data = _zip_n_check()
         else:
             raise Exception("This is an error")
-        with pbar_man.counter(color='green', unit='seg', leave=False, desc=f"Reading {self.ent.did}") as pbar:
+        with pbar_man.counter(color='green', unit='seg', leave=False, desc=f"Reading {self.ent.did}", autoregresh=True, 
+                              min_delta=Defaults.PBAR_REFRESH_INTERVAL) as pbar:
             for rec in data:
                 yield rec
                 pbar.update()
