@@ -3,7 +3,7 @@
 #
 # Author: Thamme Gowda
 # Created: 10/4/21
-from mtdata.iso.bcp47 import bcp47, BCP47Tag
+from mtdata.iso.bcp47 import bcp47, BCP47Tag, bcp47e
 from pytest import fail
 
 
@@ -78,3 +78,27 @@ def test_py_obj_model():
     assert mem[bcp47('english')] == 10
     assert mem[bcp47('English-Latn')] == 10
 
+def test_bcp47_express():
+
+    # express script
+    assert bcp47e("en-GB")[:3] == ('eng', 'Latn', 'GB')
+    assert bcp47e("en-GB") == ('eng', 'Latn', 'GB', 'eng_Latn_GB')
+    assert bcp47e("en") == ('eng', 'Latn', None, 'eng_Latn')
+    assert bcp47e("en-IN") == ('eng', 'Latn', 'IN', 'eng_Latn_IN')
+    assert bcp47e("en-US") == ('eng', 'Latn', 'US', 'eng_Latn_US')
+    assert bcp47e("en-Latn") == ('eng', 'Latn', None, 'eng_Latn')
+    
+    # hypothetical;
+    assert bcp47e("en-Knda") == ('eng', 'Knda', None, 'eng_Knda')
+    assert bcp47e("en-Latn-GB") == ('eng', 'Latn', 'GB', 'eng_Latn_GB')
+
+    try:
+        bcp47e("en-Latn-UK")
+        fail("UK is not ISO country code")
+    except ValueError:
+        pass  # expected
+
+    assert bcp47e("kn") == ('kan', 'Knda', None, 'kan_Knda')              # missing, express
+    assert bcp47e("kn-Knda") == ('kan', 'Knda', None, 'kan_Knda')         # default script, keep
+    assert bcp47e("kn_Deva_IN") == ('kan', 'Deva', 'IN', 'kan_Deva_IN')  # Non default, keep
+    

@@ -372,7 +372,7 @@ def load_mono(index: Index):
     # 1. News Crawl
     """
     base=https://data.statmt.org/news-crawl
-    langs=$(curl $base/ | grep -o 'href="[a-z][a-z]\+/"' | cut -f2 -d \")
+    langs=$(curl $base/ | grep -o 'href="[a-z][a-z]\\+/"' | cut -f2 -d \")
     for i in $langs; do
         curl $base/$i | grep -o 'href="news[^"]*.gz"' | cut -f2 -d\"; sleep 1;
     done | tee news.txt
