@@ -10,6 +10,7 @@
 # Created: 10/3/21
 
 import json
+import sys
 from collections import namedtuple
 from pathlib import Path
 from typing import Optional, Union, Tuple
@@ -18,6 +19,12 @@ from mtdata.iso import iso3_code
 
 MULTI_LANG = 'mul'      # multilang; compatible with any lang
 
+# script hanldes
+SH_SUPPRESS_DEFAULT = 'suppress-default'
+SH_SUPPRESS_ALL = 'suppress-all'
+SH_EXPRESS = 'express'
+SCRIPT_HANDLES = [SH_SUPPRESS_DEFAULT, SH_SUPPRESS_ALL, SH_EXPRESS]
+DEF_SCRIPT_HANDLE = SH_SUPPRESS_DEFAULT
 
 def load_json(path: Path):
     assert path.exists()
@@ -106,9 +113,20 @@ class BCP47Tag(namedtuple('BCP47Tag', ('lang', 'script', 'region', 'tag'))):
 
 class BCP47Parser:
 
-    def __init__(self, data):
+    def __init__(self, data, script_handle=DEF_SCRIPT_HANDLE):
+        """_summary_
+
+        Args:
+            data: bcp47.json
+            script_handle: How to handle scripts. Defaults to 'supress_default'.
+                * supress_default -- supress default script and retain non defaults
+                * supress_all -- supress all scripts
+                * express -- retain script (if exists) or fill in the default script (if known)
+        """
         self.data = data
-        assert all(key in data for key in ['languages', 'scripts', 'countries']), 'malformed bcp4j data'
+        assert script_handle in SCRIPT_HANDLES
+        self.script_handle = script_handle
+        assert all(key in data for key in ['languages', 'scripts', 'countries']), 'malformed bcp4.json data'
         self.scripts = {code: name for code, name in data['scripts']}
         self.countries = {code: name for code, name in data['countries']}
         self.languages = {code3: (code2, name) for code3, code2, name in data['languages']}
@@ -163,8 +181,16 @@ class BCP47Parser:
                 raise ValueError(f"Cant find {code_orig}; Unknown region")
             parts = parts[1:]
         assert not parts  # all parts are consumed
-        if script and lang in self.default_scripts and self.default_scripts[lang] == script:
-            script = None  # suppress script
+
+        if script:
+            if self.script_handle == SH_SUPPRESS_ALL:
+                script = None  # suppress script
+            elif self.script_handle == SH_SUPPRESS_DEFAULT and lang in self.default_scripts and self.default_scripts[lang] == script:
+                script = None  # suppress script
+        elif self.script_handle == SH_EXPRESS and lang in self.default_scripts:
+            # express i.e., fill in
+            script = self.default_scripts[lang]
+
         return BCP47Tag(lang=lang, script=script, region=region)
 
     def try_parse(self, tag, default=None):
@@ -200,6 +226,7 @@ class BCP47Parser:
 data_file = Path(__file__).parent / "bcp47.json"
 bcp47_data = load_json(data_file)
 bcp47 = BCP47Parser(data=bcp47_data)
+bcp47e = BCP47Parser(data=bcp47_data, script_handle=SH_EXPRESS)
 
 
 def main():
@@ -207,10 +234,23 @@ def main():
     import argparse
 
     p = argparse.ArgumentParser(prog='python -m mtdata.iso.bcp47', description="BCP47 lookup tool")
-    p.add_argument("langs", nargs='+', help="Language code or name that needs to be looked up. "
+    p.add_argument("-s", '--script', choices=SCRIPT_HANDLES, dest='script_handle', default=DEF_SCRIPT_HANDLE,
+                   help=(f"Script handle choices.  {SH_SUPPRESS_DEFAULT} suppress default scripts but retain others.  "
+                         f"{SH_SUPPRESS_ALL} -- remove all scripts.  "
+                         f"{SH_EXPRESS} -- retain all scripts and if missing, fill in the default script.  "))
+
+    p.add_argument("langs", nargs='*', help="Language code or name that needs to be looked up. "
                                             "When no language code is given, all languages are listed.")
+    p.add_argument('-p', "--pipe", action='store_true', help="Pipe mode. Read stdin, map code, and write to stdout.")
+
     args = vars(p.parse_args())
-    if args.get('langs'):
+    bcp47 = BCP47Parser(data=bcp47_data, script_handle=args['script_handle'].lower())
+    if args['pipe']:
+        for line in sys.stdin:
+            tag = bcp47(line.strip())
+            print(f'{tag}')
+    else:
+        assert args.get('langs'), 'No languages are given in CLI. Did you forget -p/--pipe flag?'
         print("INPUT\tSTD\tLANG\tSCRIPT\tREGION")
         for inp in args['langs']:
             tag = bcp47(inp)

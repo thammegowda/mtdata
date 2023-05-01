@@ -364,6 +364,22 @@ mtdata-bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin-Deva kan-Latn
 | kan-in	       | kan_IN	   | kan	  | None	   | IN     |
 | kn-knda-in	   | kan_IN	   | kan	  | None	   | IN     |
 
+__Pipe Mode__
+```bash
+# --pipe/-p : maps stdin -> stdout  
+# -s express : expresses scripts (unlike BCP47, which supresses default script
+$ echo -e "en\neng\nfr\nfra\nara\nkan\ntel\neng_Latn\nhin_deva"|  mtdata-bcp47 -p -s express
+eng_Latn
+eng_Latn
+fra_Latn
+fra_Latn
+ara_Arab
+kan_Knda
+tel_Telu
+eng_Latn
+hin_Deva
+```
+
 **Python API for BCP47 Mapping**
 ```python
 from mtdata.iso.bcp47 import bcp47
