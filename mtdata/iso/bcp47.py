@@ -235,7 +235,7 @@ def main():
 
     p = argparse.ArgumentParser(prog='python -m mtdata.iso.bcp47', description="BCP47 lookup tool")
     p.add_argument("-s", '--script', choices=SCRIPT_HANDLES, dest='script_handle', default=DEF_SCRIPT_HANDLE,
-                   help=(f"Script handle choices.  {SH_SUPPRESS_DEFAULT} supress default scripts but retain others.  "
+                   help=(f"Script handle choices.  {SH_SUPPRESS_DEFAULT} suppress default scripts but retain others.  "
                          f"{SH_SUPPRESS_ALL} -- remove all scripts.  "
                          f"{SH_EXPRESS} -- retain all scripts and if missing, fill in the default script.  "))
 
