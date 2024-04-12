@@ -173,6 +173,27 @@ def load_parallel(index: Index):
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
                                   cite=cite))
 
+    # test releases from github
+    for year, version, pairs in [
+            ('2022', 'v1.2', 'cs-en:B:C cs-uk:A de-en:A:B de-fr:A en-cs:B:C en-de:A:B en-hr:A:stud en-ja:A en-liv:A en-ru:A en-uk:A en-zh:A:B fr-de:A ja-en:A liv-en:A ru-en:A ru-sah:A sah-ru:A uk-cs:A uk-en:A zh-en:A:B'.split()),
+            ('2023', 'v.0.1', 'cs-uk:refA de-en:refA en-cs:refA en-de:refA en-he:refA:refB en-ja:refA en-ru:refA en-uk:refA en-zh:refA he-en:refA:refB ja-en:refA ru-en:refA uk-en:refA zh-en:refA'.split())
+        ]:
+        url = f"https://github.com/wmt-conference/wmt{year[-2:]}-news-systems/archive/refs/tags/{version}.zip"
+        for pair in pairs:
+            pair, *refs = pair.split(':')
+            src, tgt = pair.split('-')
+            for ref in refs:
+                src_file = f"wmt{year[-2:]}-news-systems-*/txt/sources/generaltest{year}.{pair}.src.{src}"
+                tgt_file = f"wmt{year[-2:]}-news-systems-*/txt/references/generaltest{year}.{pair}.ref.{ref}.{tgt}"
+                if 'ref' in ref:
+                    version = f'{year}_{ref}'
+                else:
+                    version = f'{year}_ref{ref}'
+                did = DatasetId(group=GROUP_ID, name='generaltest', version=version, langs=(src, tgt))
+                ent = Entry(did=did, filename=f'wmt{year}-news-systems.zip', in_paths=[src_file, tgt_file], in_ext='txt', url=url)
+                index.add_entry(ent)
+
+
     # Multi parallel
     wmt_sets = {
         '2009': ['en', 'cs', 'de', 'es', 'fr'],
