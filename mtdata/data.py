@@ -68,18 +68,28 @@ class Dataset:
 
     @classmethod
     def parallel_download(cls, entries: List[Entry], cache: Cache, n_jobs=1):
+        """Download entries in parallel. This is useful when there are many entries to download.
+        :param entries: list of entries to download
+        :param cache: cache object to download the entries
+        :param n_jobs: number of parallel jobs to run
+        :return: dictionary of entry -> paths. Failed entries will have None path.
+        """
         if n_jobs == 1:
             return [cache.get_entry(ent) for ent in entries]
         log.info(f"Downloading {len(entries)} datasets in parallel with {n_jobs} jobs")
+        result = {}
         with concurrent.futures.ProcessPoolExecutor(max_workers=n_jobs) as executor:
             futures_to_entry = {executor.submit(cache.get_entry, entry): entry for entry in entries}
             for future in concurrent.futures.as_completed(futures_to_entry.keys()):
                 entry:Entry = futures_to_entry[future]
                 try:
-                    entry = future.result()
+                    paths = future.result()   # paths, ignore
+                    result[entry] = paths
                     log.info(f"downloaded {entry.did}")
                 except Exception as exc:
+                    result[entry] = None
                     log.warning(f"Failed to download {entry.did}: {exc}")
+        return result
 
     @classmethod
     def prepare(cls, langs, out_dir: Path, dataset_ids=Dict[str, List[DatasetId]],
