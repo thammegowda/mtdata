@@ -45,7 +45,7 @@ setup(
     platforms=['any'],
     author='Thamme Gowda',
     author_email='tgowdan@gmail.com',
-    packages=find_namespace_packages(exclude=['crawler']),
+    packages=find_namespace_packages(include=['mtdata*']),
     keywords=['machine translation', 'datasets', 'NLP', 'natural language processing,'
                                                         'computational linguistics'],
     entry_points={
