@@ -96,7 +96,7 @@ def main(inp, out, wmt21xml=False):
 
 if __name__ == '__main__':
     import sys
-    p = argparse.ArgumentParser(description='A tool to convert TMX to TSV',
+    p = argparse.ArgumentParser(description='A tool to convert SGM to TSV',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument('-i', '--inp', type=Path, required=True, help='Input file path')
     p.add_argument('-o', '--out', type=Path, default=sys.stdout, help='Output file path')
