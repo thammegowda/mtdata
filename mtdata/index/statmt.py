@@ -92,23 +92,15 @@ def load_parallel(index: Index):
             did=DatasetId(group=GROUP_ID, name='news_commentary', version='14', langs=(l1, l2)),
             url=NEWSCOM_v14 % (l1, l2), cite=cite))
 
-    for v in [15, 16]:
-        cite = ('barrault-etal-2020-findings',)
-        url = f"http://data.statmt.org/news-commentary/v{v}/training/news-commentary-v{v}.%s-%s.tsv.gz"
-        for pair in ['ar cs', 'ar de', 'ar en', 'ar es', 'ar fr', 'ar hi', 'ar id', 'ar it', 'ar ja', 'ar kk', 'ar nl',
-                     'ar pt', 'ar ru', 'ar zh', 'cs de', 'cs en', 'cs es', 'cs fr', 'cs hi', 'cs id', 'cs it', 'cs ja',
-                     'cs kk', 'cs nl', 'cs pt', 'cs ru', 'cs zh', 'de en', 'de es', 'de fr', 'de hi', 'de id', 'de it',
-                     'de ja', 'de kk', 'de nl', 'de pt', 'de ru', 'de zh', 'en es', 'en fr', 'en hi', 'en id', 'en it',
-                     'en ja', 'en kk', 'en nl', 'en pt', 'en ru', 'en zh', 'es fr', 'es hi', 'es id', 'es it', 'es ja',
-                     'es kk', 'es nl', 'es pt', 'es ru', 'es zh', 'fr hi', 'fr id', 'fr it', 'fr ja', 'fr kk', 'fr nl',
-                     'fr pt', 'fr ru', 'fr zh', 'hi id', 'hi it', 'hi nl', 'hi pt', 'hi ru', 'hi zh', 'id it', 'id ja',
-                     'id kk', 'id nl', 'id pt', 'id ru', 'id zh', 'it kk', 'it nl', 'it pt', 'it ru', 'it zh', 'ja pt',
-                     'ja ru', 'ja zh', 'kk nl', 'kk pt', 'kk ru', 'kk zh', 'nl pt', 'nl ru', 'nl zh', 'pt ru', 'pt zh',
-                     'ru zh']:
-            l1, l2 = pair.split()
-            index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name='news_commentary', version=f'{v}', langs=(l1, l2)),
-                url=url % (l1, l2), cite=cite))
-
+    for v in '15 16 17 18 18.1'.split():
+        cite = ('kocmi-etal-2023-findings',)
+        major_v = v.split('.')[0]  # 18.1 -> 18
+        url = f"http://data.statmt.org/news-commentary/v{v}/training/news-commentary-v{major_v}.%s-%s.tsv.gz"
+        langs = "ar cs de en es fr hi id it ja kk nl pt ru zh".split()
+        for l1, l2 in itertools.combinations(langs, 2):
+            ent = Entry(did=DatasetId(group=GROUP_ID, name='news_commentary', version=v, langs=(l1, l2)),
+                url=url % (l1, l2), cite=cite)
+            index.add_entry(ent)
 
     # ===== Wiki Titles V1
     WIKI_TITLES_v1 = 'http://data.statmt.org/wikititles/v1/wikititles-v1.%s-%s.tsv.gz'
@@ -388,7 +380,7 @@ def load_parallel(index: Index):
 
 
 def load_mono(index: Index):
-    
+
     wmt22_cite = ('kocmi-etal-2022-findings',)
     # 1. News Crawl
     """
@@ -432,12 +424,12 @@ def load_mono(index: Index):
         version = '10'
         url = f'https://www.statmt.org/europarl/v{version}/training-monolingual/europarl-v{version}.{lang}.tsv.gz'
         index += Entry(DatasetId(GROUP_ID, 'europarl', version, (lang,)), url=url, in_ext='tsv', cols=(0,), cite=wmt22_cite)
-    
+
     # 4. News Commentary
-    for version in '14 15 16 17'.split():
+    for version in '14 15 16 17 18 18.1'.split():
         langs = "ar cs de en es fr hi id it ja kk nl pt ru zh".split()
         for lang in langs:
-            url = f'https://data.statmt.org/news-commentary/v{version}/training-monolingual/news-commentary-v{version}.{lang}.gz' 
+            url = f'https://data.statmt.org/news-commentary/v{version}/training-monolingual/news-commentary-v{version}.{lang}.gz'
             index += Entry(DatasetId(GROUP_ID, 'news_commentary', version, (lang,)), url=url, in_ext='txt', cite=wmt22_cite)
 
     # 5. Common Crawl
