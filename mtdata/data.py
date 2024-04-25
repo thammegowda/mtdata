@@ -7,6 +7,7 @@ import concurrent.futures
 import json
 from itertools import zip_longest
 from pathlib import Path
+import random
 from typing import Dict, List, Tuple, Union
 
 import portalocker
@@ -78,6 +79,10 @@ class Dataset:
             return [cache.get_entry(ent) for ent in entries]
         log.info(f"Downloading {len(entries)} datasets in parallel with {n_jobs} jobs")
         result = {}
+        entries = list(entries) # make a copy
+        # shuffle to hit different servers at the same time
+        random.seed(42)
+        random.shuffle(entries)
         status = dict(total=len(entries), success=0, failed=0)
         with concurrent.futures.ProcessPoolExecutor(max_workers=n_jobs) as executor:
             futures_to_entry = {executor.submit(cache.get_entry, entry): entry for entry in entries}

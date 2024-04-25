@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.4.1 - WIP
+* Better parallelization: parallel and mono data are scheduled at once (previously it was one after the other)
+* `mtdata cache` added. Improves concurrency by supporting multiple recipes
+* Added WMT general test 2022 and 2023
+* mtdata-bcp47 : -p/--pipe to map codes from stdin -> stdout
+* mtdata-bcp47 : --script {suppress-default,suppress-all,express}
+
 ## v0.4.0 - 20230326
 
 * Fix: allenai_nllb.json is now included in MANIFEST.in [#137](https://github.com/thammegowda/mtdata/issues/137). Also fixed CI: Travis -> github actions

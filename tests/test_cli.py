@@ -25,3 +25,13 @@ def test_cli_get():
         did = 'OPUS-gnome-v1-eng-kan'
         assert shrun(f'python -m mtdata get -l eng-kan -tr {did} -o {out_dir}') == 0
         assert (Path(out_dir) / 'mtdata.signature.txt').exists()
+
+def test_cache():
+    code = shrun('python -m mtdata cache -ri tg01_2to1_test -j3', capture_output=False)
+    assert code == 0
+
+
+def test_get_recipe():
+        with TemporaryDirectory() as out_dir:
+            code = shrun(f'python -m mtdata get-recipe -ri tg01_2to1_test -o {out_dir}', capture_output=False)
+            assert code == 0
