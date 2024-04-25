@@ -78,6 +78,7 @@ class Dataset:
             return [cache.get_entry(ent) for ent in entries]
         log.info(f"Downloading {len(entries)} datasets in parallel with {n_jobs} jobs")
         result = {}
+        status = dict(total=len(entries), success=0, failed=0)
         with concurrent.futures.ProcessPoolExecutor(max_workers=n_jobs) as executor:
             futures_to_entry = {executor.submit(cache.get_entry, entry): entry for entry in entries}
             for future in concurrent.futures.as_completed(futures_to_entry.keys()):
@@ -85,10 +86,13 @@ class Dataset:
                 try:
                     paths = future.result()   # paths, ignore
                     result[entry] = paths
-                    log.info(f"downloaded {entry.did}")
+                    status['success'] += 1
+                    log.info(f"[{status['success']}/{status['total']}] Downloaded {entry.did}")
                 except Exception as exc:
                     result[entry] = None
-                    log.warning(f"Failed to download {entry.did}: {exc}")
+                    status['failed'] += 1
+                    log.warning(f"Failed to download {entry.did}: {exc} Total failed: {status['failed']}")
+        log.info(f"Downloaded {status['success']} datasets. Failed to download {status['failed']}")
         return result
 
     @classmethod
