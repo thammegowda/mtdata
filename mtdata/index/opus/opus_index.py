@@ -14,7 +14,9 @@ from mtdata.iso.bcp47 import bcp47
 data_file = resource_dir / 'opus_index.tsv'
 """ To refresh the data_file from OPUS: 
 $ curl "https://opus.nlpl.eu/opusapi/?preprocessing=moses" > opus_all.json 
-$ cat opus_all.json |  jq -r  '.corpora[] | [.corpus, .version, .source, .target] | @tsv'  | sort  > opus_all.tsv 
+$ cat opus_all.json |  jq -r  '.corpora[] | [.corpus, .version, .source, .target] | @tsv' | LC_ALL=C sort > opus_index.tsv
+
+# NOTE: locale is important! See https://twitter.com/thammegowda/status/1783292996773134695
 """
 
 
