@@ -58,10 +58,22 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | Source | Dataset Count
 
 | OPUS
-| 131,359
+| 151,753
+
+| Flores
+| 51,714
+
+| Microsoft
+| 8,128
+
+| Leipzig
+| 5,893
 
 | Neulab
 | 4,455
+
+| Statmt
+| 1,784
 
 | Facebook
 | 1,617
@@ -70,13 +82,10 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | 1,611
 
 | ELRC
-| 1,506
+| 1,575
 
 | EU
 | 1,178
-
-| Statmt
-| 752
 
 | Tilde
 | 519
@@ -108,11 +117,17 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | ParIce
 | 8
 
+| LangUk
+| 5
+
 | Phontron
 | 4
 
 | NRC_CA
 | 4
+
+| KECL
+| 3
 
 | IITB
 | 3
@@ -120,14 +135,11 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | WAT
 | 3
 
-| KECL
-| 2
-
 | Masakhane
 | 2
 
 | *Total*
-| *143,921*
+| *231,157*
 |===
 
 == Usecases
@@ -522,6 +534,24 @@ mtdata-bcp47 eng English en-US en-GB eng-Latn kan Kannada-Deva hin-Deva kan-Latn
 | IN
 |===
 
+*Pipe Mode*
+
+[,bash]
+----
+# --pipe/-p : maps stdin -> stdout
+# -s express : expresses scripts (unlike BCP47, which supresses default script
+$ echo -e "en\neng\nfr\nfra\nara\nkan\ntel\neng_Latn\nhin_deva"|  mtdata-bcp47 -p -s express
+eng_Latn
+eng_Latn
+fra_Latn
+fra_Latn
+ara_Arab
+kan_Knda
+tel_Telu
+eng_Latn
+hin_Deva
+----
+
 *Python API for BCP47 Mapping*
 
 [,python]
@@ -553,6 +583,12 @@ To change it:
 mv $HOME/.mtdata /path/to/new/place
 ln -s /path/to/new/place $HOME/.mtdata
 ----
+
+== Performance Optimization Tips
+
+* Use `+mtdata cache -j <jobs> ...+` to download many datasets in parallel using specified number of jobs
+* use `--compress` flag `mtdata get|get-recipe` to keep the datasets compressed.
+* mtdata uses `pigz` by default to handle compressed files (Highly recommend installing `pigz`). If you'd like to disable pigz, `export USE_PIGZ=0`
 
 == Run tests
 
