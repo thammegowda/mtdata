@@ -1,6 +1,6 @@
 # Change Log
 
-## v0.4.1 - WIP
+## v0.4.1 - 20240425
 * Better parallelization: parallel and mono data are scheduled at once (previously it was one after the other)
 * `mtdata cache` added. Improves concurrency by supporting multiple recipes
 * Added WMT general test 2022 and 2023
