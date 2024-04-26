@@ -53,13 +53,16 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 
 |       Source | Dataset Count |
 |-------------:|--------------:|
-| OPUS | 131,359|
+| OPUS | 151,753|
+| Flores | 51,714|
+| Microsoft | 8,128|
+| Leipzig | 5,893|
 | Neulab | 4,455|
+| Statmt | 1,784|
 | Facebook | 1,617|
 | AllenAi | 1,611|
-| ELRC | 1,506|
+| ELRC | 1,575|
 | EU | 1,178|
-| Statmt | 752|
 | Tilde | 519|
 | LinguaTools | 253|
 | Anuvaad | 196|
@@ -70,13 +73,14 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | JoshuaDec | 29|
 | StanfordNLP | 15|
 | ParIce | 8|
+| LangUk | 5|
 | Phontron | 4|
 | NRC_CA | 4|
+| KECL | 3|
 | IITB | 3|
 | WAT | 3|
-| KECL | 2|
 | Masakhane | 2|
-| **Total** | **143,921** |
+| **Total** | **231,157** |
 
 
 ## Usecases
@@ -405,6 +409,12 @@ To change it:
 mv $HOME/.mtdata /path/to/new/place
 ln -s /path/to/new/place $HOME/.mtdata
 ```
+
+## Performance Optimization Tips
+* Use `mtdata cache -j <jobs> ...` to download many datasets in parallel using specified number of jobs
+* use `--compress` flag `mtdata get|get-recipe` to keep the datasets compressed. 
+* mtdata uses `pigz` by default to handle compressed files (Highly recommend installing `pigz`). If you'd like to disable pigz, `export USE_PIGZ=0`
+ 
 
 ## Run tests
 Tests are located in [tests/](tests) directory. To run all the tests:
