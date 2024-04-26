@@ -175,13 +175,13 @@ class Cache:
             raise MTDataException(f'Unable to read {entry.did}; the file is neither zip nor tar')
 
     def download(self, url: str, save_at: Path, timeout=(5, 10), entry=None):
-        
+
         valid_flag = self.get_flag_file(save_at)
         lock_file = valid_flag.with_suffix("._lock")
         if valid_flag.exists() and save_at.exists():
             return save_at
         save_at.parent.mkdir(parents=True, exist_ok=True)
-        log.info(f"Download: {url} → {save_at}")
+        log.info(f"Downloading: {url} → {save_at}")
         log.debug(f"Acquiring lock on {lock_file}")
         with portalocker.Lock(lock_file, 'w', timeout=Defaults.FILE_LOCK_TIMEOUT) as fh:
             # check if downloaded by  other parallel process
@@ -192,13 +192,12 @@ class Cache:
             assert resp.status_code == 200, resp.status_code
             buf_size = 2 ** 14
             tot_bytes = int(resp.headers.get('Content-Length', '0'))
-            n_buffers = math.ceil(tot_bytes / buf_size) or None
-            parts = url.split('/')  
+            parts = url.split('/')
             desc = [entry and f'{entry.did} |' or '',
                     tot_bytes and (format_byte_size(tot_bytes) + "|") or "",
                     parts[2][:24], '...', parts[-1][-24:], # host ... filename
                     ]
-            desc = ''.join(desc) 
+            desc = ''.join(desc)
             with pbar_man.counter(color='green', total=tot_bytes//2**10, unit='KiB', leave=False, position=2,
                                   min_delta=Defaults.PBAR_REFRESH_INTERVAL, desc=f"{desc}"
                                   ) as pbar, open(save_at, 'wb', buffering=2**24) as out:

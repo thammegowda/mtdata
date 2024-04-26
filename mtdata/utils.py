@@ -2,20 +2,23 @@
 #
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 5/13/20
-import io
+import bz2
 import gzip
+import io
+import lzma
+import os
+import shutil
+import subprocess
 import tarfile
 import zipfile
 from dataclasses import dataclass
-import portalocker
-import gzip
-import bz2
-import lzma
-
-from mtdata import log, Defaults
-import shutil
 from datetime import datetime
 from pathlib import Path
+
+import portalocker
+
+from mtdata import Defaults, log
+from mtdata.pigz import pigz
 
 COMPRESSORS = {
     '.gz': gzip.open,
@@ -23,12 +26,15 @@ COMPRESSORS = {
     '.xz': lzma.open
 }
 
+USE_PIGZ = os.environ.get('USE_PIGZ', 'YES').lower() in ('yes', 'true', '1')
+if USE_PIGZ and pigz.is_available():
+    COMPRESSORS['.gz'] = pigz.open
 
 class IO:
     """File opener and automatic closer
     Copied from my other project https://github.com/isi-nlp/rtg/blob/master/rtg/utils.py
     """
-    
+
     def __init__(self, path, mode='r', encoding=None, errors=None, smart_ext=True):
         """
 
@@ -127,7 +133,7 @@ class ArchivedPath:
     root: Path
     name: str
     fd = None
-    
+
     @property
     def suffix(self):
         return self.root.suffix
@@ -208,28 +214,23 @@ class TarPath(ArchivedPath):
                     return   # extracted by parallel process
                 log.info(f"extracting {self.root}")
                 with tarfile.open(self.root) as tar:
-                    
                     import os
-                    
                     def is_within_directory(directory, target):
-                        
                         abs_directory = os.path.abspath(directory)
                         abs_target = os.path.abspath(target)
-                    
                         prefix = os.path.commonprefix([abs_directory, abs_target])
-                        
                         return prefix == abs_directory
-                    
+
                     def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-                    
+
                         for member in tar.getmembers():
                             member_path = os.path.join(path, member.name)
                             if not is_within_directory(path, member_path):
                                 raise Exception("Attempted Path Traversal in Tar File")
-                    
+
                         tar.extractall(path, members, numeric_owner=numeric_owner) 
-                        
-                    
+
+
                     safe_extract(tar, out_path)
                 valid_path.touch()
         return out_path
@@ -252,3 +253,4 @@ def format_byte_size(n: int) -> str:
             m = n / 10 ** power
             return f'{m:.2f}'.rstrip('0') + f' {unit}'
     return f'{n}B'
+

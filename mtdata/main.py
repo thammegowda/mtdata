@@ -7,6 +7,7 @@ from pathlib import Path
 from collections import defaultdict
 from typing import List, Dict, Mapping, Tuple, Optional
 import json
+import fnmatch
 
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
@@ -149,6 +150,34 @@ def show_stats(*dids: DatasetId, quick=False):
             stats = cache.get_stats(entry)
         print(json.dumps(stats))
 
+def cache_datasets(recipes:List[str]=None, dids:List[DatasetId]=None, n_jobs=DEF_N_JOBS):
+    from mtdata.cache import Cache
+    from mtdata.data import Dataset
+    from mtdata.recipe import RECIPES
+
+    cache = Cache(CACHE_DIR)
+    all_dids = set()
+    if dids:
+        all_dids.update(dids)
+    if recipes:
+        GLOB_CHARS = '*?[]!'
+        for recipe_id in recipes:
+            if any(c in recipe_id for c in GLOB_CHARS):  # glob pattern
+                matched_rids = fnmatch.filter(RECIPES.keys(), recipe_id)
+                if not matched_rids: # at least one match expected
+                    log.warning(f'No recipe matched for {recipe_id}')
+                for rid in matched_rids:
+                    all_dids.update(RECIPES.get(rid).all_dids())
+            else:  # exact match
+                recipe = RECIPES.get(recipe_id)
+                if not recipe:
+                    raise ValueError(f'recipe {recipe_id} not found. See "mtdata list-recipe"')
+                all_dids.update(recipe.all_dids())
+    assert all_dids, 'No datasets found to cache'
+    entries = Dataset.resolve_entries(all_dids)
+    assert entries, f'No entries found'
+    log.info(f"Going to cache {len(entries)} entries at {cache.root}; n_jobs={n_jobs}")
+    Dataset.parallel_download(entries, cache=cache, n_jobs=n_jobs)
 
 class MyFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
@@ -192,6 +221,7 @@ def parse_args():
 "list-recipe" - List the (well) known papers and dataset recipes used in their experiments
 "get-recipe" - Get the datasets used in the specified experiment from "list-recipe"
 "stats" - Get stats of dataset"
+"cache" - download datasets into cache
 ''')
 
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
@@ -259,8 +289,13 @@ def parse_args():
     stats_p = sub_ps.add_parser('stats', formatter_class=MyFormatter)
     stats_p.add_argument('did', nargs='+', type=DatasetId.parse, help="Show stats of dataset IDs")
     stats_p.add_argument('-q', '--quick', action='store_true',
-                         help=("Show quick stats without downloading or parsing dataset." 
+                         help=("Show quick stats without downloading or parsing dataset."
                                "This flag sends HEAD request and shows Content-Length"))
+
+    cache_p = sub_ps.add_parser('cache', formatter_class=MyFormatter)
+    cache_p.add_argument('-ri', '--recipe-id', type=str, nargs='*', help='Recipe ID. Glob patterns are supported. Example: "wmt24-*"')
+    cache_p.add_argument('-di', '--dataset-id', type=DatasetId.parse, nargs='*', help='Dataset ID')
+    cache_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs (processes)", default=DEF_N_JOBS)
 
     args = p.parse_args()
     if args.log_level:
@@ -297,6 +332,9 @@ def main():
         show_stats(*args.did, quick=args.quick)
     elif args.task == 'report':
         generate_report(args.langs, names=args.names, not_names=args.not_names)
+    elif args.task == 'cache':
+        assert args.recipe_id or args.dataset_id, "Need at least one of --recipe-id or --dataset-id"
+        cache_datasets(recipes=args.recipe_id, dids=args.dataset_id, n_jobs=args.n_jobs)
     else:
         raise Exception(f'task={args.task} not implemented')
 

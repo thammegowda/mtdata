@@ -17,7 +17,7 @@ def check_parallel(path1:Path, path2: Path):
     assert l1 == l2, f'Expected same number of lines: {l1} == {l2} ?\n{path1} == {path2}'
 
 
-def test_2url_dataset():
+def _test_2url_dataset():  # SKIP: stanford nlp URLs are down (as of 04/25/2024)
     with TemporaryDirectory() as out_dir:
         out_dir = Path(out_dir)
         train_dids = [DatasetId.parse('StanfordNLP-iwslt15_train-1-eng-vie')]

@@ -3,19 +3,22 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu]
 # Created: 4/5/20
 import collections as coll
+import concurrent.futures
 import json
 from itertools import zip_longest
-from multiprocessing import Pool
 from pathlib import Path
-from typing import Optional, List, Tuple, Dict, Union
+import random
+from typing import Dict, List, Tuple, Union
 
 import portalocker
 
-from mtdata import log, pbar_man, cache_dir as CACHE_DIR, Defaults
+from mtdata import Defaults
+from mtdata import cache_dir as CACHE_DIR
+from mtdata import log, pbar_man
 from mtdata.cache import Cache
-from mtdata.entry import Entry, DatasetId, LangPair
+from mtdata.entry import DatasetId, Entry, LangPair
 from mtdata.index import INDEX
-from mtdata.iso.bcp47 import bcp47, BCP47Tag
+from mtdata.iso.bcp47 import BCP47Tag, bcp47
 from mtdata.parser import Parser
 from mtdata.utils import IO
 
@@ -65,6 +68,39 @@ class Dataset:
         return entries
 
     @classmethod
+    def parallel_download(cls, entries: List[Entry], cache: Cache, n_jobs=1):
+        """Download entries in parallel. This is useful when there are many entries to download.
+        :param entries: list of entries to download
+        :param cache: cache object to download the entries
+        :param n_jobs: number of parallel jobs to run
+        :return: dictionary of entry -> paths. Failed entries will have None path.
+        """
+        if n_jobs == 1:
+            return [cache.get_entry(ent) for ent in entries]
+        log.info(f"Downloading {len(entries)} datasets in parallel with {n_jobs} jobs")
+        result = {}
+        entries = list(entries) # make a copy
+        # shuffle to hit different servers at the same time
+        random.seed(42)
+        random.shuffle(entries)
+        status = dict(total=len(entries), success=0, failed=0)
+        with concurrent.futures.ProcessPoolExecutor(max_workers=n_jobs) as executor:
+            futures_to_entry = {executor.submit(cache.get_entry, entry): entry for entry in entries}
+            for future in concurrent.futures.as_completed(futures_to_entry.keys()):
+                entry:Entry = futures_to_entry[future]
+                try:
+                    paths = future.result()   # paths, ignore
+                    result[entry] = paths
+                    status['success'] += 1
+                    log.info(f"[{status['success']}/{status['total']}] Downloaded {entry.did}")
+                except Exception as exc:
+                    result[entry] = None
+                    status['failed'] += 1
+                    log.warning(f"Failed to download {entry.did}: {exc} Total failed: {status['failed']}")
+        log.info(f"Downloaded {status['success']} datasets. Failed to download {status['failed']}")
+        return result
+
+    @classmethod
     def prepare(cls, langs, out_dir: Path, dataset_ids=Dict[str, List[DatasetId]],
                 cache_dir: Path = CACHE_DIR, merge_train=False, drop_noise: Tuple[bool, bool] = (True, False),
                 compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False, n_jobs=1):
@@ -81,6 +117,8 @@ class Dataset:
         for ent in all_entries:
             if not ent.is_compatible(langs):
                 raise Exception(f'Given languages: {langs} and dataset: {ent.did} are not compatible')
+        if n_jobs > 1:
+            cls.parallel_download(all_entries, Cache(cache_dir), n_jobs=n_jobs)
 
         dataset = cls(dir=out_dir, langs=langs, cache_dir=cache_dir, drop_train_noise=drop_train_noise,
                       drop_test_noise=drop_test_noise, drop_dupes=drop_dupes, drop_tests=drop_tests,
@@ -107,8 +145,8 @@ class Dataset:
                 drop_hashes = test_pair_hash | test_seg_hash  # set union
             dataset.add_train_entries(train_entries, merge_train=merge_train, compress=compress,
                                       drop_hashes=drop_hashes)
-        for key, dirpath in [('mono_train', dataset.mono_train_parts_dir), 
-                             ('mono_dev', dataset.mono_tests_dir), 
+        for key, dirpath in [('mono_train', dataset.mono_train_parts_dir),
+                             ('mono_dev', dataset.mono_tests_dir),
                              ('mono_test', dataset.mono_tests_dir)]:
             if dataset_ids.get(key):
                 dirpath.mkdir(exist_ok=True)
@@ -206,7 +244,7 @@ class Dataset:
         log.info('Train stats:\n' + stats_msg)
         IO.write_lines(self.dir / 'train.stats.json', stats_msg)
         return counts
-    
+
     def add_mono_entry(self, dirpath, entry: Entry, compress=False):
         flag_file = dirpath / f'.valid.{entry.did}'
         assert len(entry.did.langs) == 1, f'Monolingual entry expected, given {entry.did}'
@@ -362,11 +400,19 @@ class Dataset:
 
         tasks = [dict(dir_path=dir_path, entry=ent, drop_noise=drop_noise, compress=compress,
                       fail_on_error=fail_on_error) for ent in entries]
-        pool = Pool(self.n_jobs)
-        with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
+        with concurrent.futures.ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
+            futures = [executor.submit(self.add_part_thread, task) for task in tasks]
+            with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
                               autorefresh=True, min_delta=Defaults.PBAR_REFRESH_INTERVAL, position=3) as pbar:
-            for _ in pool.imap_unordered(self.add_part_thread, tasks):
-                pbar.update(force=True)
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception as e:
+                        log.error(f"Error in thread: {e}")
+                        if fail_on_error:
+                            raise e
+                    finally:
+                        pbar.update(force=True)
 
     def add_parts_sequential(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
         with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,

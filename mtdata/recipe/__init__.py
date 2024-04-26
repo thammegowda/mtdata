@@ -6,7 +6,7 @@
 import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Dict, Optional, ClassVar, Tuple
+from typing import List, Dict, Optional, ClassVar, Tuple, Set
 
 from mtdata import yaml, cache_dir, recipes_dir, log, resource_dir
 from mtdata.entry import Langs, LangPair, DatasetId, BCP47Tag, bcp47
@@ -33,6 +33,12 @@ class Recipe:
     url: str = ''
     # class variables below
     _id_field_names: ClassVar[Tuple] = DATA_FIELDS
+
+    def all_dids(self) -> Set[DatasetId]:
+        """Get all dataset ids in this recipe"""
+        union = (self.train or []) + (self.test or []) + (self.dev or []) \
+            + (self.mono_train or []) + (self.mono_dev or []) + (self.mono_test or [])
+        return set(union)
 
     @classmethod
     def parse(cls, id:str, langs, **kwargs):
@@ -93,7 +99,7 @@ class Recipe:
         return recipes
 
     @classmethod
-    def load_all(cls):
+    def load_all(cls) -> Dict[str, 'Recipe']:
         assert _def_recipes.exists(), f'{_def_recipes} file expected but not found'
         paths = [_def_recipes]
         if _home_recipes.exists():

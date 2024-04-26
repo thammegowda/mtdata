@@ -92,23 +92,15 @@ def load_parallel(index: Index):
             did=DatasetId(group=GROUP_ID, name='news_commentary', version='14', langs=(l1, l2)),
             url=NEWSCOM_v14 % (l1, l2), cite=cite))
 
-    for v in [15, 16]:
-        cite = ('barrault-etal-2020-findings',)
-        url = f"http://data.statmt.org/news-commentary/v{v}/training/news-commentary-v{v}.%s-%s.tsv.gz"
-        for pair in ['ar cs', 'ar de', 'ar en', 'ar es', 'ar fr', 'ar hi', 'ar id', 'ar it', 'ar ja', 'ar kk', 'ar nl',
-                     'ar pt', 'ar ru', 'ar zh', 'cs de', 'cs en', 'cs es', 'cs fr', 'cs hi', 'cs id', 'cs it', 'cs ja',
-                     'cs kk', 'cs nl', 'cs pt', 'cs ru', 'cs zh', 'de en', 'de es', 'de fr', 'de hi', 'de id', 'de it',
-                     'de ja', 'de kk', 'de nl', 'de pt', 'de ru', 'de zh', 'en es', 'en fr', 'en hi', 'en id', 'en it',
-                     'en ja', 'en kk', 'en nl', 'en pt', 'en ru', 'en zh', 'es fr', 'es hi', 'es id', 'es it', 'es ja',
-                     'es kk', 'es nl', 'es pt', 'es ru', 'es zh', 'fr hi', 'fr id', 'fr it', 'fr ja', 'fr kk', 'fr nl',
-                     'fr pt', 'fr ru', 'fr zh', 'hi id', 'hi it', 'hi nl', 'hi pt', 'hi ru', 'hi zh', 'id it', 'id ja',
-                     'id kk', 'id nl', 'id pt', 'id ru', 'id zh', 'it kk', 'it nl', 'it pt', 'it ru', 'it zh', 'ja pt',
-                     'ja ru', 'ja zh', 'kk nl', 'kk pt', 'kk ru', 'kk zh', 'nl pt', 'nl ru', 'nl zh', 'pt ru', 'pt zh',
-                     'ru zh']:
-            l1, l2 = pair.split()
-            index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name='news_commentary', version=f'{v}', langs=(l1, l2)),
-                url=url % (l1, l2), cite=cite))
-
+    for v in '15 16 17 18 18.1'.split():
+        cite = ('kocmi-etal-2023-findings',)
+        major_v = v.split('.')[0]  # 18.1 -> 18
+        url = f"http://data.statmt.org/news-commentary/v{v}/training/news-commentary-v{major_v}.%s-%s.tsv.gz"
+        langs = "ar cs de en es fr hi id it ja kk nl pt ru zh".split()
+        for l1, l2 in itertools.combinations(langs, 2):
+            ent = Entry(did=DatasetId(group=GROUP_ID, name='news_commentary', version=v, langs=(l1, l2)),
+                url=url % (l1, l2), cite=cite)
+            index.add_entry(ent)
 
     # ===== Wiki Titles V1
     WIKI_TITLES_v1 = 'http://data.statmt.org/wikititles/v1/wikititles-v1.%s-%s.tsv.gz'
@@ -172,6 +164,27 @@ def load_parallel(index: Index):
                                   filename='wmt20dev.tgz', in_paths=[src, ref], in_ext='sgm',
                                   url='http://data.statmt.org/wmt20/translation-task/dev.tgz',
                                   cite=cite))
+
+    # test releases from github
+    for year, version, pairs in [
+            ('2022', 'v1.2', 'cs-en:B:C cs-uk:A de-en:A:B de-fr:A en-cs:B:C en-de:A:B en-hr:A:stud en-ja:A en-liv:A en-ru:A en-uk:A en-zh:A:B fr-de:A ja-en:A liv-en:A ru-en:A ru-sah:A sah-ru:A uk-cs:A uk-en:A zh-en:A:B'.split()),
+            ('2023', 'v.0.1', 'cs-uk:refA de-en:refA en-cs:refA en-de:refA en-he:refA:refB en-ja:refA en-ru:refA en-uk:refA en-zh:refA he-en:refA:refB ja-en:refA ru-en:refA uk-en:refA zh-en:refA'.split())
+        ]:
+        url = f"https://github.com/wmt-conference/wmt{year[-2:]}-news-systems/archive/refs/tags/{version}.zip"
+        for pair in pairs:
+            pair, *refs = pair.split(':')
+            src, tgt = pair.split('-')
+            for ref in refs:
+                src_file = f"wmt{year[-2:]}-news-systems-*/txt/sources/generaltest{year}.{pair}.src.{src}"
+                tgt_file = f"wmt{year[-2:]}-news-systems-*/txt/references/generaltest{year}.{pair}.ref.{ref}.{tgt}"
+                if 'ref' in ref:
+                    version = f'{year}_{ref}'
+                else:
+                    version = f'{year}_ref{ref}'
+                did = DatasetId(group=GROUP_ID, name='generaltest', version=version, langs=(src, tgt))
+                ent = Entry(did=did, filename=f'wmt{year}-news-systems.zip', in_paths=[src_file, tgt_file], in_ext='txt', url=url)
+                index.add_entry(ent)
+
 
     # Multi parallel
     wmt_sets = {
@@ -367,7 +380,7 @@ def load_parallel(index: Index):
 
 
 def load_mono(index: Index):
-    
+
     wmt22_cite = ('kocmi-etal-2022-findings',)
     # 1. News Crawl
     """
@@ -376,7 +389,7 @@ def load_mono(index: Index):
     for i in $langs; do
         curl $base/$i | grep -o 'href="news[^"]*.gz"' | cut -f2 -d\"; sleep 1;
     done | tee news.txt
-    cat news.txt | grep '^news.[0-9]\+.[a-z]\+.shuffled.deduped.gz$' | awk -F '.' '{if ($2 != last) {printf "\n"$2}; printf " "$3; last=$2}'
+    cat news.txt | grep '^news.[0-9]\+.[a-z]\+.shuffled.deduped.gz$' | sort | awk -F '.' '{if ($2 != last) {printf "\n"$2}; printf " "$3; last=$2}'
     """
     news_crawl = """2007 cs de en es fr hu
     2008 bn cs de en es fa fr hi hu it ky mk ps pt ru so sr sw ta uk zh
@@ -391,14 +404,14 @@ def load_mono(index: Index):
     2017 bg cs de el en es et fi fr hi hr hu it lv pt ro ru tr zh
     2018 am bg bn bs cs de el en es et fa fi fr gu hi hr hu it kk kn ko ky lt lv mr nl pa pl ps pt ro ru so sr sw ta te tr uk zh
     2019 am bg bn bs cs de el en es et fa fi fr gu hi hr hu it ja kk kn ko ky lt lv mk ml mr nl or pa pl ps pt ro ru so sr sw ta te tr uk zh
-    2020 af am ar bg bm bn bs cs de el en es et fa fi fr gu ha hi hr hu id ig is it ja kk kn ko ky lt lv mk ml mr nl nr om or pa pl ps pt ro ru rw sn so sr sw ta te tig ti tl tr uk yo zh
-    2021 af am ar bg bm bn bs cs de el en es et fa fi fr gu ha hi hr hu id ig is it ja kk kn ko ky lt lv mk ml mr nl nr om or pa pl ps pt ro ru rw sn so sr sw ta te tig ti tl tr uk yo zh
+    2020,2021,2022,2023 af am ar bg bm bn bs cs de el en es et fa fi fr gu ha hi hr hu id ig is it ja kk kn ko ky lt lv mk ml mr nl nr om or pa pl ps pt ro ru rw sn so sr sw ta te tig ti tl tr uk yo zh
     """
     news_crawl = [line.strip().split() for line in news_crawl.splitlines() if line.strip()]
-    for year, *langs in news_crawl:
-        for lang in langs:
-            url = f'https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz'
-            index += Entry(DatasetId(GROUP_ID, 'news_crawl', str(year), (lang,)), url=url, in_ext='txt', cite=wmt22_cite)
+    for years, *langs in news_crawl:
+        for year in years.split(','):
+            for lang in langs:
+                url = f'https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz'
+                index += Entry(DatasetId(GROUP_ID, 'news_crawl', str(year), (lang,)), url=url, in_ext='txt', cite=wmt22_cite)
     # 2. News Discussions
     for lang, years in [('en', range(2011, 2019+1)), ('fr', range(2006, 2019+1))]:
         for year in years:
@@ -411,12 +424,13 @@ def load_mono(index: Index):
         version = '10'
         url = f'https://www.statmt.org/europarl/v{version}/training-monolingual/europarl-v{version}.{lang}.tsv.gz'
         index += Entry(DatasetId(GROUP_ID, 'europarl', version, (lang,)), url=url, in_ext='tsv', cols=(0,), cite=wmt22_cite)
-    
+
     # 4. News Commentary
-    for version in '14 15 16 17'.split():
+    for version in '14 15 16 17 18 18.1'.split():
         langs = "ar cs de en es fr hi id it ja kk nl pt ru zh".split()
         for lang in langs:
-            url = f'https://data.statmt.org/news-commentary/v{version}/training-monolingual/news-commentary-v{version}.{lang}.gz' 
+            major_version = version.split('.')[0]
+            url = f'https://data.statmt.org/news-commentary/v{version}/training-monolingual/news-commentary-v{major_version}.{lang}.gz'
             index += Entry(DatasetId(GROUP_ID, 'news_commentary', version, (lang,)), url=url, in_ext='txt', cite=wmt22_cite)
 
     # 5. Common Crawl
@@ -432,8 +446,8 @@ def load_mono(index: Index):
         index.add_entry(Entry(DatasetId(GROUP_ID, 'commoncrawl', 'wmt22', (lang,)),
                 url=f'{prefix}/{path}', in_ext='txt', cite=wmt22_cite))
     # 6.  Extended Common Crawl
-    #   these files are too large and are split into parts. 
-    
+    #   these files are too large and are split into parts.
+
     # 7. Uber Text Corpus
     for filename in ["news.tokenized.shuffled.txt.bz2",
                  "wiki_dump.tokenized.txt.bz2",
@@ -444,8 +458,6 @@ def load_mono(index: Index):
         index.add_entry(Entry(DatasetId('LangUk', name, '1', ('uk',)),
                     url=f'https://lang.org.ua/static/downloads/corpora/{filename}',
                     in_ext='txt', cite=wmt22_cite))
-    
+
     # 8. Leipzig Corpora: lot of files, so we moved to a separate module
-    # 9. Legal Ukrainian 
-    
-    
+    # 9. Legal Ukrainian

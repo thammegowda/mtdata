@@ -21,20 +21,20 @@
   dev: Statmt-newstest-2013-eng-deu
   test: Statmt-newstest_deen-2014-deu-eng
 
-- id: tg01_2to1_test
+- id: tg01_2to1_test   # this is for unit testing only
   desc: testing multilingual
   langs: mul-eng       #  mul is multiple languages
   train:
-    - WAT-alt_train-2020-mya-eng
+    - OPUS-ubuntu-v14.10-eng-kan
     - Statmt-pmindia-1-eng-tel
   dev:
     #- AI4Bharath-wat_dev-2021-eng-tel
     - JoshuaDec-indian_dev-1-tel-eng
-    - WAT-alt_dev-2020-mya-eng
+    - OPUS-gnome-v1-eng-kan
   test:
     #- AI4Bharath-wat_test-2021-eng-tel
     - JoshuaDec-indian_test-1-tel-eng
-    - WAT-alt_test-2020-mya-eng
+    - OPUS-kde4-v2-eng-kan
 
 - id: test_02_with_mono
   desc: Testing monolingual downloads
