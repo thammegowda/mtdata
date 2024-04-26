@@ -429,7 +429,8 @@ def load_mono(index: Index):
     for version in '14 15 16 17 18 18.1'.split():
         langs = "ar cs de en es fr hi id it ja kk nl pt ru zh".split()
         for lang in langs:
-            url = f'https://data.statmt.org/news-commentary/v{version}/training-monolingual/news-commentary-v{version}.{lang}.gz'
+            major_version = version.split('.')[0]
+            url = f'https://data.statmt.org/news-commentary/v{version}/training-monolingual/news-commentary-v{major_version}.{lang}.gz'
             index += Entry(DatasetId(GROUP_ID, 'news_commentary', version, (lang,)), url=url, in_ext='txt', cite=wmt22_cite)
 
     # 5. Common Crawl
