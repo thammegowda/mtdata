@@ -6,7 +6,8 @@ Using twine : https://twine.readthedocs.io/en/latest/
    Clear `rm -r build dist *.egg-info`   if those dir exist.
 2. Build :: `$ python setup.py sdist bdist_wheel`   
    where `sdist` is source code; `bdist_wheel` is universal ie. for all platforms
-3.  Make docs: `docs/make-docs.sh`
+3.  Make docs: `docs/make-docs.sh`  
+   You may need to install these tools: `sudo apt install ruby-full; gem install asciidoctor kramdown-asciidoc`
 4. Upload to **testpypi** ::  `$ twine upload -r testpypi dist/*`
 5. Upload to **pypi** ::  `$ twine upload -r pypi dist/*`
 
@@ -22,12 +23,11 @@ index-servers =
 
 [pypi]
 repository: https://upload.pypi.org/legacy/
-username:Thamme.Gowda
-password:<password_here>
-
+username = __token__
+password = <TOKEN HERE>
 
 [testpypi]
 repository: https://test.pypi.org/legacy/
-username:Thamme.Gowda
-password:<password_here>
+username = __token__
+password = <TOKEN HERE>
 ```
