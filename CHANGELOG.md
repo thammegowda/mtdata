@@ -6,6 +6,7 @@
 * Added WMT general test 2022 and 2023
 * mtdata-bcp47 : -p/--pipe to map codes from stdin -> stdout
 * mtdata-bcp47 : --script {suppress-default,suppress-all,express}
+* Uses`pigz` to read and write gzip files by default when pigz is in PATH. export `USE_PIGZ=0` to disable
 
 ## v0.4.0 - 20230326
 
