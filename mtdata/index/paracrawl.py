@@ -82,16 +82,22 @@ def load_all(index: Index):
         url=f'{URL_PREFIX}/bonus/en-uk-v1.txt.gz',
         cite=cite, ext='tsv.gz'))
 
-    # Japanese-English paracrawl (5.1) used by WMT20 and WMT21
+    # Japanese-English paracrawl (5.1) used by WMT20 ...
     for version, cols in [('2', (2, 3)), ('3', (3, 4))]:
         ent = Entry(did=DatasetId(group='KECL', name=f'paracrawl', version=version, langs=('eng', 'jpn')),
                     in_paths=['en-ja/en-ja.bicleaner05.txt'], in_ext='tsv', cols=cols, cite='',
                     url=f'http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/{version}.0/bitext/en-ja.tar.gz')
         index.add_entry(ent)
-        
-        # JParaCrawl Chinese-Japanese, only version 2 is available
-        if version == '2':
-            ent = Entry(did=DatasetId(group='KECL', name=f'paracrawl', version=version, langs=('zho', 'jpn')),
-                            in_paths=['zh-ja/zh-ja.bicleaner05.txt'], in_ext='tsv', cols=cols, cite='',
-                            url=f'http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/{version}.0/bitext/zh-ja.tar.gz')
-            index.add_entry(ent)
+
+    # JParaCrawl Chinese-Japanese, v2: cols=2,3
+    ent = Entry(did=DatasetId(group='KECL', name=f'paracrawl', version='2', langs=('zho', 'jpn')),
+                    in_paths=['zh-ja/zh-ja.bicleaner05.txt'], filename='jparacrawl-2.0-zh-ja.tar.gz',
+                    in_ext='tsv', cols=(2, 3), cite=('morishita-etal-2022-jparacrawl',),
+                    url=f'http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/zh/2.0/bitext/zh-ja.tar.gz')
+    index.add_entry(ent)
+    # v2wmt24: columns=(3, 4)
+    ent = Entry(did=DatasetId(group='KECL', name=f'paracrawl', version=f'2wmt24', langs=('zho', 'jpn')),
+                    in_paths=['zh-ja/zh-ja.crowdsourcing_b05l07.txt'], filename='jparacrawl-2.0-zh-ja.tar.gz',
+                    in_ext='tsv', cols=(3, 4), cite=('nagata2024japanesechinese',),
+                    url=f'http://www.kecl.ntt.co.jp/icl/lirg/jparacrawl/release/zh/2.0/bitext/zh-ja.tar.gz')
+    index.add_entry(ent)

@@ -71,7 +71,8 @@ def echo_data(did:DatasetId, delim='\t'):
     path = cache.get_entry(entry)
     parser = Parser(path, ext=entry.in_ext or None, ent=entry)
     count = 0
-    for rec in parser.read_segs():
+    all_segs = parser.read_segs()
+    for rec in all_segs:
         if isinstance(rec, (list, tuple)):
             rec = (col.replace(delim, ' ').replace('\n', ' ') for col in rec)
             rec = delim.join(rec)
@@ -323,6 +324,8 @@ def main():
     elif args.task == 'get':
         get_data(**vars(args))
     elif args.task == 'echo':
+        # disable progress bar for echo; it sometimes insert new lines in the output
+        pbar_man.enabled = False
         echo_data(did=args.dataset_id)
     elif args.task == 'list-recipe':
         list_recipes(id_only=args.id, format=args.format)
