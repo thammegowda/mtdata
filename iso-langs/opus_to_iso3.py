@@ -111,6 +111,7 @@ it\tItalian
 ja\tJapanese
 jv\tJavanese
 kab\tKabyle
+kab_DZ\tKabyle
 kl\tKalaallisut
 xal\tKalmyk
 kn\tKannada
