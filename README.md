@@ -24,7 +24,7 @@ This tool knows:
 - (And more of such tiny details over the time.)
 
 [MTData](https://github.com/thammegowda/mtdata) is here to:
-- Automate machinbe translation training data creation by taking out human intervention. This is inspired by [SacreBLEU](https://github.com/mjpost/sacreBLEU) that takes out human intervention at the evaluation stage.
+- Automate machine translation training data creation by taking out human intervention. This is inspired by [SacreBLEU](https://github.com/mjpost/sacreBLEU) that takes out human intervention at the evaluation stage.
 - A reusable tool instead of dozens of use-once shell scripts spread across multiple repos.
 
 
