@@ -84,6 +84,8 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 
 
 ## Usecases
+* WMT 2025 General (News) Translation Task: https://www.statmt.org/wmt25/mtdata/ 
+* WMT 2024 General (News) Translation Task: https://www.statmt.org/wmt24/mtdata/ 
 * WMT 2023 General (News) Translation Task: https://www.statmt.org/wmt23/mtdata/ 
 * WMT 2022 General (News) Translation Task: https://www.statmt.org/wmt22/mtdata/ 
 * USC ISI's 500-to-English MT: ~http://rtg.isi.edu/many-eng/~ http://gowda.ai/006-many-to-eng/)
