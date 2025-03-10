@@ -72,10 +72,17 @@ def echo_data(did:DatasetId, delim='\t'):
     parser = Parser(path, ext=entry.in_ext or None, ent=entry)
     count = 0
     all_segs = parser.read_segs()
-    for rec in all_segs:
-        if isinstance(rec, (list, tuple)):
-            rec = (col.replace(delim, ' ').replace('\n', ' ') for col in rec)
+    for row in all_segs:
+        if isinstance(row, str):
+            rec = row
+        elif isinstance(row, (list, tuple)):
+            rec = [col.replace(delim, ' ').replace('\n', ' ') for col in row[:2]]
+            if len(row) == 3:
+                meta = json.dumps(row[2], indent=None, ensure_ascii=False)
+                rec.append(meta)
             rec = delim.join(rec)
+        else:
+            raise ValueError(f'Unknown row type: {type(row)}. Expected str or list/tuple')
         print(rec)
         count += 1
     log.info(f'Total rows={count:,}')
@@ -125,7 +132,8 @@ def list_recipes(id_only=False, delim='\t', format='plain'):
                 raise f'{format} not supported'
 
 
-def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False,
+def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, 
+               drop_tests=False, fail_on_error=False,
                n_jobs=DEF_N_JOBS, merge_train=True, **kwargs):
     if kwargs:
         log.warning(f"Args are ignored: {kwargs}")
@@ -180,6 +188,18 @@ def cache_datasets(recipes:List[str]=None, dids:List[DatasetId]=None, n_jobs=DEF
     log.info(f"Going to cache {len(entries)} entries at {cache.root}; n_jobs={n_jobs}")
     Dataset.parallel_download(entries, cache=cache, n_jobs=n_jobs)
 
+def index_datasets():
+    """
+    Create or update the dataset index. This deletes action {cached_index_file} only and not the downloaded files.
+    Use this if you've modified the mtdata source code and you want to force refresh the dataset index.
+    """
+    if cached_index_file.exists():
+        bak_file = cached_index_file.with_suffix(".bak")
+        log.info(f"Invalidate index: {cached_index_file} -> {bak_file}")
+        cached_index_file.rename(bak_file)
+    # importing the index will recreate the index
+    from mtdata.index import INDEX as index
+
 class MyFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
     def _split_lines(self, text, width: int):
@@ -206,8 +226,7 @@ def parse_args():
                    choices=log_levels, help=f'Set log level. Choices={log_levels}')
     p.add_argument('-ri', '--reindex', action='store_true',
                    help=f"Invalidate index of entries and recreate it. This deletes"
-                        f" {cached_index_file} only and not the downloaded files. "
-                        f"Use this if you've modifying mtdata source code and want to force reload.")
+                        f" Deprecated: use 'index' subcommand instead. ")
     grp = p.add_mutually_exclusive_group()
     grp.add_argument('-pb', '--pbar', action='store_true', dest='progressbar',
                      help=f"Show progressbar", default=True)
@@ -216,6 +235,7 @@ def parse_args():
 
     sub_ps = p.add_subparsers(required=True, dest='task', metavar='<task>',
                               help='''R|
+"index" - create or update the dataset index.
 "list" - List the available entries
 "get" - Downloads the entry files and prepares them for experiment
 "echo" - Print contents of a dataset into STDOUT.
@@ -224,6 +244,10 @@ def parse_args():
 "stats" - Get stats of dataset"
 "cache" - download datasets into cache
 ''')
+    index_p = sub_ps.add_parser(
+        'index', formatter_class=MyFormatter,
+        help=f"Create or update the dataset index. This deletes action {cached_index_file} only and not the downloaded files. "
+            f"Use this if you've modified the mtdata source code and you want to force refresh the dataset index.")
 
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
     list_p.add_argument('-l', '--langs', metavar='L1/L1-L2', type=Langs,
@@ -315,10 +339,12 @@ def main():
 
     args = parse_args()
     if args.reindex and cached_index_file.exists():
-        bak_file = cached_index_file.with_suffix(".bak")
-        log.info(f"Invalidate index: {cached_index_file} -> {bak_file}")
-        cached_index_file.rename(bak_file)
-    if args.task == 'list':
+        log.warning(f"--reindex flag is deprecated and will be removed in the future. Use 'index' subcommand instead")
+        index_datasets()
+
+    if args.task == 'index':
+        index_datasets()
+    elif args.task == 'list':
         list_data(args.langs, args.names, not_names=args.not_names, full=args.full,
                   groups=args.groups, not_groups=args.not_groups, id_only=args.id)
     elif args.task == 'get':

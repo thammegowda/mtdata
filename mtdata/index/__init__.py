@@ -90,6 +90,7 @@ class Index:
             ".opus.opus_index",
             ".opus.opus100",
             ".leipzig",
+            ".huggingface",
         ]
         # modules from CWD
         for p in Path('.').glob('mtdata*.py'):

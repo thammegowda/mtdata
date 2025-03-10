@@ -62,6 +62,10 @@ setup(
         'pybtex==0.24.0',
         'ruamel.yaml >= 0.17.10',
     ],
+    extras_require={
+        "hf": ["datasets>=3.3.0",],
+    },
+
     include_package_data=True,
     zip_safe=False,
 )
