@@ -33,7 +33,7 @@ jobs:
         pip install setuptools==61.2 flake8 pytest-cov
     - name: Install module
       run: |
-        python3 setup.py install
+        pip install .[hf]
     - name: Test with pytest
       run: |
          python3 -m pytest
