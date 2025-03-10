@@ -13,6 +13,8 @@ from itertools import zip_longest
 from mtdata.utils import IO
 
 COMPRESS_EXT = ['gz', 'bz2', 'xz']
+HF_EXT = 'hfds'  # huggingface dataset
+WMT21XML = 'wmt21xml'
 
 
 def detect_extension(name: Union[str, Path]):
@@ -40,7 +42,9 @@ class Parser:
         if not isinstance(self.paths, list):
             self.paths = [self.paths]
         for p in self.paths:
-            assert p.exists(), f'{p} not exists'
+            if isinstance(p, Path):
+                assert p.exists(), f'{p} not exists'
+            # skip cheks on HF datasets
 
         if not self.ext:
             exts = [detect_extension(p.name) for p in self.paths]
@@ -81,9 +85,11 @@ class Parser:
                 elif 'sgm' in self.ext:
                     from mtdata.sgm import read_sgm
                     readers.append(read_sgm(p))
-                elif 'wmt21xml' in self.ext:
+                elif WMT21XML in self.ext:
                     from mtdata.sgm import read_wmt21_xml
                     readers.append(read_wmt21_xml(p))
+                elif HF_EXT in self.ext:
+                    readers.append(self.read_hfds(p))
                 else:
                     raise Exception(f'Not supported {self.ext} : {p}')
 
@@ -93,7 +99,8 @@ class Parser:
             data = (rec for reader in readers for rec in reader)  # flatten all readers
         elif len(readers) == 2:
             def _zip_n_check():
-                for seg1, seg2 in zip_longest(*readers):
+                for row in zip_longest(*readers):
+                    seg1, seg2 = row[:2]
                     if seg1 is None or seg2 is None:
                         raise Exception(f'{self.paths} have unequal number of segments')
                     yield seg1, seg2
@@ -132,3 +139,16 @@ class Parser:
                 if cols:
                     row = [row[idx] for idx in cols]
                 yield row
+
+    def read_hfds(self, ds):
+        """ Read data from huggingface Dataset
+        :param ds: huggingface dataset
+        :return: generator of segments
+        """
+        for row in ds:
+            src = row['source']
+            tgt = row['target']
+            #doc_id = row.get('document_id')
+            #seg_id = row.get('segment_id')
+            meta = dict(doc_id=row.get('document_id'), seg_id=row.get('segment_id'), domain=row.get('domain'))
+            yield src, tgt, meta
