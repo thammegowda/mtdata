@@ -1,5 +1,16 @@
 # Change Log
 
+## 0.4.3 - WIP
+* Add preliminary support for huggingface datasets; currently wmt24++ is the only supported dataset
+* Update setup.py -> pyproject.toml; hf datasets is optional dependency
+* Add mtdata index subcommand. deprecate `mtdata --reindex <cmd>`
+* Add meta, a dictionary field to Entry to store arbitrary key-vals which maybe useful for downloading and parsing datasets.
+* Preliminary support for document id , (currently, one among the many in meta fields)
+
+
+## v0.4.2
+- minor fixes
+
 ## v0.4.1 - 20240425
 * Better parallelization: parallel and mono data are scheduled at once (previously it was one after the other)
 * `mtdata cache` added. Improves concurrency by supporting multiple recipes
