@@ -76,10 +76,12 @@ def echo_data(did:DatasetId, delim='\t'):
         if isinstance(row, str):
             rec = row
         elif isinstance(row, (list, tuple)):
-            rec = [col.replace(delim, ' ').replace('\n', ' ') for col in row[:2]]
-            if len(row) == 3:
-                meta = json.dumps(row[2], indent=None, ensure_ascii=False)
-                rec.append(meta)
+            rec = []
+            for col in row:
+                if isinstance(col, Mapping):
+                    col = json.dumps(col, indent=None, ensure_ascii=False)
+                col = col.replace(delim, ' ').replace('\n', ' ')
+                rec.append(col)
             rec = delim.join(rec)
         else:
             raise ValueError(f'Unknown row type: {type(row)}. Expected str or list/tuple')

@@ -53,9 +53,9 @@ def load_all(index: Index):
                 if data_id in index:
                     log.warning(f"Duplicate dataset id: {data_id}")
                     continue
-                params = dict(langs=orig_langs, split=config["split"])
                 url = "https://huggingface.co/datasets/" + data['id']
-                meta = dict(config=config['name'], orig_id=data['id'], split=config["split"])
+                fields = dict(source="source", target="target", doc_id="document_id", domain="domain", seg_id="segment_id")
+                meta = dict(config=config['name'], orig_id=data['id'], split=config["split"], fields=fields)
                 in_paths = config["paths"]
                 cite = None
                 entry = Entry(did=data_id, url=url, in_paths=in_paths, cite=cite, ext=HF_EXT, in_ext=HF_EXT, meta=meta)

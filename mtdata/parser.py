@@ -69,14 +69,15 @@ class Parser:
             reader = OpusXcesParser.read(align, lang1_dir, lang2_dir, preprocessing=preprocessing)
             readers.append(reader)
         else:
+            meta_fields = self.ent.meta and self.ent.meta.get('fields') or None
             for p in self.paths:
                 if 'tsv' in self.ext:
                     cols = (0, 1) #extract first two columns
                     if self.ent and self.ent.cols:
                         cols = self.ent.cols
-                    readers.append(self.read_tsv(p, cols=cols))
+                    readers.append(self.read_tsv(p, cols=cols, meta_fields=meta_fields))
                 elif 'csvwithheader' in self.ext:
-                    readers.append(self.read_tsv(p, delim=',', skipheader=True))
+                    readers.append(self.read_tsv(p, delim=',', skipheader=True, meta_fields=meta_fields))
                 elif 'raw' in self.ext or 'txt' in self.ext:
                     readers.append(self.read_plain(p))
                 elif 'tmx' in self.ext:
@@ -122,7 +123,7 @@ class Parser:
             log.warning(f'Error reading file {path}')
             raise
 
-    def read_tsv(self, path, delim='\t', cols=None, skipheader=False):
+    def read_tsv(self, path, delim='\t', cols=None, skipheader=False, meta_fields=None):
         """
         Read data from TSV file
         :param path: path to TSV file
@@ -136,19 +137,36 @@ class Parser:
                 line = stream.readline()
             for line in stream:
                 row = [x.strip() for x in line.rstrip('\n').split(delim)]
+                out_row = row
                 if cols:
-                    row = [row[idx] for idx in cols]
-                yield row
+                    out_row = [row[idx] for idx in cols]
+                if meta_fields:
+                    metadata = {}
+                    for key, idx in meta_fields.items():
+                        if key in ("source", "target") or idx >= len(row) or row[idx] in ("", None):
+                            continue
+                        metadata[key] = row[idx]
+                    if metadata:
+                        out_row.append(metadata)
+                yield out_row
 
     def read_hfds(self, ds):
         """ Read data from huggingface Dataset
         :param ds: huggingface dataset
         :return: generator of segments
         """
+        fields = self.ent.meta["fields"]  # expects dictionary
+        src_field = fields['source']
+        tgt_field = fields.get('target', None)
+        rev_map = {v: k for k, v in fields.items()}
+        # fields map is a forward map of "dest: orig", and meant to pick a subset of fields from the row
+        # in the current version, I am going to retain all fields to see what all fields exist,
+        # and map the subset of fields as per the dict; so, created rev_map.get(orig,orig)
         for row in ds:
-            src = row['source']
-            tgt = row['target']
-            #doc_id = row.get('document_id')
-            #seg_id = row.get('segment_id')
-            meta = dict(doc_id=row.get('document_id'), seg_id=row.get('segment_id'), domain=row.get('domain'))
-            yield src, tgt, meta
+            out_row = [row.pop(src_field)]
+            if tgt_field is not None:
+                out_row.append(row.pop(tgt_field))
+            # remap meta fields if necessary
+            metadata = {rev_map.get(k, k): v for k, v in row.items() if k not in (src_field, tgt_field)}
+            out_row.append(metadata)
+            yield out_row

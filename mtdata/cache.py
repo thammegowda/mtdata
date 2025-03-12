@@ -169,7 +169,7 @@ class Cache:
             streaming=False,
             trust_remote_code=False,
         )
-        log.info(f"Loading dataset {hf_id} with args: {args}")
+        log.debug(f"Loading dataset {hf_id} with args: {args}")
         ds = load_dataset(hf_id, **args)
         return ds
 
