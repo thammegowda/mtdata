@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "mtdata is a tool to download datasets for machine translation"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 authors = [
     { name = "Thamme Gowda", email = "tgowdan@gmail.com" }
 ]
@@ -50,8 +50,10 @@ exclude = ["tests*", "tmp*", "build*", "dist*", "crawler*"]
 
 
 [project.optional-dependencies]
-hf = ["datasets>=3.3.0"]
+hf = ["datasets>=3.1.0"]
 test = [ "pytest", "pytest-cov[all]", "black", "isort", "mypy"]
+# Note: hf datasets>=3.2 onwards doesnot support python 3.8
+
 
 [project.scripts]
 mtdata = "mtdata.__main__:main"
