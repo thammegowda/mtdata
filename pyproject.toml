@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mtdata"
+dynamic = ["version"]
+description = "mtdata is a tool to download datasets for machine translation"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+authors = [
+    { name = "Thamme Gowda", email = "tgowdan@gmail.com" }
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Utilities",
+    "Topic :: Text Processing",
+    "Topic :: Text Processing :: General",
+    "Topic :: Text Processing :: Filters",
+    "Topic :: Text Processing :: Linguistic",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3 :: Only"
+]
+keywords = [
+    "machine translation",
+    "datasets",
+    "NLP",
+    "natural language processing",
+    "computational linguistics"
+]
+dependencies = [
+    "requests>=2.31.0",
+    "enlighten==1.10.1",
+    "portalocker==2.3.0",
+    "pybtex==0.24.0",
+    "ruamel.yaml >= 0.17.10"
+]
+
+[project.urls]
+homepage = "https://github.com/thammegowda/mtdata"
+documentation = "https://github.com/thammegowda/mtdata"
+repository = "https://github.com/thammegowda/mtdata"
+#changelog = ""
+
+[tool.setuptools.packages.find]
+include = ["mtdata*"]  # ["*"] by default
+exclude = ["tests*", "tmp*", "build*", "dist*", "crawler*"]
+
+
+[project.optional-dependencies]
+hf = ["datasets>=3.1.0"]
+test = [ "pytest", "pytest-cov[all]", "black", "isort", "mypy"]
+# Note: hf datasets>=3.2 onwards doesnot support python 3.8
+
+
+[project.scripts]
+mtdata = "mtdata.__main__:main"
+mtdata-iso = "mtdata.iso.__main__:main"
+mtdata-bcp47 = "mtdata.iso.bcp47:main"
+
+
+[tool.setuptools.dynamic]
+version = {attr = "mtdata.__version__"}

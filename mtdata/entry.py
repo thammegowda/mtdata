@@ -80,7 +80,7 @@ class DatasetId:
 
 
 class Entry:
-    __slots__ = ('did', 'url', 'filename', 'ext', 'in_paths', 'in_ext', 'cite', 'cols', 'is_archive')
+    __slots__ = ('did', 'url', 'filename', 'ext', 'in_paths', 'in_ext', 'cite', 'cols', 'is_archive', 'meta')
 
     def __init__(self, did: Union[str, DatasetId],
                  url: Union[str, Tuple[str, str]],
@@ -89,13 +89,15 @@ class Entry:
                  in_paths: Optional[List[str]] = None,
                  in_ext: Optional[str] = None,
                  cite: Optional[Tuple[str]] = None,
-                 cols: Optional[Tuple[int, int]] = None):
+                 cols: Optional[Tuple[int, int]] = None,
+                 meta: Optional[dict] = None):
         if not isinstance(did, DatasetId):
             did = DatasetId.parse(did)
         self.did = did
         self.url = url
         self.filename = filename
         self.ext = ext
+        self.meta = meta
         if not self.ext:
             from mtdata.parser import detect_extension
             assert isinstance(self.url, str), '"ext" attribute must be explicitely set for multi-URL entries'
@@ -109,7 +111,7 @@ class Entry:
         self.cols = cols   # column index starts from zero
 
         assert not self.ext.startswith("."), f'{did} :: ext {self.ext} should not start with a dot (.)'
-        self.is_archive = self.ext in ('zip', 'tar', 'tar.gz', 'tgz')
+        self.is_archive = self.ext in ('zip', 'tar', 'tar.gz', 'tgz', 'hfds')
         if self.is_archive:
             assert self.in_paths and len(self.in_paths) > 0, 'Archive entries must have in_paths'
             if not self.in_ext:

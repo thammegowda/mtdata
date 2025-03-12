@@ -257,10 +257,11 @@ def load_parallel(index: Index):
 
     # ==== Europarl v10
     EP_v10 = "http://www.statmt.org/europarl/v10/training/europarl-v10.%s-%s.tsv.gz"
-    for pair in ['cs en', 'cs pl', 'de en', 'de fr', 'es pt', 'fi en', 'fr en', 'lt en', 'pl en']:
-        l1, l2 = pair.split()
+    ep_meta = dict(fields=dict(source=0, target=1, doc_id=2, para_id=3, speaker_id=4, speaker_name=5, affiliation=6))
+    ep_pairs = "cs-pl de-fr es-pt".split() + [f"{x}-en" for x in  "bg cs da de el es et fi fr hu it lt lv nl pl pt ro sk sl sv".split()]
+    for l1, l2 in (x.split('-') for x in ep_pairs):
         index.add_entry(Entry(did=DatasetId(group=GROUP_ID, name=f'europarl', version='10', langs=(l1, l2)),
-                url=EP_v10 % (l1, l2), cite=wmt20_cite))
+                url=EP_v10 % (l1, l2), cite=wmt20_cite, meta=ep_meta))
 
     # ==== PMIndia V1
     PMINDIA_v1 = "http://data.statmt.org/pmindia/v1/parallel/pmindia.v1.%s-%s.tsv"
@@ -370,12 +371,12 @@ def load_parallel(index: Index):
     wmt22_cite = ('kocmi-etal-2022-findings',)
     index.add_entry(Entry(
         did=DatasetId(group=GROUP_ID, name='yandex', version='wmt22', langs=('en', 'ru')), cite=wmt22_cite,
-        ext='zip', in_ext='tsv', cols=(0,1), in_paths=[f'WMT2022-data-main/en-ru/en-ru.1m_{i}.tsv' for i in range(1, 11)], 
+        ext='zip', in_ext='tsv', cols=(0,1), in_paths=[f'WMT2022-data-main/en-ru/en-ru.1m_{i}.tsv' for i in range(1, 11)],
         url='https://github.com/mashashma/WMT2022-data/archive/refs/heads/main.zip'))
 
     index.add_entry(Entry(
         did=DatasetId(group=GROUP_ID, name='yakut', version='wmt22', langs=('sah', 'rus')), cite=wmt22_cite,
-        ext='zip', in_ext='tsv', cols=(0, 1), in_paths=['yakut/sah-ru.parallel.uniq.tsv'], 
+        ext='zip', in_ext='tsv', cols=(0, 1), in_paths=['yakut/sah-ru.parallel.uniq.tsv'],
         url='http://data.statmt.org/wmt22/translation-task/yakut.zip'))
 
 
@@ -420,10 +421,12 @@ def load_mono(index: Index):
                 in_ext='txt', cite=wmt22_cite)
 
     # 3. Europarl 10
+    ep_meta = dict(fields=dict(source=0, doc_id=1, para_id=2, speaker_id=3, speaker_name=4))
     for lang in 'cs de en es fi fr lt pl pt'.split():
         version = '10'
         url = f'https://www.statmt.org/europarl/v{version}/training-monolingual/europarl-v{version}.{lang}.tsv.gz'
-        index += Entry(DatasetId(GROUP_ID, 'europarl', version, (lang,)), url=url, in_ext='tsv', cols=(0,), cite=wmt22_cite)
+        index += Entry(DatasetId(GROUP_ID, 'europarl', version, (lang,)), url=url, in_ext='tsv', cols=(0,),
+                       cite=wmt22_cite, meta=ep_meta)
 
     # 4. News Commentary
     for version in '14 15 16 17 18 18.1'.split():

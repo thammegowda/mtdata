@@ -90,7 +90,7 @@ class IO:
     def get_lines(cls, path, col=0, delim='\t', line_mapper=None, newline_fix=True):
         with cls.reader(path) as inp:
             if newline_fix and delim != '\r':
-                inp = (line.replace(b'\r', b'') for line in inp)
+                inp = (line.replace('\r', '') for line in inp)
             if col >= 0:
                 inp = (line.split(delim)[col].strip() for line in inp)
             if line_mapper:
