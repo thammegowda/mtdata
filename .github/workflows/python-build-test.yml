@@ -4,9 +4,9 @@ name: mtdata build test
 
 on:
   push:
-    branches: [ "master", "develop" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "master", "develop" ]
+    branches: [ "main", "develop" ]
 
 permissions:
   contents: read
