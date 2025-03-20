@@ -353,7 +353,7 @@ def parse_args():
                          help="mini batch size")
     score_p.add_argument('-mx', '--maxi-batch', type=int, default=1000,
                          help="Maxi batch size")
-    score_p.add_argument("-ws", "--workspace", type=int, default=8000,
+    score_p.add_argument("-ws", "--workspace", type=int, default=-8000,
                          help="Workspace memory for pymarian. Recommended: Total VRAM - memory for model")
     score_p.add_argument('-o', '--out', dest='out_dir', type=Path, required=True,
                          help='Output directory name; this should be the output of "get"/"get-recipe" command')

@@ -87,23 +87,14 @@ class PyMarianScorer:
             log.info(f'Scoring {src_file.name} {tgt_file.name}')
             src_lines = IO.get_lines(src_file)
             tgt_lines = IO.get_lines(tgt_file)
-
             desc = f'[{part_num}/{len(parts)}] Scoring {did}'
             with pbar_man.counter(unit='it', desc=desc, leave=False, min_delta=Defaults.PBAR_REFRESH_INTERVAL,
                                     autorefresh=True) as pbar:
-                if tmp_file.exists():
-                    line_count = sum(1 for _ in IO.get_lines(tmp_file))
-                    if line_count > 0:
-                        log.warning(f"File {tmp_file} already exists. Seek input with {line_count} lines")
-                        for i, _ in enumerate(zip_longest(src_lines, tgt_lines)):
-                            pbar.update(1)
-                            if i >= line_count:
-                                break
+                tmp_file.unlink(missing_ok=True)
                 with IO.writer(tmp_file, 'a') as out:
                         for score in self.score(src_lines, tgt_lines):
                             out.write(f'{score:.{self.width}f}\n')
                             pbar.update(1)
-                pbar.close()
 
             # move tmp_file to out_file
             tmp_file.rename(out_file)
