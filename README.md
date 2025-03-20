@@ -53,12 +53,12 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 
 |       Source | Dataset Count |
 |-------------:|--------------:|
-| OPUS | 151,753|
+| OPUS | 156,257|
 | Flores | 51,714|
 | Microsoft | 8,128|
 | Leipzig | 5,893|
 | Neulab | 4,455|
-| Statmt | 1,784|
+| Statmt | 1,798|
 | Facebook | 1,617|
 | AllenAi | 1,611|
 | ELRC | 1,575|
@@ -69,18 +69,19 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | AI4Bharath | 192|
 | ParaCrawl | 127|
 | Lindat | 56|
+| Google | 55|
 | UN | 30|
 | JoshuaDec | 29|
 | StanfordNLP | 15|
 | ParIce | 8|
 | LangUk | 5|
+| KECL | 4|
 | Phontron | 4|
 | NRC_CA | 4|
-| KECL | 3|
 | IITB | 3|
 | WAT | 3|
 | Masakhane | 2|
-| **Total** | **231,157** |
+| **Total** | **235,731**|
 
 
 ## Usecases

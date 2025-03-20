@@ -4,8 +4,10 @@
 * Add preliminary support for huggingface datasets; currently wmt24++ is the only supported dataset
 * Update setup.py -> pyproject.toml; hf datasets is optional dependency
 * Add mtdata index subcommand. deprecate `mtdata --reindex <cmd>`
-* Add meta, a dictionary field to Entry to store arbitrary key-vals which maybe useful for downloading and parsing datasets.
-* Preliminary support for document id , (currently, one among the many in meta fields)
+* Add a field named `meta` of type dictionary to the Entry class; stores arbitrary key-vals which maybe useful for downloading and parsing datasets.
+* Support for document id , (currently, one among the many in meta fields)in  `.meta.jsonl.gz`
+* OPUS index updated
+* `mtdata score` sub command added; support QE scoring via pymarian
 
 
 ## v0.4.2
