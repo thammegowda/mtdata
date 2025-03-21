@@ -1,6 +1,9 @@
 from pathlib import Path
 from typing import List, Iterator, Tuple
 from itertools import zip_longest
+import subprocess as sp
+import os
+
 from pymarian import Evaluator
 from pymarian.utils import get_model_path, get_vocab_path
 
@@ -8,6 +11,7 @@ from pymarian.utils import get_model_path, get_vocab_path
 from . import log, pbar_man, Defaults
 from  .entry import LangPair
 from .utils import IO
+from .map import SubprocMapper, read_paths
 
 
 class LocalDataset:
@@ -24,7 +28,6 @@ class LocalDataset:
         """
         List the parallel parts of the dataset.
         """
-        src_lang, tgt_lang = self.langs
         # * is added to match script or country tags
         src_ext = f'{self.langs[0]}*' + (self.compress and ".gz" or "")
         tgt_ext = f'{self.langs[1]}*' + (self.compress and ".gz" or "")
@@ -44,29 +47,14 @@ class LocalDataset:
         return parts
 
 
-class PyMarianScorer:
+class PyMarianScorer():
 
     def __init__(self, metric:str, langs:Tuple[str,str], quiet=False, fp16=False, **kwargs):
         self.metric = metric
         self.langs = langs
         self.quiet = quiet
         self.fp16 = fp16
-        self._evaluator = None  # lazy load
-        self.width = kwargs.get('width', 4)
         self.eval_args = kwargs
-
-    @property
-    def evaluator(self):
-        if self._evaluator is None:
-            model = get_model_path(self.metric)
-            vocab = get_vocab_path(self.metric)
-            log.info(f'Loading {self.metric};  model={model} vocab={vocab}')
-            if not model.exists() or not vocab.exists():
-                raise ValueError(f'Model or vocab not found for {metric}.')
-            eval_args = dict(like='comet-qe', quiet=self.quiet, fp16=self.fp16)
-            eval_args.update(self.eval_args)
-            self._evaluator = Evaluator.new(model_file=model, vocab_file=vocab, **eval_args)
-        return self._evaluator
 
     def score_all(self, work_dir: Path):
         """
@@ -77,41 +65,57 @@ class PyMarianScorer:
         parts = dataset.list_parallel_parts()
         fp16 = self.fp16 and ".fp16" or ""
         log.info(f'Found {len(parts)} parts')
+        all_paths = []
         for part_num, (did, src_file, tgt_file) in enumerate(parts):
             out_file = src_file.parent / f'{did}.{self.metric}.score{fp16}.gz'
             if out_file.exists() and out_file.stat().st_size > 0:
                 log.info(f'Skipping {src_file.name} {tgt_file.name} (already scored)')
                 continue
-            log.info(f"Scoring: {did} -> {out_file}")
-            tmp_file = out_file.with_name(out_file.name + '.tmp.gz')
-            log.info(f'Scoring {src_file.name} {tgt_file.name}')
-            src_lines = IO.get_lines(src_file)
-            tgt_lines = IO.get_lines(tgt_file)
-            desc = f'[{part_num}/{len(parts)}] Scoring {did}'
-            with pbar_man.counter(unit='it', desc=desc, leave=False, min_delta=Defaults.PBAR_REFRESH_INTERVAL,
+            all_paths.append((src_file, tgt_file, out_file))
+
+        cmdline = f"pymarian-eval --stdin -m {self.metric} -a skip"
+        if not self.quiet:
+            cmdline += " --debug"
+        if self.fp16:
+            cmdline += " --fp16"
+        for k,v in self.eval_args.items():
+            k = k.replace('_', '-')
+            cmdline += f" --{k} {v}"
+        if os.getenv('PYMARIAN_CACHE'):
+            cmdline += f" --cache {os.getenv('PYMARIAN_CACHE')}"
+
+        # get internal command which is purely c++ and a bit more efficient than python wrapper
+        cmdline = sp.check_output(cmdline + " --print-cmd", text=True, shell=True).strip()
+        if cmdline.startswith("marian "):
+            # older version used "marian evaluate", make it "pymarian evaluate"
+            cmdline = f"py{cmdline}"
+        stream = read_paths(all_paths)
+        mapper = SubprocMapper(cmdline=cmdline)
+        try:
+            out_stream = mapper(stream)
+            out_path = None
+            tmp_path = None
+            writer = None
+            desc = f'Scoring {len(all_paths)} parts with {self.metric}'
+            with pbar_man.counter(unit='it', desc=desc, min_delta=Defaults.PBAR_REFRESH_INTERVAL,
                                     autorefresh=True) as pbar:
-                tmp_file.unlink(missing_ok=True)
-                with IO.writer(tmp_file, 'a') as out:
-                        for score in self.score(src_lines, tgt_lines):
-                            out.write(f'{score:.{self.width}f}\n')
-                            pbar.update(1)
-
-            # move tmp_file to out_file
-            tmp_file.rename(out_file)
-
-    def score(self, srcs: Iterator[str], mts: Iterator[str]) -> Iterator[float]:
-        mn = self.eval_args.get('mini_batch', 64)
-        mx = self.eval_args.get('maxi_batch', 1024)
-        buffer_size = mn * mx
-        def make_maxi_batches(batch_size=buffer_size):
-            batch = []
-            for s, t in zip_longest(srcs, mts):
-                batch.append(f"{s}\t{t}")
-                if len(batch) >= batch_size:
-                    yield batch
-                    batch = []
-            if batch:
-                yield batch
-
-        for batch in make_maxi_batches():
-            yield from self.evaluator.evaluate(batch)
+                for rec in out_stream:
+                    if isinstance(rec, dict):
+                        if writer is not None:
+                            writer.close()  # close the previous writer
+                            tmp_path.rename(out_path)  # rename the tmp file to the final output file
+                            log.info(f"Renamed {tmp_path} to {out_path}")
+                        out_path = rec['output']
+                        tmp_path = out_path.with_name('.tmp.' + out_path.name)
+                        log.info(f"Writing to {tmp_path}")
+                        tmp_path.unlink(missing_ok=True)  # remove the tmp file if it exists
+                        tmp_path.parent.mkdir(parents=True, exist_ok=True)
+                        writer = IO.writer(tmp_path).__enter__()
+                    else:
+                        writer.write(rec + '\n')
+                        pbar.update(1)
+            if writer is not None:
+                writer.close()
+                tmp_path.rename(out_path)  # rename the tmp file to the final output file
+        finally:
+            mapper.close()
