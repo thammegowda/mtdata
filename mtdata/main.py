@@ -12,7 +12,7 @@ import fnmatch
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
 from mtdata import pbar_man
-from mtdata.entry import DatasetId, Langs
+from mtdata.entry import DatasetId, Langs, LangPair
 from mtdata.utils import IO, format_byte_size
 
 DEF_N_JOBS = 1
@@ -202,6 +202,19 @@ def index_datasets():
     # importing the index will recreate the index
     from mtdata.index import INDEX as index
 
+def score_datasets(scorer: str, metric: str, langs: LangPair, out_dir: Path, fp16: bool=False, **kwargs):
+    """
+    Score the datasets using the specified scorer
+    """
+    assert scorer in ['pymarian'], f'Unknown scorer: {scorer}'
+    if scorer == "pymarian":
+        from .scorer import PyMarianScorer
+        marian_args = {arg: kwargs[arg] for arg in ['mini_batch', 'maxi_batch', 'workspace'] if kwargs.get(arg)}
+        scorer = PyMarianScorer(metric, langs=langs, quiet=not mtdata.debug_mode, fp16=fp16, **marian_args)
+        scorer.score_all(out_dir)
+    else:
+        raise Exception(f"scorer={scorer} is not implemented.")
+
 class MyFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
     def _split_lines(self, text, width: int):
@@ -245,6 +258,8 @@ def parse_args():
 "get-recipe" - Get the datasets used in the specified experiment from "list-recipe"
 "stats" - Get stats of dataset"
 "cache" - download datasets into cache
+"report" - Generate a report of the datasets
+"score" - score the datasets using the specified scorer
 ''')
     index_p = sub_ps.add_parser(
         'index', formatter_class=MyFormatter,
@@ -324,6 +339,25 @@ def parse_args():
     cache_p.add_argument('-di', '--dataset-id', type=DatasetId.parse, nargs='*', help='Dataset ID')
     cache_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs (processes)", default=DEF_N_JOBS)
 
+    score_p = sub_ps.add_parser('score', formatter_class=MyFormatter
+                                , help="Score the datasets using the specified scorer")
+    score_p.add_argument('-s', '--scorer', type=str, choices=["pymarian"], default="pymarian", help='Scorer name')
+    score_p.add_argument('-m', '--metric', type=str, default="wmt22-cometkiwi-da",
+                            help='QE metric name. See scorer help for a list of supported metrics. \
+                                For pymarian supported QE metrics are: wmt20-comet-qe-da, wmt22-cometkiwi-da, wmt23-cometkiwi-da-xl, wmt23-cometkiwi-da-xxl')
+    score_p.add_argument('-fp16', '--fp16', action='store_true', default=False,
+                            help='Use fp16 model for faster scoring')
+    score_p.add_argument("-l", "--langs", type=Langs, required=True,
+                         help="Language pair")
+    score_p.add_argument("-mn", "--mini-batch", type=int, default=16,
+                         help="mini batch size")
+    #score_p.add_argument('-mx', '--maxi-batch', type=int, default=1000,
+    #                     help="Maxi batch size")
+    score_p.add_argument("-ws", "--workspace", type=int, default=-8000,
+                         help="Workspace memory for pymarian. Recommended: Total VRAM - memory for model")
+    score_p.add_argument('-o', '--out', dest='out_dir', type=Path, required=True,
+                         help='Output directory name; this should be the output of "get"/"get-recipe" command')
+
     args = p.parse_args()
     if args.log_level:
         log_level = log._nameToLevel[args.log_level]
@@ -366,6 +400,8 @@ def main():
     elif args.task == 'cache':
         assert args.recipe_id or args.dataset_id, "Need at least one of --recipe-id or --dataset-id"
         cache_datasets(recipes=args.recipe_id, dids=args.dataset_id, n_jobs=args.n_jobs)
+    elif args.task == 'score':
+        score_datasets(**vars(args))
     else:
         raise Exception(f'task={args.task} not implemented')
 
