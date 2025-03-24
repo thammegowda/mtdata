@@ -72,7 +72,10 @@ class PyMarianScorer():
                 log.info(f'Skipping {src_file.name} {tgt_file.name} (already scored)')
                 continue
             all_paths.append((src_file, tgt_file, out_file))
-
+        log.info(f"Found {len(all_paths)}")
+        if not all_paths:
+            log.warning("No parts to score; skipping")
+            return
         cmdline = f"pymarian-eval --stdin -m {self.metric} -a skip"
         if not self.quiet:
             cmdline += " --debug"
