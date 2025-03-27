@@ -181,7 +181,7 @@ class TarPath(ArchivedPath):
         self.ext_dir = self.extract()
         matches = list(self.ext_dir.glob(self.name))
         if len(matches) != 1:
-            raise Exception(f'expected to find exactly one path inside tarball, but found {matches}')
+            raise Exception(f'expected to find exactly one path inside tarball @ {self.ext_dir}/{self.name}, but found {matches}')
         self.child = matches[0]
         self.open = self.child.open
 
