@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Author: Thamme Gowda [tg (at) isi (dot) edu] 
+# Author: Thamme Gowda [tg (at) isi (dot) edu]
 # Created: 4/4/20
 import zipfile
 import tarfile
@@ -45,7 +45,7 @@ class Cache:
             else:
                 assert isinstance(entry.url, str)
                 local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing, entry=entry)
-                if zipfile.is_zipfile(local) or tarfile.is_tarfile(local):
+                if isinstance(local, Path) and (zipfile.is_zipfile(local) or tarfile.is_tarfile(local)):
                     # look inside the archives and get the desired files
                     local = self.get_local_in_paths(path=local, entry=entry)
             return local
@@ -133,6 +133,11 @@ class Cache:
 
     def get_local_path(self, url, filename=None, fix_missing=True, entry=None):
         hostname = urlparse(url).hostname or 'nohost'
+        if hostname == "huggingface.co":
+            # HF is special cased by deligating the task to huggingface sdk
+            #  I have considered not adding the dependency but there are a lot of file formats and
+            # some are sharded datasets which require custom logic, and my custom code might not be future proof
+            return self.get_hf_dataset(url, entry=entry)
         filename = filename or url.split('/')[-1]
         assert hostname and filename
         mdf5_sum = md5(url.encode('utf-8')).hexdigest()
@@ -144,6 +149,29 @@ class Cache:
                 log.error(f'Error downloading {entry and entry.did}\nURL: {url}\nPath:{local}')
                 raise
         return local
+
+    def get_hf_dataset(self, url: str, entry=None):
+        # dataset lib has a lot of transient dependencies, so lazily load it
+        #  and only when needed
+        try:
+            from datasets import load_dataset
+        except ImportError as e:
+            raise MTDataException(f"huggingface datasets library is required to access {entry.did}, but it is missing. "
+                                  f"Run: 'pip install datasets' and try again") from e
+        hf_id = entry.meta["orig_id"]
+        config = entry.meta.get("config", None)
+        split = entry.meta.get("split", None)
+        cache_dir = self.root / 'huggingface' / 'datasets'
+        args = dict(
+            name=config,
+            split=split,
+            cache_dir=cache_dir,
+            streaming=False,
+            trust_remote_code=False,
+        )
+        log.debug(f"Loading dataset {hf_id} with args: {args}")
+        ds = load_dataset(hf_id, **args)
+        return ds
 
     @classmethod
     def match_globs(cls, names, globs, meta=''):

@@ -12,7 +12,7 @@ from typing import Dict, List, Tuple, Union
 
 import portalocker
 
-from mtdata import Defaults
+from mtdata import Defaults, MTDataUserError
 from mtdata import cache_dir as CACHE_DIR
 from mtdata import log, pbar_man
 from mtdata.cache import Cache
@@ -116,7 +116,7 @@ class Dataset:
         all_entries = cls.resolve_entries(all_dids)
         for ent in all_entries:
             if not ent.is_compatible(langs):
-                raise Exception(f'Given languages: {langs} and dataset: {ent.did} are not compatible')
+                raise MTDataUserError(f'Dataset {ent.did} is not compatible for {"-".join(map(str, langs))}')
         if n_jobs > 1:
             cls.parallel_download(all_entries, Cache(cache_dir), n_jobs=n_jobs)
 
@@ -137,7 +137,7 @@ class Dataset:
             if drop_tests:
                 pair_files = []
                 for ent in dev_entries + test_entries:
-                    p1, p2 = dataset.get_paths(dataset.tests_dir, ent)
+                    p1, p2, _ = dataset.get_paths(dataset.tests_dir, ent)
                     if BCP47Tag.check_compat_swap(langs, ent.did.langs, fail_on_incompat=True)[1]:
                         p1, p2 = p2, p1  # swap
                     pair_files.append((p1, p2))
@@ -152,7 +152,7 @@ class Dataset:
                 dirpath.mkdir(exist_ok=True)
                 entries = cls.resolve_entries(dataset_ids[key])
                 for entry in entries:
-                    dataset.add_mono_entry(dirpath, entry, compress=compress) 
+                    dataset.add_mono_entry(dirpath, entry, compress=compress)
 
         # citations
         refs_file = out_dir / 'references.bib'
@@ -193,11 +193,11 @@ class Dataset:
         # paired_files = self.find_bitext_pairs(self.train_parts_dir, lang1, lang2)
         paired_files = {}
         for ent in entries:
-            e1, e2 = self.get_paths(self.train_parts_dir, ent, compress=compress)
+            e1, e2, e3 = self.get_paths(self.train_parts_dir, ent, compress=compress)
             _, swapped = BCP47Tag.check_compat_swap(self.langs, ent.did.langs, fail_on_incompat=True)
             if swapped:
                 e1, e2 = e2, e1
-            paired_files[str(ent.did)] = e1, e2
+            paired_files[str(ent.did)] = e1, e2, e3
 
         log.info(f"Going to merge {len(paired_files)} files as one train file")
         compress_ext = f'.{DEF_COMPRESS}' if compress else ''
@@ -205,7 +205,7 @@ class Dataset:
         l2_ext = f'{lang2}{compress_ext}'
         of1 = self.dir / f'train.{l1_ext}'
         of2 = self.dir / f'train.{l2_ext}'
-        of3 = self.dir / f'train.meta.{DEF_COMPRESS}'
+        of3 = self.dir / f'train.meta.jsonl.{DEF_COMPRESS}'
 
         counts = dict(total=coll.defaultdict(int),
                       dupes_skips=coll.defaultdict(int),
@@ -216,8 +216,9 @@ class Dataset:
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
             with pbar_man.counter(color='green', total=len(paired_files), unit='it', desc="Merging", leave=False,
                                   min_delta=Defaults.PBAR_REFRESH_INTERVAL, autorefresh=True) as pbar:
-                for name, (if1, if2) in paired_files.items():
-                    for seg1, seg2 in self.read_parallel(if1, if2):
+                for name, (if1, if2, if3) in paired_files.items():
+                    for fields in self.read_parallel(if1, if2):
+                        seg1, seg2 = fields[:2]
                         counts['total'][name] += 1
                         if self.drop_dupes or self.drop_tests:
                             hash_val = hash((seg1, seg2))
@@ -253,14 +254,18 @@ class Dataset:
             return -1, -1
         cache_path = self.cache.get_entry(entry)
         parser = Parser(cache_path, ext=entry.in_ext or None, ent=entry)
-        out_path = self.get_paths(dirpath, entry, compress=compress)
+        out_path, meta_file = self.get_paths(dirpath, entry, compress=compress)
         log.info("Writing %s to %s", entry.did, out_path)
         io_args = dict(encoding='utf-8', errors='ignore')
-        with IO.writer(out_path, **io_args) as out:
+        has_meta = None  # None -> True/False on first row ;then ensure it is consistent
+        with IO.writer(out_path, **io_args) as out, IO.writer(meta_file, **io_args) as out_meta:
             count, skips = 0, 0
-            for sentence in parser.read_segs():
-                if isinstance(sentence, (list, tuple)) and len(sentence) == 1:
-                    sentence = sentence[0]   # flatten list
+            for row in parser.read_segs():
+                if has_meta is None:  # first row only
+                    has_meta = bool(isinstance(row, (list, tuple)) and len(row) > 1)
+                sentence = row
+                if isinstance(row, (list, tuple)):
+                    sentence = row[0]   # flatten list
                 assert isinstance(sentence, str), f'str sentence expected. found: {type(sentence)}; entry: {entry.did}'
                 sentence = sentence and sentence.strip()
                 if not sentence:
@@ -268,12 +273,19 @@ class Dataset:
                     continue
                 sentence = sentence.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
                 out.write(f'{sentence}\n')
+                if has_meta:
+                    assert len(row) >= 2, f'Expected 2 fields, found {len(row)}: {row}'
+                    meta = json.dumps(row[1], ensure_ascii=False, indent=None)
+                    meta = meta.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
+                    out_meta.write(f'{meta}\n')
                 count += 1
             msg = f'Looks like an error. {count} segs are valid {skips} are invalid: {entry}'
             assert count > 0, msg
             if skips > count:
                 log.warning(msg)
                 log.info(f"{entry}: Skips : {skips:,}/{count:,} => {100 * skips / count:.4f}%")
+            if not has_meta and meta_file.exists():
+                meta_file.unlink()  # remove empty meta file; file may not be empty if its .gz compressed
         flag_file.touch()
         return count, skips
 
@@ -314,6 +326,14 @@ class Dataset:
                     raise Exception(f'{file1} {file2} have unequal num of lines. This is an error.')
                 yield seg1.strip(), seg2.strip()
 
+    @classmethod
+    def read_parallel2(cls, *files: Path):
+        streams = [IO.get_lines(f) for f in files]
+        for row in zip_longest(*streams):
+            if any(seg is None for seg in row):
+                raise Exception(f'{files} have unequal num of lines. This is an error.')
+            yield tuple(seg.strip() for seg in row)
+
     def add_test_entries(self, entries):
         self.add_parts(self.tests_dir, entries, drop_noise=self.drop_test_noise, desc='Held-out sets',
                        fail_on_error=self.fail_on_error)
@@ -324,7 +344,7 @@ class Dataset:
     def link_to_part(self, entry, data_dir, link_name):
         """Create link such as test, dev"""
         l1, l2 = self.langs
-        l1_path, l2_path = self.get_paths(data_dir, entry)
+        l1_path, l2_path, meta_file = self.get_paths(data_dir, entry)
         l1_path, l2_path = l1_path.relative_to(self.dir), l2_path.relative_to(self.dir)
         l1_link = self.dir / f'{link_name}.{l1.lang}'
         l2_link = self.dir / f'{link_name}.{l2.lang}'
@@ -351,7 +371,7 @@ class Dataset:
             out_paths = (self.dir / f'dev.{l1.lang}', self.dir / f'dev.{l2.lang}')
             in_paths = []
             for ent in entries:
-                e1, e2 = self.get_paths(self.tests_dir, ent)
+                e1, e2, meta_file = self.get_paths(self.tests_dir, ent)
                 compat, swapped = BCP47Tag.check_compat_swap(self.langs, ent.did.langs)
                 if not compat:
                     raise Exception(f"Unable to unify language IDs {self.langs} x {ent.did.langs}")
@@ -433,7 +453,7 @@ class Dataset:
                     self.errors_file.open('a').write(f"{ent.did}\t{msg}\n")
 
     @classmethod
-    def get_paths(cls, dir_path: Path, entry: Entry, compress=False) -> Union[Path, Tuple[Path, Path]]:
+    def get_paths(cls, dir_path: Path, entry: Entry, compress=False) -> Union[Tuple[Path, Path], Tuple[Path, Path, Path]]:
         """
         Gets file path for entry in given directory. 
         Return single path for monolingual entry and tuple of two paths for bilingual entry.
@@ -442,12 +462,15 @@ class Dataset:
         compress_ext = compress and f'.{DEF_COMPRESS}' or ''
         l1_ext = str(entry.did.langs[0]) + compress_ext
         l1 = dir_path / f'{entry.did}.{l1_ext}'
+        # always compress meta, because we use jsonl format which is very verbose
+        # and we dont need to read meta often; so worth compressing
+        meta_path = dir_path / f'{entry.did}.meta.jsonl.{DEF_COMPRESS}'
         if len(entry.did.langs) == 1: # monolingual
-            return l1
+            return l1, meta_path
         else: # biling
             l2_ext = str(entry.did.langs[1]) + compress_ext
             l2 = dir_path / f'{entry.did}.{l2_ext}'
-            return l1, l2
+            return l1, l2, meta_path
 
     def add_part(self, dir_path: Path, entry: Entry, drop_noise=False, compress=False):
         flag_file = dir_path / f'.valid.{entry.did}'
@@ -459,20 +482,22 @@ class Dataset:
         parser = Parser(path, ext=entry.in_ext or None, ent=entry)
         # langs = '_'.join(str(lang) for lang in self.langs)
         # Check that files are written in correct order
-        l1, l2 = self.get_paths(dir_path, entry, compress=compress)
+        l1, l2, meta_file = self.get_paths(dir_path, entry, compress=compress)
         io_args = dict(encoding='utf-8', errors='ignore')
-        with IO.writer(l1, **io_args) as f1, IO.writer(l2, **io_args) as f2:
+        has_meta = None
+        with IO.writer(l1, **io_args) as f1, IO.writer(l2, **io_args) as f2, IO.writer(meta_file, **io_args) as f3:
             count, skips, noise = 0, 0, 0
             for rec in parser.read_segs():
-                rec = rec[:2]  # get the first two recs
-                if len(rec) != 2:
+                if has_meta is None:
+                    has_meta = bool(len(rec) > 2)
+                if len(rec) < 2:
                     skips += 1
                     continue
                 if drop_noise and entry.is_noisy(seg1=rec[0], seg2=rec[1]):
                     skips += 1
                     noise += 1
                     continue
-                sent1, sent2 = [s.strip() for s in rec]
+                sent1, sent2 = [s.strip() for s in rec[:2]]
                 if not sent1 or not sent2:
                     skips += 1
                     continue
@@ -480,6 +505,10 @@ class Dataset:
                 sent2 = sent2.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
                 f1.write(f'{sent1}\n')
                 f2.write(f'{sent2}\n')
+                if has_meta:
+                    assert len(rec) >= 3, f'Expected 3 fields, found {len(rec)}: {rec}'
+                    meta = json.dumps(rec[2], ensure_ascii=False, indent=None)
+                    f3.write(f'{meta}\n')
                 count += 1
             msg = f'Looks like an error. {count} segs are valid {skips} are invalid: {entry}'
             assert count > 0, msg
@@ -488,6 +517,8 @@ class Dataset:
             if noise > 0:
                 log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100 * noise / count:.4f}%")
             log.info(f"wrote {count} lines to {l1} == {l2}")
+        if not has_meta and meta_file.exists():
+            meta_file.unlink()
         flag_file.touch()
         return count, skips
 

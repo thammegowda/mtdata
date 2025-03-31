@@ -8,11 +8,13 @@ from collections import defaultdict
 from typing import List, Dict, Mapping, Tuple, Optional
 import json
 import fnmatch
+import subprocess as sp
+import sys
 
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
 from mtdata import pbar_man
-from mtdata.entry import DatasetId, Langs
+from mtdata.entry import DatasetId, Langs, LangPair
 from mtdata.utils import IO, format_byte_size
 
 DEF_N_JOBS = 1
@@ -40,7 +42,7 @@ def get_data(langs, out_dir, merge_train=False, compress=False,
         if kwargs.get(old_name):
             dataset_ids[name] = kwargs.pop(old_name)
     if kwargs:
-        log.info(f"Args are ignored: {kwargs}")
+        log.debug(f"Args are ignored: {kwargs}")
     assert any(bool(ids) for ids in dataset_ids.values()),\
         f'Required at least one of --train --test --dev --mono-train --mono-test --mono-dev \n given={dataset_ids.keys()}'
     dataset = Dataset.prepare(
@@ -72,10 +74,19 @@ def echo_data(did:DatasetId, delim='\t'):
     parser = Parser(path, ext=entry.in_ext or None, ent=entry)
     count = 0
     all_segs = parser.read_segs()
-    for rec in all_segs:
-        if isinstance(rec, (list, tuple)):
-            rec = (col.replace(delim, ' ').replace('\n', ' ') for col in rec)
+    for row in all_segs:
+        if isinstance(row, str):
+            rec = row
+        elif isinstance(row, (list, tuple)):
+            rec = []
+            for col in row:
+                if isinstance(col, Mapping):
+                    col = json.dumps(col, indent=None, ensure_ascii=False)
+                col = col.replace(delim, ' ').replace('\n', ' ')
+                rec.append(col)
             rec = delim.join(rec)
+        else:
+            raise ValueError(f'Unknown row type: {type(row)}. Expected str or list/tuple')
         print(rec)
         count += 1
     log.info(f'Total rows={count:,}')
@@ -125,10 +136,11 @@ def list_recipes(id_only=False, delim='\t', format='plain'):
                 raise f'{format} not supported'
 
 
-def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, drop_tests=False, fail_on_error=False,
+def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False, 
+               drop_tests=False, fail_on_error=False,
                n_jobs=DEF_N_JOBS, merge_train=True, **kwargs):
     if kwargs:
-        log.warning(f"Args are ignored: {kwargs}")
+        log.debug(f"Args are ignored: {kwargs}")
     from mtdata.recipe import RECIPES
     recipe = RECIPES.get(recipe_id)
     if not recipe:
@@ -180,6 +192,35 @@ def cache_datasets(recipes:List[str]=None, dids:List[DatasetId]=None, n_jobs=DEF
     log.info(f"Going to cache {len(entries)} entries at {cache.root}; n_jobs={n_jobs}")
     Dataset.parallel_download(entries, cache=cache, n_jobs=n_jobs)
 
+def index_datasets():
+    """
+    Create or update the dataset index. This deletes action {cached_index_file} only and not the downloaded files.
+    Use this if you've modified the mtdata source code and you want to force refresh the dataset index.
+    """
+    if cached_index_file.exists():
+        bak_file = cached_index_file.with_suffix(".bak")
+        log.info(f"Invalidate index: {cached_index_file} -> {bak_file}")
+        cached_index_file.rename(bak_file)
+    # importing the index will recreate the index
+    from mtdata.index import INDEX as index
+
+def score_datasets(cmd: str, langs: LangPair, out_dir: Path, metric_name: str):
+    """
+    Score the datasets using the specified scorer
+    """
+    optimize_pymarian = True
+    # get an optimized command which is a bit more efficient than the python wrapper
+    if optimize_pymarian and cmd.startswith("pymarian-eval "):
+        optim_cmd = sp.check_output(cmd + " --print-cmd", text=True, shell=True).strip()
+        if optim_cmd.startswith("marian "):
+            # older version used "marian evaluate", make it "pymarian evaluate"
+            optim_cmd = f"py{optim_cmd}"
+        cmd = optim_cmd
+    from .scorer import LocalDataset
+    dataset = LocalDataset(out_dir, langs)
+    dataset.score_all(cmd, metric_name)
+
+
 class MyFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
     def _split_lines(self, text, width: int):
@@ -206,8 +247,7 @@ def parse_args():
                    choices=log_levels, help=f'Set log level. Choices={log_levels}')
     p.add_argument('-ri', '--reindex', action='store_true',
                    help=f"Invalidate index of entries and recreate it. This deletes"
-                        f" {cached_index_file} only and not the downloaded files. "
-                        f"Use this if you've modifying mtdata source code and want to force reload.")
+                        f" Deprecated: use 'index' subcommand instead. ")
     grp = p.add_mutually_exclusive_group()
     grp.add_argument('-pb', '--pbar', action='store_true', dest='progressbar',
                      help=f"Show progressbar", default=True)
@@ -216,6 +256,7 @@ def parse_args():
 
     sub_ps = p.add_subparsers(required=True, dest='task', metavar='<task>',
                               help='''R|
+"index" - create or update the dataset index.
 "list" - List the available entries
 "get" - Downloads the entry files and prepares them for experiment
 "echo" - Print contents of a dataset into STDOUT.
@@ -223,7 +264,13 @@ def parse_args():
 "get-recipe" - Get the datasets used in the specified experiment from "list-recipe"
 "stats" - Get stats of dataset"
 "cache" - download datasets into cache
+"report" - Generate a report of the datasets
+"score" - score the datasets using the specified scorer
 ''')
+    index_p = sub_ps.add_parser(
+        'index', formatter_class=MyFormatter,
+        help=f"Create or update the dataset index. This deletes action {cached_index_file} only and not the downloaded files. "
+            f"Use this if you've modified the mtdata source code and you want to force refresh the dataset index.")
 
     list_p = sub_ps.add_parser('list', formatter_class=MyFormatter)
     list_p.add_argument('-l', '--langs', metavar='L1/L1-L2', type=Langs,
@@ -298,6 +345,21 @@ def parse_args():
     cache_p.add_argument('-di', '--dataset-id', type=DatasetId.parse, nargs='*', help='Dataset ID')
     cache_p.add_argument('-j', '--n-jobs', type=int, help="Number of worker jobs (processes)", default=DEF_N_JOBS)
 
+    score_p = sub_ps.add_parser('score', formatter_class=MyFormatter
+                                , help="Score the datasets using the specified scorer")
+    score_p.add_argument("-l", "--langs", type=Langs, required=True,
+                         help="Language pair. Used to correctly identify source and target files.")
+
+    DEF_SCORER_METRIC = "wmt22-cometkiwi-da"
+    DEF_SCORE_CMD = f"pymarian-eval --stdin --fields src mt --workspace -8000 --model {DEF_SCORER_METRIC} --mini-batch 64"
+    score_p.add_argument('-c', '--cmd', default=DEF_SCORE_CMD, help='Scorer command. Assumptions: \
+                         (1). STDIN->STDOUT where each line in STDIN has source<tab>target, and the corresponding score is written to STDOUT. \
+                         (2). Maintains input order (3). 1:1 mapping.')
+    score_p.add_argument('-n', '--name', dest='metric_name', default=DEF_SCORER_METRIC,
+                        help='Metric name which will be added to all files')
+    score_p.add_argument('-o', '--out', dest='out_dir', type=Path, required=True,
+                         help='Output directory name; this should be the output of "get"/"get-recipe" command')
+
     args = p.parse_args()
     if args.log_level:
         log_level = log._nameToLevel[args.log_level]
@@ -313,33 +375,42 @@ def parse_args():
 
 def main():
 
-    args = parse_args()
-    if args.reindex and cached_index_file.exists():
-        bak_file = cached_index_file.with_suffix(".bak")
-        log.info(f"Invalidate index: {cached_index_file} -> {bak_file}")
-        cached_index_file.rename(bak_file)
-    if args.task == 'list':
-        list_data(args.langs, args.names, not_names=args.not_names, full=args.full,
-                  groups=args.groups, not_groups=args.not_groups, id_only=args.id)
-    elif args.task == 'get':
-        get_data(**vars(args))
-    elif args.task == 'echo':
-        # disable progress bar for echo; it sometimes insert new lines in the output
-        pbar_man.enabled = False
-        echo_data(did=args.dataset_id)
-    elif args.task == 'list-recipe':
-        list_recipes(id_only=args.id, format=args.format)
-    elif args.task == 'get-recipe':
-        get_recipe(**vars(args))
-    elif args.task == 'stats':
-        show_stats(*args.did, quick=args.quick)
-    elif args.task == 'report':
-        generate_report(args.langs, names=args.names, not_names=args.not_names)
-    elif args.task == 'cache':
-        assert args.recipe_id or args.dataset_id, "Need at least one of --recipe-id or --dataset-id"
-        cache_datasets(recipes=args.recipe_id, dids=args.dataset_id, n_jobs=args.n_jobs)
-    else:
-        raise Exception(f'task={args.task} not implemented')
+    try:
+        args = parse_args()
+        if args.reindex and cached_index_file.exists():
+            log.warning(f"--reindex flag is deprecated and will be removed in the future. Use 'index' subcommand instead")
+            index_datasets()
+
+        if args.task == 'index':
+            index_datasets()
+        elif args.task == 'list':
+            list_data(args.langs, args.names, not_names=args.not_names, full=args.full,
+                    groups=args.groups, not_groups=args.not_groups, id_only=args.id)
+        elif args.task == 'get':
+            get_data(**vars(args))
+        elif args.task == 'echo':
+            # disable progress bar for echo; it sometimes insert new lines in the output
+            pbar_man.enabled = False
+            echo_data(did=args.dataset_id)
+        elif args.task == 'list-recipe':
+            list_recipes(id_only=args.id, format=args.format)
+        elif args.task == 'get-recipe':
+            get_recipe(**vars(args))
+        elif args.task == 'stats':
+            show_stats(*args.did, quick=args.quick)
+        elif args.task == 'report':
+            generate_report(args.langs, names=args.names, not_names=args.not_names)
+        elif args.task == 'cache':
+            assert args.recipe_id or args.dataset_id, "Need at least one of --recipe-id or --dataset-id"
+            cache_datasets(recipes=args.recipe_id, dids=args.dataset_id, n_jobs=args.n_jobs)
+        elif args.task == 'score':
+            score_datasets(cmd=args.cmd, langs=args.langs, out_dir=args.out_dir,
+                            metric_name=args.metric_name)
+        else:
+            raise Exception(f'task={args.task} not implemented')
+    except mtdata.MTDataUserError as e:
+        print("Error: " + e.msg, file=sys.stderr)
+        sys.exit(e.exitcode)
 
 
 if __name__ == '__main__':

@@ -134,10 +134,13 @@ def load_all(index: Index):
              " swe tah tam tat tel tgk_Cyrl tha tir ton tsn tuk tur uig ukr urd uzb ven vie wol xho yor"
              " yue zho_CN zho_TW zul").split()  # NOTE: fij tgk_Cyrl urd vie wol zul had extra lines
     for l2 in ntrex128_langs:
+        l2_ext = l2.replace('_', "-")
         index += Entry(did=f"Microsoft-ntrex-128-eng-{l2}", url=_url, filename="NTREX-52b9c57c.tar.gz",
-                       in_ext='txt', in_paths=["*/NTREX-128/newstest2019-src.eng.txt", f"*/NTREX-128/newstest2019-ref.{l2}.txt"])
+                       in_ext='txt', in_paths=["*/NTREX-128/newstest2019-src.eng.txt", f"*/NTREX-128/newstest2019-ref.{l2_ext}.txt"])
 
     for i, l1 in enumerate(ntrex128_langs):
+        l1_ext = l1.replace('_', "-")
         for l2 in ntrex128_langs[i+1:]:
+             l2_ext = l2.replace('_', "-")
              index += Entry(did=f"Microsoft-ntrex-128-{l1}-{l2}", url=_url, filename="NTREX-52b9c57c.tar.gz",
-                       in_ext='txt', in_paths=[f"*/NTREX-128/newstest2019-ref.{l1}.txt", f"*/NTREX-128/newstest2019-ref.{l2}.txt"])
+                       in_ext='txt', in_paths=[f"*/NTREX-128/newstest2019-ref.{l1_ext}.txt", f"*/NTREX-128/newstest2019-ref.{l2_ext}.txt"])
