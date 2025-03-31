@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=77.0.3", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,7 @@ name = "mtdata"
 dynamic = ["version"]
 description = "mtdata is a tool to download datasets for machine translation"
 readme = "README.md"
-license = { file = "LICENSE" }
+license-files = [ "LICENSE" ]
 requires-python = ">=3.8"
 authors = [
     { name = "Thamme Gowda", email = "tgowdan@gmail.com" }
@@ -20,7 +20,6 @@ classifiers = [
     "Topic :: Text Processing :: General",
     "Topic :: Text Processing :: Filters",
     "Topic :: Text Processing :: Linguistic",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3 :: Only"
 ]
 keywords = [
@@ -31,7 +30,7 @@ keywords = [
     "computational linguistics"
 ]
 dependencies = [
-    "requests>=2.31.0",
+    "requests>=2.32.0",
     "enlighten==1.10.1",
     "portalocker==2.3.0",
     "pybtex==0.24.0",
@@ -46,7 +45,7 @@ repository = "https://github.com/thammegowda/mtdata"
 
 [tool.setuptools.packages.find]
 include = ["mtdata*"]  # ["*"] by default
-exclude = ["tests*", "tmp*", "build*", "dist*", "crawler*"]
+#exclude = ["tests*", "tmp*", "build*", "dist*", "crawler*"]
 
 
 [project.optional-dependencies]
