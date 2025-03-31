@@ -26,7 +26,7 @@ Europarl, News Commentary, WikiTitles, Tilde Model corpus, OPUS ...
 
 https://github.com/thammegowda/mtdata[MTData] is here to:
 
-* Automate machinbe translation training data creation by taking out human intervention. This is inspired by https://github.com/mjpost/sacreBLEU[SacreBLEU] that takes out human intervention at the evaluation stage.
+* Automate machine translation training data creation by taking out human intervention. This is inspired by https://github.com/mjpost/sacreBLEU[SacreBLEU] that takes out human intervention at the evaluation stage.
 * A reusable tool instead of dozens of use-once shell scripts spread across multiple repos.
 
 == Installation
@@ -58,7 +58,7 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | Source | Dataset Count
 
 | OPUS
-| 151,753
+| 156,257
 
 | Flores
 | 51,714
@@ -73,7 +73,7 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | 4,455
 
 | Statmt
-| 1,784
+| 1,798
 
 | Facebook
 | 1,617
@@ -105,6 +105,9 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | Lindat
 | 56
 
+| Google
+| 55
+
 | UN
 | 30
 
@@ -120,14 +123,14 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | LangUk
 | 5
 
+| KECL
+| 4
+
 | Phontron
 | 4
 
 | NRC_CA
 | 4
-
-| KECL
-| 3
 
 | IITB
 | 3
@@ -139,11 +142,13 @@ These are the summary of datasets from various sources (Updated: Feb 2022).
 | 2
 
 | *Total*
-| *231,157*
+| *235,731*
 |===
 
 == Usecases
 
+* WMT 2025 General (News) Translation Task: https://www.statmt.org/wmt25/mtdata/
+* WMT 2024 General (News) Translation Task: https://www.statmt.org/wmt24/mtdata/
 * WMT 2023 General (News) Translation Task: https://www.statmt.org/wmt23/mtdata/
 * WMT 2022 General (News) Translation Task: https://www.statmt.org/wmt22/mtdata/
 * USC ISI's 500-to-English MT: ~http://rtg.isi.edu/many-eng/~ http://gowda.ai/006-many-to-eng/)
@@ -355,6 +360,29 @@ See link:mtdata/recipe/recipes.yml[`mtdata/recipe/recipes.yml`] for the format a
 ----
 mtdata list-recipe  # see all recipes
 mtdata get-recipe -ri <recipe_id> -o <out_dir>  # get recipe, recreate dataset
+----
+
+== QE Scoring
+
+____
+Since v0.4.3 (WMT25)
+____
+
+We support scoring parallel segments using any (QE) metric using a subprocess invocation.
+The command for subprocess has to satisfy the following three assumptions
+
+. STDIN\->STDOUT mapping such that reads `source\ttarget` lines from STDIN and prints score to stdout
+. 1:1 mapping. i.e. number of output lines match the number of input lines
+. Preserves input order
+
+Here is an example with `pymarian`
+
+[,bash]
+----
+pip install pymarian
+metric="wmt22-cometkiwi-da"
+cmd="pymarian-eval --stdin --fields src mt --workspace -8000 --model wmt22-cometkiwi-da --mini-batch 64"
+python -m mtdata score -l eng-isl -o wmt25-eng-isl -c "$cmd" -n "$metric"
 ----
 
 == Language Name Standardization
