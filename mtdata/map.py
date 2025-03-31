@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+#
+# Created by TG on March 2025
+#
+# This is util help map a bunch of small files using a single subproc,
+# under a few assumptions
+# maps line-by-line STDIN->STDOUT, maintains 1:1 mapping and the input order.
+# This util was created to optimize time for scoring many small files using
+# a subprocess that takes much time to intialize (e.g. loading a large QE metric model)
+
 import argparse
 from pathlib import Path
 from typing import List, Tuple, Union, Iterator
@@ -7,7 +17,6 @@ import subprocess as sp
 import multiprocessing as mp
 import threading as mt
 import sys
-import queue
 
 from mtdata import log
 from mtdata.utils import IO
@@ -171,6 +180,10 @@ class SubprocMapper:
         if self.proc and self.proc.poll() is None:
             log.info(f"terminating subprocess {self.proc.pid}")
             self.proc.terminate()
+
+    @classmethod
+    def read_stream(cls, paths: Iterator[List[Path]]) -> Iterator[Union[dict,list]]:
+        return read_paths(paths)
 
 
 def read_input_paths(input, delim=DELIM):

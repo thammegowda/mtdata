@@ -1,17 +1,10 @@
 from pathlib import Path
-from typing import List, Iterator, Tuple
-from itertools import zip_longest
-import subprocess as sp
-import os
-
-from pymarian import Evaluator
-from pymarian.utils import get_model_path, get_vocab_path
-
+from typing import List, Tuple
 
 from . import log, pbar_man, Defaults
 from  .entry import LangPair
 from .utils import IO
-from .map import SubprocMapper, read_paths
+from .map import SubprocMapper
 
 
 class LocalDataset:
@@ -46,28 +39,16 @@ class LocalDataset:
             log.info(f"Found {len(parts)} parallel parts in {subdir} for {self.langs}")
         return parts
 
-
-class PyMarianScorer():
-
-    def __init__(self, metric:str, langs:Tuple[str,str], quiet=False, fp16=False, **kwargs):
-        self.metric = metric
-        self.langs = langs
-        self.quiet = quiet
-        self.fp16 = fp16
-        self.eval_args = kwargs
-
-    def score_all(self, work_dir: Path):
+    def score_all(self, cmdline, metric_name:str):
         """
         Score the translations in the work_dir using the specified metric.
         """
-        log.info(f'Scoring {work_dir} with {self.metric}')
-        dataset = LocalDataset(work_dir, self.langs)
-        parts = dataset.list_parallel_parts()
-        fp16 = self.fp16 and ".fp16" or ""
+        log.info(f'Scoring {self.root} with {metric_name}')
+        parts = self.list_parallel_parts()
         log.info(f'Found {len(parts)} parts')
         all_paths = []
         for part_num, (did, src_file, tgt_file) in enumerate(parts):
-            out_file = src_file.parent / f'{did}.{self.metric}.score{fp16}.gz'
+            out_file = src_file.parent / f'{did}.{metric_name}.score.gz'
             if out_file.exists() and out_file.stat().st_size > 0:
                 log.info(f'Skipping {src_file.name} {tgt_file.name} (already scored)')
                 continue
@@ -76,30 +57,14 @@ class PyMarianScorer():
         if not all_paths:
             log.warning("No parts to score; skipping")
             return
-        cmdline = f"pymarian-eval --stdin -m {self.metric} -a skip"
-        if not self.quiet:
-            cmdline += " --debug"
-        if self.fp16:
-            cmdline += " --fp16"
-        for k,v in self.eval_args.items():
-            k = k.replace('_', '-')
-            cmdline += f" --{k} {v}"
-        if os.getenv('PYMARIAN_CACHE'):
-            cmdline += f" --cache {os.getenv('PYMARIAN_CACHE')}"
-
-        # get internal command which is purely c++ and a bit more efficient than python wrapper
-        cmdline = sp.check_output(cmdline + " --print-cmd", text=True, shell=True).strip()
-        if cmdline.startswith("marian "):
-            # older version used "marian evaluate", make it "pymarian evaluate"
-            cmdline = f"py{cmdline}"
-        stream = read_paths(all_paths)
         mapper = SubprocMapper(cmdline=cmdline)
         try:
+            stream = mapper.read_stream(all_paths)
             out_stream = mapper(stream)
             out_path = None
             tmp_path = None
             writer = None
-            desc = f'Scoring {len(all_paths)} parts with {self.metric}'
+            desc = f'Scoring {len(all_paths)} parts with {metric_name}'
             with pbar_man.counter(unit='it', desc=desc, min_delta=Defaults.PBAR_REFRESH_INTERVAL,
                                     autorefresh=True) as pbar:
                 for rec in out_stream:

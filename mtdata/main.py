@@ -8,6 +8,7 @@ from collections import defaultdict
 from typing import List, Dict, Mapping, Tuple, Optional
 import json
 import fnmatch
+import subprocess as sp
 
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
@@ -202,18 +203,22 @@ def index_datasets():
     # importing the index will recreate the index
     from mtdata.index import INDEX as index
 
-def score_datasets(scorer: str, metric: str, langs: LangPair, out_dir: Path, fp16: bool=False, **kwargs):
+def score_datasets(cmd: str, langs: LangPair, out_dir: Path, metric_name: str):
     """
     Score the datasets using the specified scorer
     """
-    assert scorer in ['pymarian'], f'Unknown scorer: {scorer}'
-    if scorer == "pymarian":
-        from .scorer import PyMarianScorer
-        marian_args = {arg: kwargs[arg] for arg in ['mini_batch', 'maxi_batch', 'workspace'] if kwargs.get(arg)}
-        scorer = PyMarianScorer(metric, langs=langs, quiet=not mtdata.debug_mode, fp16=fp16, **marian_args)
-        scorer.score_all(out_dir)
-    else:
-        raise Exception(f"scorer={scorer} is not implemented.")
+    optimize_pymarian = True
+    # get an optimized command which is a bit more efficient than the python wrapper
+    if optimize_pymarian and cmd.startswith("pymarian-eval "):
+        optim_cmd = sp.check_output(cmd + " --print-cmd", text=True, shell=True).strip()
+        if optim_cmd.startswith("marian "):
+            # older version used "marian evaluate", make it "pymarian evaluate"
+            optim_cmd = f"py{optim_cmd}"
+        cmd = optim_cmd
+    from .scorer import LocalDataset
+    dataset = LocalDataset(out_dir, langs)
+    dataset.score_all(cmd, metric_name)
+
 
 class MyFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
@@ -341,20 +346,16 @@ def parse_args():
 
     score_p = sub_ps.add_parser('score', formatter_class=MyFormatter
                                 , help="Score the datasets using the specified scorer")
-    score_p.add_argument('-s', '--scorer', type=str, choices=["pymarian"], default="pymarian", help='Scorer name')
-    score_p.add_argument('-m', '--metric', type=str, default="wmt22-cometkiwi-da",
-                            help='QE metric name. See scorer help for a list of supported metrics. \
-                                For pymarian supported QE metrics are: wmt20-comet-qe-da, wmt22-cometkiwi-da, wmt23-cometkiwi-da-xl, wmt23-cometkiwi-da-xxl')
-    score_p.add_argument('-fp16', '--fp16', action='store_true', default=False,
-                            help='Use fp16 model for faster scoring')
     score_p.add_argument("-l", "--langs", type=Langs, required=True,
-                         help="Language pair")
-    score_p.add_argument("-mn", "--mini-batch", type=int, default=16,
-                         help="mini batch size")
-    #score_p.add_argument('-mx', '--maxi-batch', type=int, default=1000,
-    #                     help="Maxi batch size")
-    score_p.add_argument("-ws", "--workspace", type=int, default=-8000,
-                         help="Workspace memory for pymarian. Recommended: Total VRAM - memory for model")
+                         help="Language pair. Used to correctly identify source and target files.")
+
+    DEF_SCORER_METRIC = "wmt22-cometkiwi-da"
+    DEF_SCORE_CMD = f"pymarian-eval --stdin --fields src mt --workspace -8000 --model {DEF_SCORER_METRIC} --mini-batch 64"
+    score_p.add_argument('-c', '--cmd', default=DEF_SCORE_CMD, help='Scorer command. Assumptions: \
+                         (1). STDIN->STDOUT where each line in STDIN has source<tab>target, and the corresponding score is written to STDOUT. \
+                         (2). Maintains input order (3). 1:1 mapping.')
+    score_p.add_argument('-n', '--name', dest='metric_name', default=DEF_SCORER_METRIC,
+                        help='Metric name which will be added to all files')
     score_p.add_argument('-o', '--out', dest='out_dir', type=Path, required=True,
                          help='Output directory name; this should be the output of "get"/"get-recipe" command')
 
@@ -401,7 +402,8 @@ def main():
         assert args.recipe_id or args.dataset_id, "Need at least one of --recipe-id or --dataset-id"
         cache_datasets(recipes=args.recipe_id, dids=args.dataset_id, n_jobs=args.n_jobs)
     elif args.task == 'score':
-        score_datasets(**vars(args))
+        score_datasets(cmd=args.cmd, langs=args.langs, out_dir=args.out_dir,
+                        metric_name=args.metric_name)
     else:
         raise Exception(f'task={args.task} not implemented')
 

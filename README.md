@@ -279,6 +279,25 @@ mtdata list-recipe  # see all recipes
 mtdata get-recipe -ri <recipe_id> -o <out_dir>  # get recipe, recreate dataset
 ```
 
+## QE Scoring
+
+> Since v0.4.3 (WMT25)
+
+We support scoring parallel segments using any (QE) metric using a subprocess invocation.
+The command for subprocess has to satisfy the following three assumptions
+1. STDIN->STDOUT mapping such that reads `source\ttarget` lines from STDIN and prints score to stdout
+2. 1:1 mapping. i.e. number of output lines match the number of input lines
+3. Preserves input order
+
+Here is an example with `pymarian`
+
+```bash
+pip install pymarian
+metric="wmt22-cometkiwi-da"
+cmd="pymarian-eval --stdin --fields src mt --workspace -8000 --model wmt22-cometkiwi-da --mini-batch 64"
+python -m mtdata score -l eng-isl -o wmt25-eng-isl -c "$cmd" -n "$metric"
+```
+
 ## Language Name Standardization
 ### ISO 639 3 
 Internally, all language codes are mapped to ISO-639 3 codes.
