@@ -12,7 +12,7 @@ from typing import Dict, List, Tuple, Union
 
 import portalocker
 
-from mtdata import Defaults
+from mtdata import Defaults, MTDataUserError
 from mtdata import cache_dir as CACHE_DIR
 from mtdata import log, pbar_man
 from mtdata.cache import Cache
@@ -116,7 +116,7 @@ class Dataset:
         all_entries = cls.resolve_entries(all_dids)
         for ent in all_entries:
             if not ent.is_compatible(langs):
-                raise Exception(f'Given languages: {langs} and dataset: {ent.did} are not compatible')
+                raise MTDataUserError(f'Dataset {ent.did} is not compatible for {"-".join(map(str, langs))}')
         if n_jobs > 1:
             cls.parallel_download(all_entries, Cache(cache_dir), n_jobs=n_jobs)
 

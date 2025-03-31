@@ -27,6 +27,18 @@ pbar_man = enlighten.get_manager()
 class MTDataException(Exception):
     pass
 
+
+class MTDataUserError(MTDataException):
+    """
+    This exception is for the cases where printing the whole stack trace is bad UI
+    and we want to show a user-friendly message. https://github.com/thammegowda/mtdata/issues/162
+    """
+    def __init__(self, msg, exitcode=1, *args):
+        super().__init__(*args)
+        self.msg = msg
+        self.exitcode = exitcode
+
+
 class Defaults:
     FILE_LOCK_TIMEOUT = 2 * 60 * 60  # 2 hours
     PBAR_REFRESH_INTERVAL = 1    # seconds

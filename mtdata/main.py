@@ -9,6 +9,7 @@ from typing import List, Dict, Mapping, Tuple, Optional
 import json
 import fnmatch
 import subprocess as sp
+import sys
 
 import mtdata
 from mtdata import log, __version__, cache_dir as CACHE_DIR, cached_index_file
@@ -41,7 +42,7 @@ def get_data(langs, out_dir, merge_train=False, compress=False,
         if kwargs.get(old_name):
             dataset_ids[name] = kwargs.pop(old_name)
     if kwargs:
-        log.info(f"Args are ignored: {kwargs}")
+        log.debug(f"Args are ignored: {kwargs}")
     assert any(bool(ids) for ids in dataset_ids.values()),\
         f'Required at least one of --train --test --dev --mono-train --mono-test --mono-dev \n given={dataset_ids.keys()}'
     dataset = Dataset.prepare(
@@ -139,7 +140,7 @@ def get_recipe(recipe_id, out_dir: Path, compress=False, drop_dupes=False,
                drop_tests=False, fail_on_error=False,
                n_jobs=DEF_N_JOBS, merge_train=True, **kwargs):
     if kwargs:
-        log.warning(f"Args are ignored: {kwargs}")
+        log.debug(f"Args are ignored: {kwargs}")
     from mtdata.recipe import RECIPES
     recipe = RECIPES.get(recipe_id)
     if not recipe:
@@ -374,38 +375,42 @@ def parse_args():
 
 def main():
 
-    args = parse_args()
-    if args.reindex and cached_index_file.exists():
-        log.warning(f"--reindex flag is deprecated and will be removed in the future. Use 'index' subcommand instead")
-        index_datasets()
+    try:
+        args = parse_args()
+        if args.reindex and cached_index_file.exists():
+            log.warning(f"--reindex flag is deprecated and will be removed in the future. Use 'index' subcommand instead")
+            index_datasets()
 
-    if args.task == 'index':
-        index_datasets()
-    elif args.task == 'list':
-        list_data(args.langs, args.names, not_names=args.not_names, full=args.full,
-                  groups=args.groups, not_groups=args.not_groups, id_only=args.id)
-    elif args.task == 'get':
-        get_data(**vars(args))
-    elif args.task == 'echo':
-        # disable progress bar for echo; it sometimes insert new lines in the output
-        pbar_man.enabled = False
-        echo_data(did=args.dataset_id)
-    elif args.task == 'list-recipe':
-        list_recipes(id_only=args.id, format=args.format)
-    elif args.task == 'get-recipe':
-        get_recipe(**vars(args))
-    elif args.task == 'stats':
-        show_stats(*args.did, quick=args.quick)
-    elif args.task == 'report':
-        generate_report(args.langs, names=args.names, not_names=args.not_names)
-    elif args.task == 'cache':
-        assert args.recipe_id or args.dataset_id, "Need at least one of --recipe-id or --dataset-id"
-        cache_datasets(recipes=args.recipe_id, dids=args.dataset_id, n_jobs=args.n_jobs)
-    elif args.task == 'score':
-        score_datasets(cmd=args.cmd, langs=args.langs, out_dir=args.out_dir,
-                        metric_name=args.metric_name)
-    else:
-        raise Exception(f'task={args.task} not implemented')
+        if args.task == 'index':
+            index_datasets()
+        elif args.task == 'list':
+            list_data(args.langs, args.names, not_names=args.not_names, full=args.full,
+                    groups=args.groups, not_groups=args.not_groups, id_only=args.id)
+        elif args.task == 'get':
+            get_data(**vars(args))
+        elif args.task == 'echo':
+            # disable progress bar for echo; it sometimes insert new lines in the output
+            pbar_man.enabled = False
+            echo_data(did=args.dataset_id)
+        elif args.task == 'list-recipe':
+            list_recipes(id_only=args.id, format=args.format)
+        elif args.task == 'get-recipe':
+            get_recipe(**vars(args))
+        elif args.task == 'stats':
+            show_stats(*args.did, quick=args.quick)
+        elif args.task == 'report':
+            generate_report(args.langs, names=args.names, not_names=args.not_names)
+        elif args.task == 'cache':
+            assert args.recipe_id or args.dataset_id, "Need at least one of --recipe-id or --dataset-id"
+            cache_datasets(recipes=args.recipe_id, dids=args.dataset_id, n_jobs=args.n_jobs)
+        elif args.task == 'score':
+            score_datasets(cmd=args.cmd, langs=args.langs, out_dir=args.out_dir,
+                            metric_name=args.metric_name)
+        else:
+            raise Exception(f'task={args.task} not implemented')
+    except mtdata.MTDataUserError as e:
+        print("Error: " + e.msg, file=sys.stderr)
+        sys.exit(e.exitcode)
 
 
 if __name__ == '__main__':
