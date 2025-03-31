@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.4.3 - WIP
+## 0.4.3 - 20250330
 * Add preliminary support for huggingface datasets; currently wmt24++ is the only supported dataset
 * Update setup.py -> pyproject.toml; hf datasets is optional dependency
 * Add mtdata index subcommand. deprecate `mtdata --reindex <cmd>`
