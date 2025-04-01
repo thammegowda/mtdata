@@ -3,7 +3,7 @@
 Using twine : https://twine.readthedocs.io/en/latest/
 
 1. Update the `__version__` in `mtdata/__init__.py`
-   Clear `rm -r build dist *.egg-info`   if those dir exist.
+   Clear `rm -rf build dist *.egg-info`   if those dir exist.
 2. Build :: `$ python -m build`
    where `sdist` is source code; `bdist_wheel` is universal ie. for all platforms
 3.  Make docs: `docs/make-docs.sh`
