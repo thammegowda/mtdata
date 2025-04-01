@@ -21,13 +21,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]  # windows-latest
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
-        exclude:
-          - os: macos-latest
-            python-version: '3.7'
-          - os: ubuntu-latest
-            python-version: '3.7'
-          # os x py versions here: https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        #exclude:
+        #  - os: macos-latest
+        #    python-version: '3.7'
+        #  - os: ubuntu-latest
+        #    python-version: '3.7'
+        # os x py versions here: https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}

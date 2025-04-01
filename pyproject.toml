@@ -10,7 +10,7 @@ readme = "README.md"
 #license = {text = "Apache-2.0"}
 #license-files = [ "LICENSE" ]  # twine complaints about this;
 license-files = [] #TODO: revisit this after twine is fixed
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [
     { name = "Thamme Gowda", email = "tgowdan@gmail.com" }
 ]
