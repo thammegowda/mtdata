@@ -36,6 +36,7 @@ dependencies = [
     "enlighten==1.10.1",
     "portalocker==2.3.0",
     "pybtex==0.24.0",
+    "setuptools>=80.9.0; python_version >= '3.12'",  # Needed until pybtex updates
     "ruamel.yaml >= 0.17.10"
 ]
 
