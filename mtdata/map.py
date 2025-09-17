@@ -22,7 +22,8 @@ from mtdata import log
 from mtdata.utils import IO
 
 
-DELIM = '\t'
+#DELIM = '\t'
+DELIM = None
 SENTINEL = None
 
 
@@ -188,7 +189,11 @@ class SubprocMapper:
 
 def read_input_paths(input, delim=DELIM):
     for line in input:
-        parts = line.rstrip("\n").split(delim)
+        parts = line.rstrip("\n")
+        if delim:
+            parts = parts.split(delim)
+        else:
+            parts = parts.split() # white spaces
         parts = [Path(p) for p in parts]
         yield parts
 
@@ -219,14 +224,29 @@ def main():
         stream = trim_stream(stream, skip=n_skip, limit=n_limit)
 
     mapper = SubprocMapper(cmdline=args['cmdline'])
+    out = None
     try:
         out_stream = mapper(stream)
         for rec in out_stream:
-            print(rec)
+            if isinstance(rec, dict):
+                if out is not None:
+                    log.info(f"closing {out.name}")
+                    out.close()
+                log.info(f"[[opening]] {rec['output']}")
+                out_path = Path(rec['output'])
+                if args['make_parents']:
+                    out_path.parent.mkdir(parents=True, exist_ok=True)
+                out = out_path.open('w', encoding='utf-8', errors='replace')
+            else:
+                assert out is not None, f"Output file is not opened yet"
+                out.write(rec + '\n')
     except Exception as e:
         mapper.close()
         raise
-
+    finally:
+        if out is not None:
+            log.info(f"((closing)) {out.name}")
+            out.close()
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -234,11 +254,14 @@ def parse_args():
         help="Mapper command that maps line-by-line, maintains 1:1 mapping and the input order. For example: 'cat'")
     parser.add_argument('-i', '--input', type=argparse.FileType('r'), default=sys.stdin,
         help="Listing file containing file paths. Atleast two paths per line is expected first one is input and last one is output")
-    parser.add_argument('-d', '--delim', type=str, default=DELIM, help="delimiter for paths in input")
+    parser.add_argument('-d', '--delim', type=str, default=DELIM, help="delimiter for paths in input. default=None => split by all whitespaces (space, tab etc.)")
     parser.add_argument('-l', '--limit', type=int, default=0,
                         help="Limit data stream to these many lines. Score: for debugging and testing")
     parser.add_argument('-s', '--skip', type=int, default=0,
                         help="Skip the first n records. Scope: for debugging and testing")
+    parser.add_argument('-p', '--parents',  action='store_true', dest='make_parents',
+                        help="Create parent directories for output files if they do not exist")
+    # return the parsed arguments
     return parser.parse_args()
 
 if __name__ == '__main__':
