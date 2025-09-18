@@ -54,7 +54,7 @@ def read_paths(paths: Iterator[List[Path]]) -> Iterator[Union[dict,list]]:
                 yield rec
                 counter += 1
             n_data += counter
-            log.info(f"Producer: end of {inps}; count: {counter}")
+            log.info(f"Producer: End of {','.join(str(x) for x in inps)}; count: {counter}")
         except Exception as e:
             log.exception(f"Producer: error in {inps}: {e}")
     log.info(f"Producer: finishing... n_ctrls: {n_ctrls};  n_data: {n_data:,}")
@@ -230,7 +230,7 @@ def main():
         for rec in out_stream:
             if isinstance(rec, dict):
                 if out is not None:
-                    log.info(f"closing {out.name}")
+                    log.info(f"[[closing]] {out.name}")
                     out.close()
                 log.info(f"[[opening]] {rec['output']}")
                 out_path = Path(rec['output'])
