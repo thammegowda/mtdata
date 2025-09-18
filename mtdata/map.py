@@ -50,7 +50,7 @@ def read_paths(paths: Iterator[List[Path]]) -> Iterator[Union[dict,list]]:
             for rec in zip_longest(*streams):
                 if len(inps) > 1 and any(x is None for x in rec):
                     raise ValueError(f"Unequal number of lines detected in {inps} @ count: {counter}")
-                rec = '\t'.join(x.strip().replace('\t', ' ') for x in rec)
+                rec = '\t'.join(x.strip() for x in rec)
                 yield rec
                 counter += 1
             n_data += counter
