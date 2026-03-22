@@ -1,6 +1,9 @@
 import sys
 import subprocess
 from pathlib import Path
+import pytest
+
+pytestmark = pytest.mark.skipif(sys.platform == 'win32', reason='map uses shell subprocesses not available on Windows')
 
 
 def run_map_cmd(cmd_args, cwd):

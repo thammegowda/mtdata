@@ -7,6 +7,7 @@ from typing import Union
 from pathlib import Path
 from xml.etree import ElementTree as ET
 import argparse
+import sys
 from mtdata import log
 from mtdata.utils import IO
 import time
@@ -89,21 +90,20 @@ def read_tmx(path: Union[Path, str], langs=None):
 
 def main(inp, out, langs):
     recs = read_tmx(inp, langs=langs)
-    with IO.writer(out) as out:
-        count = 0
-        for rec in recs:
-            rec = [l.replace('\t', ' ') for l in rec]
-            out.write('\t'.join(rec) + '\n')
-            count += 1
-        log.warning(f"Wrote {count} lines to {out}")
+    count = 0
+    for rec in recs:
+        rec = [l.replace('\t', ' ') for l in rec]
+        out.write('\t'.join(rec) + '\n')
+        count += 1
+    log.warning(f"Wrote {count} lines to {out}")
 
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='A tool to convert TMX to TSV',
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument('-i', '--inp', type=Path, required=True, help='Input file path')
-    p.add_argument('-o', '--out', type=Path, default=Path('/dev/stdout'),
-                   help='Output file path')
+    p.add_argument('-o', '--out', type=argparse.FileType('w'), default=sys.stdout,
+                   help='Output file path; defaults to stdout')
     p.add_argument('-l', '--langs', type=Langs, default=None,
                    help='Languages from TMX. example: eng-fra or en-fr')
 
