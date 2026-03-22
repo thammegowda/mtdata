@@ -20,14 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]  # windows-latest
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        #exclude:
-        #  - os: macos-latest
-        #    python-version: '3.7'
-        #  - os: ubuntu-latest
-        #    python-version: '3.7'
-        # os x py versions here: https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -36,8 +30,7 @@ jobs:
         python-version: "${{ matrix.python-version }}"
     - name: Install dependencies
       run: |
-        pip install --upgrade pip
-        pip install setuptools==61.2 flake8
+        pip install --upgrade pip setuptools
         python --version
         pip --version
     - name: Install module
