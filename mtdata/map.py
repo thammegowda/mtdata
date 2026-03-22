@@ -14,12 +14,14 @@ from typing import List, Tuple, Union, Iterator
 from itertools import zip_longest
 
 import subprocess as sp
-import queue
+import multiprocessing as mp
 import threading as mt
 import sys
 
 from mtdata import log
 from mtdata.utils import IO
+
+_MAX_QSIZE = 16384 if sys.platform == 'darwin' else 1024 * 1024
 
 
 #DELIM = '\t'
@@ -62,7 +64,7 @@ def read_paths(paths: Iterator[List[Path]]) -> Iterator[Union[dict,list]]:
 
 class SubprocMapper:
 
-    def __init__(self, cmdline: str, max_qsize=1024*1024, shell=True):
+    def __init__(self, cmdline: str, max_qsize=_MAX_QSIZE, shell=True):
         self.cmdline = cmdline
         self._subproc_args = dict(shell=shell)
         self.ctrl_queue = None
@@ -74,8 +76,8 @@ class SubprocMapper:
 
     def start(self):
         assert not self._started, f'Already started'
-        self.ctrl_queue = queue.Queue(maxsize=self.max_qsize)
-        self.data_queue = queue.Queue(maxsize=self.max_qsize)
+        self.ctrl_queue = mp.Queue(maxsize=self.max_qsize)
+        self.data_queue = mp.Queue(maxsize=self.max_qsize)
         log.info(f"RUN:\n\t{self.cmdline}")
         self.proc = sp.Popen(self.cmdline, stdin=sp.PIPE, stdout=sp.PIPE, text=True, **self._subproc_args)
         self._stop_event.clear()
