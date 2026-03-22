@@ -23,6 +23,12 @@ from mtdata.parser import Parser
 from mtdata.utils import IO
 
 DEF_COMPRESS = 'gz'
+
+
+def _worker_init(progress_queue):
+    """Initialize worker process with a progress queue for remote updates."""
+    from mtdata import pbar_man
+    pbar_man._queue = progress_queue
 DATA_FIELDS = ('train', 'dev', 'test', 'mono_train', 'mono_dev', 'mono_test')
 
 
@@ -420,19 +426,23 @@ class Dataset:
 
         tasks = [dict(dir_path=dir_path, entry=ent, drop_noise=drop_noise, compress=compress,
                       fail_on_error=fail_on_error) for ent in entries]
-        with concurrent.futures.ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
-            futures = [executor.submit(self.add_part_thread, task) for task in tasks]
-            with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
+        import multiprocessing as mp
+        progress_queue = mp.Queue()
+        with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
                               autorefresh=True, min_delta=Defaults.PBAR_REFRESH_INTERVAL, position=3) as pbar:
-                for future in concurrent.futures.as_completed(futures):
-                    try:
-                        future.result()
-                    except Exception as e:
-                        log.error(f"Error in thread: {e}")
-                        if fail_on_error:
-                            raise e
-                    finally:
-                        pbar.update(force=True)
+            with pbar_man.consume_remote(progress_queue):
+                with concurrent.futures.ProcessPoolExecutor(max_workers=self.n_jobs,
+                        initializer=_worker_init, initargs=(progress_queue,)) as executor:
+                    futures = [executor.submit(self.add_part_thread, task) for task in tasks]
+                    for future in concurrent.futures.as_completed(futures):
+                        try:
+                            future.result()
+                        except Exception as e:
+                            log.error(f"Error in thread: {e}")
+                            if fail_on_error:
+                                raise e
+                        finally:
+                            pbar.update(force=True)
 
     def add_parts_sequential(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
         with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,

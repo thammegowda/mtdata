@@ -11,18 +11,21 @@ __author__ = 'Thamme Gowda'
 import logging as log
 from pathlib import Path
 import os
-import enlighten
 from ruamel.yaml import YAML
 
 yaml = YAML()
 debug_mode = False
-_log_format = '%(asctime)s %(module)s.%(funcName)s:%(lineno)s %(levelname)s:: %(message)s'
-log.basicConfig(level=log.INFO, datefmt='%Y-%m-%d %H:%M:%S', format=_log_format)
+#_log_format = '%(module)s.%(funcName)s:%(lineno)s %(message)s'
+from mtdata.pbar import get_log_handler  # noqa: E402
+log.basicConfig(level=log.INFO, datefmt='%Y%m%d %H:%M:%S',
+                handlers=[get_log_handler()])
 cache_dir = Path(os.environ.get('MTDATA', '~/.mtdata')).expanduser()
 recipes_dir = Path(os.getenv('MTDATA_RECIPES', '.')).resolve()
 cached_index_file = cache_dir / f'mtdata.index.{__version__}.pkl'
 resource_dir:Path = Path(__file__).parent / 'resource'
-pbar_man = enlighten.get_manager()
+
+from mtdata.pbar import pbar_man  # noqa: E402
+
 
 class MTDataException(Exception):
     pass

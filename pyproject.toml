@@ -33,7 +33,7 @@ keywords = [
 ]
 dependencies = [
     "requests~=2.32",
-    "enlighten~=1.14",
+    "rich~=14.0",
     "portalocker~=3.2",
     "pybtex~=0.25",
     "ruamel.yaml~=0.18"
