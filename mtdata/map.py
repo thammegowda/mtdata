@@ -26,7 +26,19 @@ _MAX_QSIZE = 16384 if sys.platform == 'darwin' else 1024 * 1024
 
 #DELIM = '\t'
 DELIM = None
-SENTINEL = None
+
+
+class _Sentinel:
+    """Singleton sentinel that preserves identity across pickling."""
+    _instance = None
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    def __reduce__(self):
+        return (self.__class__, ())
+
+SENTINEL = _Sentinel()
 
 
 def read_paths(paths: Iterator[List[Path]]) -> Iterator[Union[dict,list]]:
@@ -133,7 +145,7 @@ class SubprocMapper:
             while not self._stop_event.is_set():
                 if ctrl_msg is None and not self.ctrl_queue.empty():
                     ctrl_msg = self.ctrl_queue.get()
-                if ctrl_msg is not None:
+                if isinstance(ctrl_msg, dict):
                     if line_count == ctrl_msg['last_count']:
                         yield ctrl_msg
                         n_ctrls += 1
@@ -141,15 +153,19 @@ class SubprocMapper:
                         ctrl_msg = None
                         continue
                     else:
-                        # line_count should not go beyond file
                         assert line_count < ctrl_msg['last_count']
 
                 rec = self.data_queue.get()
-                if rec is SENTINEL:  # end of queue
+                if rec is SENTINEL:
                     break
                 yield rec
                 line_count += 1
                 n_data += 1
+            # data done; ctrl SENTINEL is guaranteed to have arrived
+            # (stdin_writer puts it before subprocess closes stdout)
+            if ctrl_msg is not SENTINEL:
+                ctrl_msg = self.ctrl_queue.get()
+            assert ctrl_msg is SENTINEL, f'Expected ctrl SENTINEL, got {ctrl_msg}'
         except Exception as e:
             log.error(f"Iterator encountered an error: {e}")
             self._stop_event.set()
@@ -166,6 +182,7 @@ class SubprocMapper:
             yield from self.iterator()
             writer_t.join(timeout=10)
             reader_t.join(timeout=10)
+            # both SENTINELs consumed by iterator; queues must be empty
             assert self.ctrl_queue.empty(), 'ctrl_queue is not empty'
             assert self.data_queue.empty(), 'data_queue is not empty'
         except Exception as e:
