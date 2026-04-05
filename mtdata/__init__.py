@@ -19,6 +19,14 @@ debug_mode = False
 from mtdata.pbar import get_log_handler  # noqa: E402
 log.basicConfig(level=log.INFO, datefmt='%Y%m%d %H:%M:%S',
                 handlers=[get_log_handler()])
+
+_THIRD_PARTY_LOGGERS = ('httpx', 'datasets', 'huggingface_hub', 'fsspec', 'urllib3')
+
+def set_third_party_log_level(level=log.WARNING):
+    for name in _THIRD_PARTY_LOGGERS:
+        log.getLogger(name).setLevel(level)
+
+set_third_party_log_level(log.WARNING)
 cache_dir = Path(os.environ.get('MTDATA', '~/.mtdata')).expanduser()
 recipes_dir = Path(os.getenv('MTDATA_RECIPES', '.')).resolve()
 cached_index_file = cache_dir / f'mtdata.index.{__version__}.pkl'

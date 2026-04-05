@@ -20,6 +20,14 @@ QPARAMS = {
     "p": 0,
 }
 HF_EXT = "hfds"  # huggingface dataset
+HF_URL = "https://huggingface.co/datasets/"
+
+
+def _parse_hf_id(hf_id):
+    """Split hf_id into (group, name). Group is title-cased, name is lowercased with hyphens replaced."""
+    group, name = hf_id.split("/")
+    return group.title(), name.lower().replace("-", "_")
+
 
 # To refresh the data_file from huggingface:
 #    python -m mtdata.index.huggingface --refresh
@@ -31,35 +39,73 @@ def load_all(index: Index):
     with meta_file.open() as lines:
         for line in lines:
             line = line.strip()
+            # skip empty lines and comments starting with # or //
             if not line or line.startswith("#") or line.startswith("//"):
                 continue
             data = json.loads(line)
-            if data['id'] != "google/wmt24pp":
-                continue  # TODO: support other datasets
+            _load_hf_dataset(index, data)
 
-            id_parts = data['id'].split('/')
-            assert len(id_parts) == 2, f"Invalid dataset id: {data['id']}"
-            group, name = id_parts
-            group = group.title()
-            for config in data['configs']:
-                split_name = name
-                if config["split"] != "train":
-                    # assume train is the default
-                    split_name += f"_{config['split']}"
-                orig_langs = config["name"]
-                langs = tuple(orig_langs.split("-"))
-                assert len(langs) in (1, 2), f"Invalid langs: {langs}"
-                data_id = DatasetId(group=group, name=split_name, version="1", langs=langs)
-                if data_id in index:
-                    log.warning(f"Duplicate dataset id: {data_id}")
-                    continue
-                url = "https://huggingface.co/datasets/" + data['id']
-                fields = dict(source="source", target="target", doc_id="document_id", domain="domain", seg_id="segment_id")
-                meta = dict(config=config['name'], orig_id=data['id'], split=config["split"], fields=fields)
-                in_paths = config["paths"]
-                cite = None
-                entry = Entry(did=data_id, url=url, in_paths=in_paths, cite=cite, ext=HF_EXT, in_ext=HF_EXT, meta=meta)
-                index.add_entry(entry)
+
+def _load_hf_dataset(index, data):
+    hf_id = data['id']
+    group, base_name = _parse_hf_id(hf_id)
+    url = f"{HF_URL}{hf_id}"
+    default_fields = data.get('fields', dict(source="source", target="target"))
+
+    for config in data.get('configs', []):
+        config_name = config['name']
+        ds_name = config.get('ds_name', base_name)
+
+        # splits: list of split names to register. Each gets suffixed to ds_name.
+        # split: single split. If present, suffixed to ds_name.
+        # If neither is given, no suffix, and split passed as None to HF API (loads default).
+        splits = config.get('splits')
+        if splits:
+            split_suffix = {s: f"{ds_name}_{s}" for s in splits}
+        elif 'split' in config:
+            split_suffix = {config['split']: f"{ds_name}_{config['split']}"}
+        else:
+            split_suffix = {None: ds_name}
+
+        # Languages: explicit or derived from config name
+        langs = config.get('langs')
+        if langs is None:
+            if isinstance(config_name, str):
+                langs = tuple(config_name.split("-"))
+            elif isinstance(config_name, list):
+                langs = tuple(config_name)
+            else:
+                log.warning(f"Skipping {hf_id}: cannot derive langs from config {config_name}")
+                continue
+        else:
+            langs = tuple(langs)
+
+        # Fields
+        if isinstance(config_name, list):
+            # Cross-config: source/target are the config names
+            fields = dict(source=config_name[0], target=config_name[1])
+        else:
+            fields = config.get('fields', default_fields)
+
+        in_paths = config.get('paths', ['default'])
+
+        for split, name in split_suffix.items():
+
+            if isinstance(config_name, list):
+                meta = dict(orig_id=hf_id, config=config_name, split=split, fields=fields,
+                            text_field=config.get('text_field', 'text'),
+                            join_field=config.get('join_field', 'id'))
+            else:
+                meta = dict(orig_id=hf_id, config=config_name, split=split, fields=fields)
+
+            data_id = DatasetId(group=group, name=name, version='1', langs=langs)
+            if data_id in index:
+                log.warning(f"Duplicate dataset id: {data_id}")
+                continue
+
+            entry = Entry(did=data_id, url=url, in_paths=in_paths,
+                          ext=HF_EXT, in_ext=HF_EXT, meta=meta)
+            index.add_entry(entry)
 
 
 def query_datasets(page_num=0):

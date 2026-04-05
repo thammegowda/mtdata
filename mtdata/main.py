@@ -370,6 +370,7 @@ def parse_args():
 
     if args.verbose:
         mtdata.debug_mode = True
+        mtdata.set_third_party_log_level(log.DEBUG)
     return args
 
 
