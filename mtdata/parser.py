@@ -58,7 +58,7 @@ class Parser:
         # tsv and tmx just concatenate all of them
         assert len(self.paths) <= 3 or self.ext == 'tmx' or self.ext == 'tsv'
 
-    def read_segs(self):
+    def read_segs(self, show_pbar=True):
         readers = []
         if self.ext == 'opus_xces':
             preprocessing = 'xml'
@@ -108,8 +108,10 @@ class Parser:
             data = _zip_n_check()
         else:
             raise Exception("This is an error")
-        with pbar_man.counter(color='green', unit='seg', leave=False, desc=f"Reading {self.ent.did}", autoregresh=True, 
-                              min_delta=Defaults.PBAR_REFRESH_INTERVAL) as pbar:
+        if not show_pbar:
+            yield from data
+            return
+        with pbar_man.counter(unit='line', desc=f"Reading {self.ent.did}") as pbar:
             for rec in data:
                 yield rec
                 pbar.update()

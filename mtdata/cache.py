@@ -271,8 +271,8 @@ class Cache:
                     parts[2][:24], '...', parts[-1][-24:], # host ... filename
                     ]
             desc = ''.join(desc)
-            with pbar_man.counter(color='green', total=tot_bytes//2**10, unit='KiB', leave=False, position=2,
-                                  min_delta=Defaults.PBAR_REFRESH_INTERVAL, desc=f"{desc}"
+            with pbar_man.counter(total=tot_bytes//2**10, unit='KiB',
+                                  desc=f"{desc}"
                                   ) as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):
                     out.write(chunk)

@@ -65,8 +65,7 @@ class LocalDataset:
             tmp_path = None
             writer = None
             desc = f'Scoring {len(all_paths)} parts with {metric_name}'
-            with pbar_man.counter(unit='it', desc=desc, min_delta=Defaults.PBAR_REFRESH_INTERVAL,
-                                    autorefresh=True) as pbar:
+            with pbar_man.counter(unit='it', desc=desc) as pbar:
                 for rec in out_stream:
                     if isinstance(rec, dict):
                         if writer is not None:

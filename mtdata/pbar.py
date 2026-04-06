@@ -3,14 +3,37 @@
 import logging
 import os
 import threading
+import time as _time
 from contextlib import contextmanager
 
 from rich.progress import (Progress, TextColumn, BarColumn, TaskProgressColumn,
-    TimeElapsedColumn, TimeRemainingColumn, SpinnerColumn)
+    TimeElapsedColumn, TimeRemainingColumn, SpinnerColumn, ProgressColumn)
 from rich.console import Console
 from rich.logging import RichHandler
+from rich.text import Text
 
 console = Console(stderr=True)
+
+
+class _CountColumn(ProgressColumn):
+    def render(self, task):
+        unit = task.fields.get('unit', 'it')
+        completed = f"{task.completed:,.0f}"
+        if task.total is None:
+            return Text(f"{completed} {unit}")
+        return Text(f"{completed}/{task.total:,.0f} {unit}")
+
+
+class _RateColumn(ProgressColumn):
+    def render(self, task):
+        speed = task.finished_speed or task.speed
+        if speed is None:
+            return Text('')
+        unit = task.fields.get('unit', 'it')
+        if 'write_count' in task.fields and task.elapsed:
+            write_speed = task.fields['write_count'] / task.elapsed
+            return Text(f"r {speed:,.1f} w {write_speed:,.1f} {unit}/s")
+        return Text(f"{speed:,.1f} {unit}/s")
 
 
 class _ProgressAwareRichHandler(RichHandler):
@@ -42,6 +65,8 @@ class _PbarManager:
             TextColumn("[bold blue]{task.description}"),
             BarColumn(bar_width=30),
             TaskProgressColumn(),
+            _CountColumn(),
+            _RateColumn(),
             TimeElapsedColumn(),
             TextColumn("eta"),
             TimeRemainingColumn(),
@@ -63,13 +88,19 @@ class _PbarManager:
                 self._progress = None
                 self._active = 0
 
-    def _add_task(self, desc, total=None):
+    def _add_task(self, desc, total=None, unit='it'):
         with self._lock:
-            return self._progress.add_task(desc, total=total)
+            return self._progress.add_task(desc, total=total, unit=unit)
 
-    def _advance(self, task_id, incr=1):
+    def _advance(self, task_id, incr=1, **kwargs):
         with self._lock:
-            self._progress.update(task_id, advance=incr, refresh=True)
+            self._progress.update(task_id, advance=incr, refresh=True, **kwargs)
+
+    def emit_log(self, level, message):
+        if self._queue is not None:
+            self._queue.put(('log', level, message))
+            return
+        logging.getLogger().log(level, message)
 
     @contextmanager
     def render_lock(self):
@@ -77,13 +108,13 @@ class _PbarManager:
             yield
 
     @contextmanager
-    def counter(self, desc='', total=None, unit='it', **kwargs):
+    def counter(self, desc='', total=None, unit='it'):
         if not self.enabled:
             yield _NoopPbar()
             return
         if self._queue is not None:
             pbar = _RemotePbar(self._queue)
-            self._queue.put(('start', pbar._id, desc, total))
+            self._queue.put(('start', pbar._id, desc, total, unit))
             try:
                 yield pbar
             finally:
@@ -91,7 +122,7 @@ class _PbarManager:
                 self._queue.put(('stop', pbar._id))
             return
         self._start()
-        task_id = self._add_task(desc, total=total)
+        task_id = self._add_task(desc, total=total, unit=unit)
         try:
             yield _RichPbar(self, task_id)
         finally:
@@ -110,13 +141,13 @@ class _PbarManager:
                 if msg == sentinel:
                     break
                 if kind == 'start':
-                    _, tid, desc, total = msg
-                    ptid = self._add_task(desc, total=total)
+                    _, tid, desc, total, unit = msg
+                    ptid = self._add_task(desc, total=total, unit=unit)
                     remote_tasks[tid] = ptid
                 elif kind == 'update':
-                    _, tid, incr = msg
+                    _, tid, incr, fields = msg
                     if tid in remote_tasks:
-                        self._advance(remote_tasks[tid], incr=incr)
+                        self._advance(remote_tasks[tid], incr=incr, **fields)
                 elif kind == 'stop':
                     _, tid = msg
                     if tid in remote_tasks:
@@ -124,6 +155,9 @@ class _PbarManager:
                             self._progress.stop_task(remote_tasks[tid])
                             self._progress.update(remote_tasks[tid], visible=False, refresh=True)
                         del remote_tasks[tid]
+                elif kind == 'log':
+                    _, level, message = msg
+                    logging.getLogger().log(level, message)
 
         t = threading.Thread(target=_consume, daemon=True)
         t.start()
@@ -140,7 +174,7 @@ class _RichPbar:
         self._task_id = task_id
 
     def update(self, incr=1, **kwargs):
-        self._manager._advance(self._task_id, incr=incr)
+        self._manager._advance(self._task_id, incr=incr, **kwargs)
 
 
 class _RemotePbar:
@@ -150,26 +184,27 @@ class _RemotePbar:
     FLUSH_INTERVAL = 0.5  # seconds
 
     def __init__(self, queue):
-        import time
         with _RemotePbar._lock:
             _RemotePbar._counter += 1
             self._id = (os.getpid(), _RemotePbar._counter)
         self._queue = queue
         self._pending = 0
-        self._last_flush = time.monotonic()
-        self._time = time
+        self._fields = {}
+        self._last_flush = _time.monotonic()
 
     def update(self, incr=1, **kwargs):
         self._pending += incr
-        now = self._time.monotonic()
-        if now - self._last_flush >= self.FLUSH_INTERVAL:
+        if kwargs:
+            self._fields.update(kwargs)
+        if _time.monotonic() - self._last_flush >= self.FLUSH_INTERVAL:
             self.flush()
 
     def flush(self):
         if self._pending > 0:
-            self._queue.put(('update', self._id, self._pending))
+            self._queue.put(('update', self._id, self._pending, dict(self._fields)))
             self._pending = 0
-            self._last_flush = self._time.monotonic()
+            self._fields.clear()
+            self._last_flush = _time.monotonic()
 
 
 class _NoopPbar:
