@@ -13,10 +13,16 @@ from rich.logging import RichHandler
 console = Console(stderr=True)
 
 
+class _ProgressAwareRichHandler(RichHandler):
+    def emit(self, record):
+        with pbar_man.render_lock():
+            super().emit(record)
+
+
 def get_log_handler():
     """Return a RichHandler that coordinates with the progress bars."""
-    return RichHandler(console=console, show_path=False, show_time=True,
-                       omit_repeated_times=False)
+    return _ProgressAwareRichHandler(console=console, show_path=False, show_time=True,
+                                     omit_repeated_times=False)
 
 
 class _PbarManager:
@@ -27,7 +33,7 @@ class _PbarManager:
     """
     def __init__(self):
         self.enabled = True
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._progress = None
         self._active = 0
         self._queue = None  # set in worker processes for remote mode
@@ -44,18 +50,31 @@ class _PbarManager:
     def _start(self):
         with self._lock:
             if self._progress is None:
-                self._progress = Progress(*self._columns, console=console)
+                self._progress = Progress(*self._columns, console=console, auto_refresh=False)
                 self._progress.start()
             self._active += 1
 
     def _stop(self, task_id):
         with self._lock:
-            self._progress.update(task_id, visible=False)
+            self._progress.update(task_id, visible=False, refresh=True)
             self._active -= 1
             if self._active <= 0:
                 self._progress.stop()
                 self._progress = None
                 self._active = 0
+
+    def _add_task(self, desc, total=None):
+        with self._lock:
+            return self._progress.add_task(desc, total=total)
+
+    def _advance(self, task_id, incr=1):
+        with self._lock:
+            self._progress.update(task_id, advance=incr, refresh=True)
+
+    @contextmanager
+    def render_lock(self):
+        with self._lock:
+            yield
 
     @contextmanager
     def counter(self, desc='', total=None, unit='it', **kwargs):
@@ -72,9 +91,9 @@ class _PbarManager:
                 self._queue.put(('stop', pbar._id))
             return
         self._start()
-        task_id = self._progress.add_task(desc, total=total)
+        task_id = self._add_task(desc, total=total)
         try:
-            yield _RichPbar(self._progress, task_id)
+            yield _RichPbar(self, task_id)
         finally:
             self._stop(task_id)
 
@@ -94,16 +113,17 @@ class _PbarManager:
                 kind = msg[0]
                 if kind == 'start':
                     _, tid, desc, total = msg
-                    ptid = self._progress.add_task(desc, total=total)
+                    ptid = self._add_task(desc, total=total)
                     remote_tasks[tid] = ptid
                 elif kind == 'update':
                     _, tid, incr = msg
                     if tid in remote_tasks:
-                        self._progress.update(remote_tasks[tid], advance=incr)
+                        self._advance(remote_tasks[tid], incr=incr)
                 elif kind == 'stop':
                     _, tid = msg
                     if tid in remote_tasks:
-                        self._progress.update(remote_tasks[tid], visible=False)
+                        with self._lock:
+                            self._progress.update(remote_tasks[tid], visible=False, refresh=True)
                         del remote_tasks[tid]
             # drain remaining messages
             while not queue.empty():
@@ -111,9 +131,10 @@ class _PbarManager:
                     msg = queue.get_nowait()
                     kind = msg[0]
                     if kind == 'update' and msg[1] in remote_tasks:
-                        self._progress.update(remote_tasks[msg[1]], advance=msg[2])
+                        self._advance(remote_tasks[msg[1]], incr=msg[2])
                     elif kind == 'stop' and msg[1] in remote_tasks:
-                        self._progress.update(remote_tasks[msg[1]], visible=False)
+                        with self._lock:
+                            self._progress.update(remote_tasks[msg[1]], visible=False, refresh=True)
                         del remote_tasks[msg[1]]
                 except _queue_mod.Empty:
                     break
@@ -128,12 +149,12 @@ class _PbarManager:
 
 
 class _RichPbar:
-    def __init__(self, progress, task_id):
-        self._progress = progress
+    def __init__(self, manager, task_id):
+        self._manager = manager
         self._task_id = task_id
 
     def update(self, incr=1, **kwargs):
-        self._progress.update(self._task_id, advance=incr)
+        self._manager._advance(self._task_id, incr=incr)
 
 
 class _RemotePbar:
