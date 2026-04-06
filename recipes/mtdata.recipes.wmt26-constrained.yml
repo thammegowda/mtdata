@@ -1,4 +1,4 @@
-# Setup: pip install mtdata==0.4.4
+# Setup: pip install "git+https://github.com/thammegowda/mtdata.git@develop"
 # To list all the available datasets, use the following commands
 #   mtdata list -id -l <lang1>-<lang2>   # parallel
 #   mtdata list -id -l <lang>            # monolingual
@@ -775,7 +775,14 @@
     - Statmt-wikititles-3-zho-eng
     - OPUS-alt-v20191206-eng-zho
     - OPUS-gnome-v1-eng-zho_TW
+    - OPUS-gnome-v1-eng_AU-zho_TW
+    - OPUS-gnome-v1-eng_CA-zho_TW
+    - OPUS-gnome-v1-eng_GB-zho_TW
+    - OPUS-gnome-v1-eng_NZ-zho_TW
+    - OPUS-gnome-v1-eng_US-zho_TW
     - OPUS-kde4-v2-eng-zho_TW
+    - OPUS-kde4-v2-eng_GB-zho_TW
+    - OPUS-kdedoc-v1-eng_GB-zho_TW
     - OPUS-mdn_web_docs-v20230925-eng-zho_TW
     - OPUS-multiccaligned-v1-eng-zho_TW
     - OPUS-nllb-v1-eng-zho_TW
@@ -784,6 +791,11 @@
     - OPUS-ted2020-v1-eng-zho_TW
     - OPUS-tldr_pages-v20251124-eng-zho
     - OPUS-ubuntu-v14.10-eng-zho_TW
+    - OPUS-ubuntu-v14.10-eng_AU-zho_TW
+    - OPUS-ubuntu-v14.10-eng_CA-zho_TW
+    - OPUS-ubuntu-v14.10-eng_GB-zho_TW
+    - OPUS-ubuntu-v14.10-eng_NZ-zho_TW
+    - OPUS-ubuntu-v14.10-eng_US-zho_TW
     - OPUS-wikimedia-v20230407-eng-zho_TW
   mono_train:
     - Statmt-news_crawl-2023-zho
@@ -1060,8 +1072,12 @@
     - OPUS-qed-v2.0a-eng-lld
     - OPUS-tatoeba-v20230412-eng-lld
     - OPUS-ubuntu-v14.10-eng-lld
+    - OPUS-ubuntu-v14.10-eng_AU-lld
+    - OPUS-ubuntu-v14.10-eng_CA-lld
+    - OPUS-ubuntu-v14.10-eng_GB-lld
     - OPUS-wikimedia-v20230407-eng-lld
     - OPUS-translatewiki-v20250101-eng-lld
+    - OPUS-translatewiki-v20250101-eng_CA-lld
   mono_train:
     - Sfrontull-la_usc_valbadia_loresmt24-1-lld
     - Sfrontull-south_tyrol_weather_lld-1-lld
@@ -1070,18 +1086,28 @@
 - id: wmt26-eng-lij_Latn
   langs: eng-lij_Latn
   train:
+    - AllenAi-nllb-1-eng-lij_Latn
     - Conseggioligure-zenamt_eng_train-1-eng-lij_Latn
     - Openlanguagedata-oldi_seed-1-eng-lij_Latn
+  mono_train:
+    - Conseggioligure-linc-1-lij_Latn
 
 ########## ENG-SME (new) ##########
 - id: wmt26-eng-sme
   langs: eng-sme
   train:
     - OPUS-kde4-v2-eng-sme
+    - OPUS-kde4-v2-eng_GB-sme
     - OPUS-opensubtitles-v2024-eng-sme
     - OPUS-opus100_train-1-eng-sme
     - OPUS-tatoeba-v20230412-eng-sme
+    - OPUS-translatewiki-v20250101-eng_CA-sme
     - OPUS-ubuntu-v14.10-eng-sme
+    - OPUS-ubuntu-v14.10-eng_AU-sme
+    - OPUS-ubuntu-v14.10-eng_CA-sme
+    - OPUS-ubuntu-v14.10-eng_GB-sme
+    - OPUS-ubuntu-v14.10-eng_NZ-sme
+    - OPUS-ubuntu-v14.10-eng_US-sme
     - OPUS-wikimedia-v20230407-eng-sme
   mono_train:
     - Leipzig-news-2015_10k-sme_NO

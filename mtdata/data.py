@@ -257,7 +257,7 @@ class Dataset:
                      counts=counts)
 
         stats_msg = json.dumps(stats, indent=2)
-        log.info('Train stats:\n' + stats_msg)
+        log.info('Train stats: ' + ' | '.join(stats_msg.splitlines()))
         IO.write_lines(self.dir / 'train.stats.json', stats_msg)
         return counts
 

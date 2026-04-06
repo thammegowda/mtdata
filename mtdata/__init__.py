@@ -17,7 +17,7 @@ yaml = YAML()
 debug_mode = False
 #_log_format = '%(module)s.%(funcName)s:%(lineno)s %(message)s'
 from mtdata.pbar import get_log_handler  # noqa: E402
-log.basicConfig(level=log.INFO, datefmt='%Y%m%d %H:%M:%S',
+log.basicConfig(level=log.INFO, format='%(message)s', datefmt='%Y%m%d %H:%M:%S',
                 handlers=[get_log_handler()])
 
 _THIRD_PARTY_LOGGERS = ('httpx', 'datasets', 'huggingface_hub', 'fsspec', 'urllib3')

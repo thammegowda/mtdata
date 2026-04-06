@@ -146,7 +146,7 @@ class Cache:
             try:
                 self.download(url, local, entry=entry)
             except:
-                log.error(f'Error downloading {entry and entry.did}\nURL: {url}\nPath:{local}')
+                log.error(f'Error downloading {entry and entry.did} | url={url} | path={local}')
                 raise
         return local
 

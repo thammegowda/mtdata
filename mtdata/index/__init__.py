@@ -111,7 +111,7 @@ class Index:
         items = list(sorted(counts.items(), key=lambda x: x[1], reverse=True))
         items += [("Total", len(self))]
         counts = "\n".join([f"| {n} | {c:,}|" for n, c in items])
-        log.info(f"Index status:\n{counts}")
+        log.info("Index status: %s", ' | '.join(counts.splitlines()))
 
     @property
     def n_entries(self) -> int:

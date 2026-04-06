@@ -90,7 +90,7 @@ class SubprocMapper:
         assert not self._started, f'Already started'
         self.ctrl_queue = mp.Queue(maxsize=self.max_qsize)
         self.data_queue = mp.Queue(maxsize=self.max_qsize)
-        log.info(f"RUN:\n\t{self.cmdline}")
+        log.info(f"RUN: {self.cmdline}")
         self.proc = sp.Popen(self.cmdline, stdin=sp.PIPE, stdout=sp.PIPE, text=True, **self._subproc_args)
         self._stop_event.clear()
 

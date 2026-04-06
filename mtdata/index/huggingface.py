@@ -126,7 +126,8 @@ def query_datasets(page_num=0):
         log.info(f"GET {url_with_parms}")
         response = requests.get(url_with_parms)
         if response.status_code != 200:
-            log.warning(f"Failed to fetch data: {response.status_code}; text:\n{response.text}")
+            msg = ' '.join(response.text.splitlines())
+            log.warning(f"Failed to fetch data: {response.status_code}; text: {msg}")
             raise Exception(f"Failed to fetch data: {response.status_code}")
         data = response.json()
         if "datasets" not in data or not data["datasets"]:

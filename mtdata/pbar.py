@@ -100,17 +100,15 @@ class _PbarManager:
     @contextmanager
     def consume_remote(self, queue):
         """Consume progress events from worker processes and render them in the shared Progress."""
-        import queue as _queue_mod
-        stop_event = threading.Event()
+        sentinel = ('shutdown', None)
         remote_tasks = {}
 
         def _consume():
-            while not stop_event.is_set():
-                try:
-                    msg = queue.get(timeout=0.2)
-                except _queue_mod.Empty:
-                    continue
+            while True:
+                msg = queue.get()
                 kind = msg[0]
+                if msg == sentinel:
+                    break
                 if kind == 'start':
                     _, tid, desc, total = msg
                     ptid = self._add_task(desc, total=total)
@@ -123,28 +121,16 @@ class _PbarManager:
                     _, tid = msg
                     if tid in remote_tasks:
                         with self._lock:
+                            self._progress.stop_task(remote_tasks[tid])
                             self._progress.update(remote_tasks[tid], visible=False, refresh=True)
                         del remote_tasks[tid]
-            # drain remaining messages
-            while not queue.empty():
-                try:
-                    msg = queue.get_nowait()
-                    kind = msg[0]
-                    if kind == 'update' and msg[1] in remote_tasks:
-                        self._advance(remote_tasks[msg[1]], incr=msg[2])
-                    elif kind == 'stop' and msg[1] in remote_tasks:
-                        with self._lock:
-                            self._progress.update(remote_tasks[msg[1]], visible=False, refresh=True)
-                        del remote_tasks[msg[1]]
-                except _queue_mod.Empty:
-                    break
 
         t = threading.Thread(target=_consume, daemon=True)
         t.start()
         try:
             yield
         finally:
-            stop_event.set()
+            queue.put(sentinel)
             t.join(timeout=5)
 
 

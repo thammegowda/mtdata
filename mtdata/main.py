@@ -60,7 +60,7 @@ def get_data(langs, out_dir, merge_train=False, compress=False,
             cli_sig += ' ' + flag
     sig = f'mtdata get {cli_sig} -o <out-dir>\nmtdata version {mtdata.__version__}\n'
     log.info(f'Dataset is ready at {dataset.dir}')
-    log.info(f'mtdata args for reproducing this dataset:\n {sig}')
+    log.info('mtdata args for reproducing this dataset: %s', ' | '.join(sig.strip().splitlines()))
     with IO.writer(out_dir / 'mtdata.signature.txt', append=True) as w:
         w.write(sig)
 
