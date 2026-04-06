@@ -447,14 +447,14 @@ class Dataset:
         for t in tasks:
             t['fail_on_error'] = fail_on_error
         if self.n_jobs == 1:
-            with pbar_man.counter(leave=False, total=len(entries), unit='it', desc=desc) as pbar:
+            with pbar_man.counter(total=len(entries), unit='it', desc=desc) as pbar:
                 for task in tasks:
                     self._entry_worker(func, task)
                     pbar.update(force=True)
             return
         import multiprocessing as mp
         progress_queue = mp.Queue()
-        with pbar_man.counter(leave=False, total=len(entries), unit='it', desc=desc) as pbar:
+        with pbar_man.counter(total=len(entries), unit='it', desc=desc) as pbar:
             with pbar_man.consume_remote(progress_queue):
                 with concurrent.futures.ProcessPoolExecutor(
                         max_workers=self.n_jobs,
