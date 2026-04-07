@@ -123,9 +123,11 @@ class _PbarManager:
             return
         self._start()
         task_id = self._add_task(desc, total=total, unit=unit)
+        pbar = _RichPbar(self, task_id)
         try:
-            yield _RichPbar(self, task_id)
+            yield pbar
         finally:
+            pbar.flush()
             self._stop(task_id)
 
     @contextmanager
@@ -169,19 +171,35 @@ class _PbarManager:
 
 
 class _RichPbar:
+    FLUSH_INTERVAL = 1.0  # seconds; configurable via Defaults if needed
+
     def __init__(self, manager, task_id):
         self._manager = manager
         self._task_id = task_id
+        self._pending = 0
+        self._fields = {}
+        self._last_flush = _time.monotonic()
 
-    def update(self, incr=1, **kwargs):
-        self._manager._advance(self._task_id, incr=incr, **kwargs)
+    def update(self, incr=1, force=False, **kwargs):
+        self._pending += incr
+        if kwargs:
+            self._fields.update(kwargs)
+        if force or _time.monotonic() - self._last_flush >= self.FLUSH_INTERVAL:
+            self.flush()
+
+    def flush(self):
+        if self._pending > 0:
+            self._manager._advance(self._task_id, incr=self._pending, **self._fields)
+            self._pending = 0
+            self._fields.clear()
+            self._last_flush = _time.monotonic()
 
 
 class _RemotePbar:
     """Batches progress updates and sends them via queue at most once per FLUSH_INTERVAL."""
     _counter = 0
     _lock = threading.Lock()
-    FLUSH_INTERVAL = 0.5  # seconds
+    FLUSH_INTERVAL = 1.0  # seconds; matches _RichPbar
 
     def __init__(self, queue):
         with _RemotePbar._lock:
@@ -192,11 +210,11 @@ class _RemotePbar:
         self._fields = {}
         self._last_flush = _time.monotonic()
 
-    def update(self, incr=1, **kwargs):
+    def update(self, incr=1, force=False, **kwargs):
         self._pending += incr
         if kwargs:
             self._fields.update(kwargs)
-        if _time.monotonic() - self._last_flush >= self.FLUSH_INTERVAL:
+        if force or _time.monotonic() - self._last_flush >= self.FLUSH_INTERVAL:
             self.flush()
 
     def flush(self):
@@ -208,7 +226,7 @@ class _RemotePbar:
 
 
 class _NoopPbar:
-    def update(self, incr=1, **kwargs):
+    def update(self, incr=1, force=False, **kwargs):
         pass
 
 

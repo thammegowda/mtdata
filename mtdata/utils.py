@@ -18,7 +18,7 @@ from pathlib import Path
 import portalocker
 
 from mtdata import Defaults, log
-from mtdata.pigz import pigz
+from mtdata.pigz import pigz, xz_subprocess, bzip2_subprocess
 
 COMPRESSORS = {
     '.gz': gzip.open,
@@ -29,6 +29,10 @@ COMPRESSORS = {
 USE_PIGZ = os.environ.get('USE_PIGZ', 'YES').lower() in ('yes', 'true', '1')
 if USE_PIGZ and pigz.is_available():
     COMPRESSORS['.gz'] = pigz.open
+if xz_subprocess.is_available():
+    COMPRESSORS['.xz'] = xz_subprocess.open
+if bzip2_subprocess.is_available():
+    COMPRESSORS['.bz2'] = bzip2_subprocess.open
 
 class IO:
     """File opener and automatic closer
