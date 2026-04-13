@@ -122,7 +122,7 @@ class Parser:
         try:
             with IO.reader(path) as stream:
                 for line in stream:
-                    yield line.strip()
+                    yield line.rstrip('\r\n')
         except:
             log.warning(f'Error reading file {path}')
             raise
@@ -140,7 +140,7 @@ class Parser:
             if skipheader:
                 line = stream.readline()
             for line in stream:
-                row = [x.strip() for x in line.rstrip('\n').split(delim)]
+                row = [x.strip() for x in line.rstrip('\r\n').split(delim)]
                 out_row = row
                 if cols:
                     out_row = [row[idx] for idx in cols]

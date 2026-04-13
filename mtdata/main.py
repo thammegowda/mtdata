@@ -82,7 +82,7 @@ def echo_data(did:DatasetId, delim='\t'):
             for col in row:
                 if isinstance(col, Mapping):
                     col = json.dumps(col, indent=None, ensure_ascii=False)
-                col = col.replace(delim, ' ').replace('\n', ' ')
+                col = col.replace(delim, ' ').replace('\n', ' ').replace('\r', ' ')
                 rec.append(col)
             rec = delim.join(rec)
         else:
