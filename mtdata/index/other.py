@@ -164,3 +164,22 @@ def load_all(index: Index):
             ("2", "*/mono-bho-corpus/monolingual-v0.2.bho")]:
         index += Entry(did=DatasetId(group='BHLTR', name=f'mono', version=version, langs=('bho',)),
                     url=url, filename=filename, ext='zip', in_ext='txt', in_paths=[f1], cite=cite)
+
+    ### Motorola Endangered Indigenous Languages ###
+    _moto_base = "https://wpa_supplier.motorola.com/"
+    _moto_datasets = [
+        # (filename, src_lang, tgt_lang, version-date)
+        ("MotorolaMobility_All-en_US-lld_IT-2024-06-04.xlsx", "eng", "lld", "20240604"),
+        ("MotorolaMobility_All-en_US-chr-2022-03-08.xlsx", "eng", "chr", "20220308"),
+        ("MotorolaMobility_All-en_US-xnr_IN-2023-02-10.xlsx", "eng", "xnr", "20230210"),
+        ("MotorolaMobility_All-en_US-mi_NZ-2023-08-08.xlsx", "eng", "mri", "20230808"),
+        ("MotorolaMobility-en_US-yrl-2022-12-08.xlsx", "eng", "yrl", "20221208"),
+        ("MotorolaMobility-en_US-kgp-2022-12-08.xlsx", "eng", "kgp", "20221208"),
+        ("MotorolaMobility_All-pt_BR-yrl_BR-2022-07-20.xlsx", "por", "yrl", "20220720"),
+        ("MotorolaMobility_All-pt_BR-kgp_BR-2022-07-20.xlsx", "por", "kgp", "20220720"),
+    ]
+    for fname, src, tgt, version in _moto_datasets:
+        url = _moto_base + fname
+        index += Entry(did=DatasetId(group='Motorola', name='lang_revitalization', version=version,
+                                     langs=(src, tgt)),
+                       url=url, filename=fname, ext='xlsx', in_ext='xlsx')

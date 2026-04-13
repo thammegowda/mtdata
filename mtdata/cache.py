@@ -45,7 +45,7 @@ class Cache:
             else:
                 assert isinstance(entry.url, str)
                 local = self.get_local_path(entry.url, filename=entry.filename, fix_missing=fix_missing, entry=entry)
-                if isinstance(local, Path) and (zipfile.is_zipfile(local) or tarfile.is_tarfile(local)):
+                if isinstance(local, Path) and entry.is_archive and (zipfile.is_zipfile(local) or tarfile.is_tarfile(local)):
                     # look inside the archives and get the desired files
                     local = self.get_local_in_paths(path=local, entry=entry)
             return local
@@ -261,7 +261,13 @@ class Cache:
             if valid_flag.exists() and save_at.exists():
                 return save_at
             log.debug(f"GET {url} → {save_at}")
-            resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True, timeout=timeout)
+            try:
+                resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True,
+                                    timeout=timeout)
+            except requests.exceptions.SSLError as e:
+                log.warning(f"SSL verification failed for {url}: {e}; retrying without verification")
+                resp = requests.get(url=url, allow_redirects=True, headers=headers, stream=True,
+                                    timeout=timeout, verify=False)
             assert resp.status_code == 200, resp.status_code
             buf_size = 2 ** 14
             tot_bytes = int(resp.headers.get('Content-Length', '0'))

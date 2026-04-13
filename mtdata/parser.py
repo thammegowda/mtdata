@@ -91,6 +91,8 @@ class Parser:
                     readers.append(read_wmt21_xml(p))
                 elif HF_EXT in self.ext:
                     readers.append(self.read_hfds(p))
+                elif 'xlsx' in self.ext:
+                    readers.append(self.read_xlsx(p))
                 else:
                     raise Exception(f'Not supported {self.ext} : {p}')
 
@@ -152,6 +154,26 @@ class Parser:
                         out_row.append(metadata)
                 yield out_row
 
+    def read_xlsx(self, path, cols=None):
+        """Read data from an Excel .xlsx file.
+        :param path: path to .xlsx file
+        :param cols: column indices to extract; default uses ent.cols or (0, 1)
+        """
+        try:
+            from openpyxl import load_workbook
+        except ImportError as e:
+            raise ImportError("openpyxl is required to read .xlsx files. Run: pip install openpyxl") from e
+        if cols is None:
+            cols = self.ent.cols if (self.ent and self.ent.cols) else (0, 1)
+        wb = load_workbook(path, read_only=True, data_only=True)
+        ws = wb.active
+        for row in ws.iter_rows(min_row=2, values_only=True):  # skip header
+            out = [str(row[c]).strip() if row[c] is not None else '' for c in cols]
+            if all(v == '' for v in out):
+                continue
+            yield out
+        wb.close()
+
     @staticmethod
     def _nested_get(row, field):
         """Get a value from a dict using dot-separated path for nested access.
@@ -176,11 +198,24 @@ class Parser:
         # in the current version, I am going to retain all fields to see what all fields exist,
         # and map the subset of fields as per the dict; so, created rev_map.get(orig,orig)
         for row in ds:
-            out_row = [self._nested_get(row, src_field)]
-            if tgt_field is not None:
-                out_row.append(self._nested_get(row, tgt_field))
-            # remap meta fields if necessary
+            src_val = self._nested_get(row, src_field)
+            tgt_val = self._nested_get(row, tgt_field) if tgt_field else None
             top_keys = {f.split('.')[0] for f in [src_field] + ([tgt_field] if tgt_field else [])}
             metadata = {rev_map.get(k, k): v for k, v in row.items() if k not in top_keys}
-            out_row.append(metadata)
-            yield out_row
+
+            src_is_list = isinstance(src_val, list)
+            tgt_is_list = isinstance(tgt_val, list)
+            if src_is_list and tgt_is_list:
+                # Both lists (e.g. SmolDoc srcs/trgs): zip and yield each pair
+                for s, t in zip(src_val, tgt_val):
+                    yield [s, t, metadata]
+            elif not src_is_list and tgt_is_list:
+                # Source is scalar, target is list (e.g. GATITOS src/trgs): expand
+                for t in tgt_val:
+                    yield [src_val, t, metadata]
+            else:
+                out_row = [src_val]
+                if tgt_val is not None:
+                    out_row.append(tgt_val)
+                out_row.append(metadata)
+                yield out_row

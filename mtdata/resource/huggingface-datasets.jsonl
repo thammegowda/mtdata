@@ -12,3 +12,5 @@
 {"id": "sfrontull/autonomia-lld_valbadia-ita", "configs": [{"name": null, "langs": ["ita", "lld"], "fields": {"source": "translation.ita", "target": "translation.lld_valbadia"}}]}
 {"id": "sfrontull/stiftungsparkasse-lld_valbadia-ita", "configs": [{"name": null, "langs": ["ita", "lld"], "fields": {"source": "translation.ita", "target": "translation.lld_valbadia"}}]}
 {"id": "sfrontull/pinocchio-lld_valbadia-ita", "configs": [{"name": null, "langs": ["ita", "lld"], "fields": {"source": "translation.ita", "target": "translation.lld_valbadia"}}]}
+# === SMOL: Professional translations for low-resource languages (google/smol) ===
+{"id": "google/smol", "configs": [{"name": "smolsent__en_lij", "ds_name": "smol_sent", "langs": ["eng", "lij_Latn"], "fields": {"source": "src", "target": "trg"}}, {"name": "smoldoc__en_lij", "ds_name": "smol_doc", "langs": ["eng", "lij_Latn"], "fields": {"source": "srcs", "target": "trgs"}}, {"name": "gatitos__en_lij", "ds_name": "smol_gatitos", "langs": ["eng", "lij_Latn"], "fields": {"source": "src", "target": "trgs"}}]}
