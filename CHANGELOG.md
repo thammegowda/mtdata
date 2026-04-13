@@ -1,5 +1,35 @@
 # Change Log
 
+## 0.5.0 - 20250413
+
+**Breaking Changes:**
+* Drop Python 3.9 support; minimum is now Python 3.10
+* Replace `enlighten` progress bars with `rich`; logging now uses `RichHandler`
+* Dependency versions updated: `rich~=14.0` replaces `enlighten`, `portalocker~=3.2`, `pybtex~=0.25`, `ruamel.yaml~=0.18`
+* Removed `setuptools` workaround for pybtex on Python 3.12+
+
+**New Features:**
+* `mtdata-map` CLI added for applying subprocess-based transformations to parallel data; registered as console script
+* Subprocess-based decompression for `.xz` (via `xz -T0`) and `.bz2` (via `pbzip2`/`lbzip2`/`bzip2`) for faster I/O
+* Generalized `SubprocessCompressor` base class in `pigz.py`; `pigz`, `xz_subprocess`, and `bzip2_subprocess` are now subclasses
+* HuggingFace index loader generalized to support arbitrary datasets (no longer hard-coded to `google/wmt24pp` only)
+* Write buffering (1 MiB) for subprocess compressors
+
+**Data Updates:**
+* OPUS index updated: ~60k new entries (159k → 219k)
+* Added WMT26 constrained recipes
+* Added new datasets for WMT26
+* Added English-Bhojpuri parallel and monolingual corpora (BHLTR); Fixes #174
+
+**Improvements:**
+* Progress bars rewritten with `rich`: multi-task support, spinner, rate columns, coordinated logging
+* Singleton `_Sentinel` pattern in `SubprocMapper` preserves identity across pickling
+* `SubprocMapper`: improved control message handling and queue draining assertions
+* `mtdata-map`: do not modify input lines (no longer replaces `\t` in data)
+* Improved log message readability across `mtdata-map` and data pipeline
+* Muted third-party loggers (`httpx`, `datasets`, `huggingface_hub`, `fsspec`, `urllib3`) to WARNING level
+* CI: add Python 3.14, test on ubuntu-22.04
+
 ## 0.4.3 - 20250330
 * Add preliminary support for huggingface datasets; currently wmt24++ is the only supported dataset
 * Update setup.py -> pyproject.toml; hf datasets is optional dependency
