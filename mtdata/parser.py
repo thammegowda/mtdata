@@ -3,6 +3,7 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/4/20
 
+import csv
 from typing import Optional, Union, Tuple, List
 from dataclasses import dataclass
 from pathlib import Path
@@ -77,7 +78,7 @@ class Parser:
                         cols = self.ent.cols
                     readers.append(self.read_tsv(p, cols=cols, meta_fields=meta_fields))
                 elif 'csvwithheader' in self.ext:
-                    readers.append(self.read_tsv(p, delim=',', skipheader=True, meta_fields=meta_fields))
+                    readers.append(self.read_csv(p, meta_fields=meta_fields))
                 elif 'raw' in self.ext or 'txt' in self.ext:
                     readers.append(self.read_plain(p))
                 elif 'tmx' in self.ext:
@@ -146,6 +147,31 @@ class Parser:
                     out_row = [row[idx] for idx in cols]
                     if len(cols) == 1:
                         out_row = out_row[0]  # unwrap single-column to scalar
+                if meta_fields:
+                    metadata = {}
+                    for key, idx in meta_fields.items():
+                        if key in ("source", "target") or idx >= len(row) or row[idx] in ("", None):
+                            continue
+                        metadata[key] = row[idx]
+                    if metadata:
+                        out_row.append(metadata)
+                yield out_row
+
+    def read_csv(self, path, cols=None, meta_fields=None):
+        """Read data from a CSV file with header using Python's csv module.
+        Handles quoted fields with embedded commas/newlines correctly.
+        :param path: path to CSV file
+        :param cols: column indices to extract; default is (0, 1)
+        """
+        if cols is None:
+            cols = self.ent.cols if (self.ent and self.ent.cols) else (0, 1)
+        with IO.reader(path) as stream:
+            reader = csv.reader(stream)
+            header = next(reader, None)  # skip header
+            for row in reader:
+                if not row or len(row) <= max(cols):
+                    continue
+                out_row = [row[c].strip() for c in cols]
                 if meta_fields:
                     metadata = {}
                     for key, idx in meta_fields.items():

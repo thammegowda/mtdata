@@ -174,6 +174,10 @@ class Cache:
             streaming=False,
             trust_remote_code=False,
         )
+        data_files = entry.meta.get("data_files", None)
+        if data_files:
+            args['data_files'] = data_files
+            args.pop('name', None)  # data_files and name are mutually exclusive
         log.debug(f"Loading dataset {hf_id} with args: {args}")
         ds = load_dataset(hf_id, **args)
         if split is None and hasattr(ds, 'keys'):
