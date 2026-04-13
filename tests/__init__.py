@@ -4,4 +4,4 @@
 # Created: 4/23/20
 
 import sys
-MTDATA_CMD = f"{sys.executable} -m mtdata"
+MTDATA_CMD = [sys.executable, '-m', 'mtdata']

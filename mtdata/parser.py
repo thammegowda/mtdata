@@ -58,7 +58,7 @@ class Parser:
         # tsv and tmx just concatenate all of them
         assert len(self.paths) <= 3 or self.ext == 'tmx' or self.ext == 'tsv'
 
-    def read_segs(self):
+    def read_segs(self, show_pbar=True):
         readers = []
         if self.ext == 'opus_xces':
             preprocessing = 'xml'
@@ -108,8 +108,10 @@ class Parser:
             data = _zip_n_check()
         else:
             raise Exception("This is an error")
-        with pbar_man.counter(color='green', unit='seg', leave=False, desc=f"Reading {self.ent.did}", autoregresh=True, 
-                              min_delta=Defaults.PBAR_REFRESH_INTERVAL) as pbar:
+        if not show_pbar:
+            yield from data
+            return
+        with pbar_man.counter(unit='line', desc=f"Reading {self.ent.did}") as pbar:
             for rec in data:
                 yield rec
                 pbar.update()
@@ -150,6 +152,17 @@ class Parser:
                         out_row.append(metadata)
                 yield out_row
 
+    @staticmethod
+    def _nested_get(row, field):
+        """Get a value from a dict using dot-separated path for nested access.
+        e.g. _nested_get(row, "translation.ita") == row["translation"]["ita"]
+        """
+        parts = field.split('.')
+        val = row
+        for part in parts:
+            val = val[part]
+        return val
+
     def read_hfds(self, ds):
         """ Read data from huggingface Dataset
         :param ds: huggingface dataset
@@ -163,10 +176,11 @@ class Parser:
         # in the current version, I am going to retain all fields to see what all fields exist,
         # and map the subset of fields as per the dict; so, created rev_map.get(orig,orig)
         for row in ds:
-            out_row = [row.pop(src_field)]
+            out_row = [self._nested_get(row, src_field)]
             if tgt_field is not None:
-                out_row.append(row.pop(tgt_field))
+                out_row.append(self._nested_get(row, tgt_field))
             # remap meta fields if necessary
-            metadata = {rev_map.get(k, k): v for k, v in row.items() if k not in (src_field, tgt_field)}
+            top_keys = {f.split('.')[0] for f in [src_field] + ([tgt_field] if tgt_field else [])}
+            metadata = {rev_map.get(k, k): v for k, v in row.items() if k not in top_keys}
             out_row.append(metadata)
             yield out_row

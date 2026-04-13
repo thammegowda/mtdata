@@ -1,4 +1,4 @@
-# Setup: pip install mtdata==0.4.2
+# Setup: pip install mtdata==0.4.3
 # To list all the available datasets, use the following commands
 #   mtdata list -id -l <lang1>-<lang2>   # parallel
 #   mtdata list -id -l <lang>            # monolingual
@@ -18,7 +18,7 @@
     - OPUS-kde4-v2-ces-ukr
     - OPUS-multiccaligned-v1.1-ces-ukr
     - OPUS-multiparacrawl-v9b-ces-ukr
-    - OPUS-opensubtitles-v2018-ces-ukr
+    - OPUS-opensubtitles-v2024-ces-ukr
     - OPUS-qed-v2.0a-ces-ukr
     - OPUS-ted2020-v1-ces-ukr
     - OPUS-tatoeba-v20220303-ces-ukr
@@ -38,7 +38,7 @@
     - Leipzig-web-2019_1m-ukr_UA
     - Leipzig-wikipedia-2021_1m-ukr
 
-###############CES_DEU########################
+###############CES-DEU########################
 - id: wmt25-ces-deu
   langs: ces-deu
   train:
@@ -75,14 +75,11 @@
     - OPUS-globalvoices-v2018q4-ces-deu
     - OPUS-jrc_acquis-v3.0-ces-deu
     - OPUS-kde4-v2-ces-deu
-    - OPUS-linguatools_wikititles-v2014-ces-deu
     - OPUS-multiccaligned-v1.1-ces-deu
     - OPUS-multiparacrawl-v9b-ces-deu
     - OPUS-nllb-v1-ces-deu
     - OPUS-neulab_tedtalks-v1-ces-deu
-    - OPUS-news_commentary-v16-ces-deu
-    - OPUS-news_commentary-v9.1-ces-deu
-    - OPUS-opensubtitles-v2018-ces-deu
+    - OPUS-opensubtitles-v2024-ces-deu
     - OPUS-php-v1-ces-deu
     - OPUS-qed-v2.0a-ces-deu
     - OPUS-ted2020-v1-ces-deu
@@ -122,7 +119,7 @@
     - OPUS-kde4-v2-jpn-zho_CN
     - OPUS-multiccaligned-v1-jpn-zho_CN
     - OPUS-openoffice-v3-jpn-zho_CN
-    - OPUS-opensubtitles-v2018-jpn-zho_CN
+    - OPUS-opensubtitles-v2024-jpn-zho_CN
     - OPUS-php-v1-jpn-zho
     - OPUS-qed-v2.0a-jpn-zho
     - OPUS-ted2020-v1-jpn-zho
@@ -143,26 +140,23 @@
     - Leipzig-news-2020_300k-zho
     # TODO: extended common crawl (too big) https://data.statmt.org/wmt21/translation-task/cc-mono/
 
-######### BHO-ENG ###########
-- id: wmt25-bho-eng
-  langs: bho-eng
+######### ENG-BHO ###########
+- id: wmt25-eng-bho
+  langs: eng-bho
   train:
     - OPUS-nllb-v1-bho-eng
     - OPUS-tatoeba-v20230412-bho-eng
     - OPUS-ubuntu-v14.10-bho-eng
     - OPUS-wikimedia-v20230407-bho-eng
-  mono_train: &mono_eng
-    - Statmt-commoncrawl-wmt22-eng
-    - Statmt-europarl-10-eng
-    - Statmt-news_commentary-18.1-eng
-    - Statmt-news_crawl-2023-eng
-    - Statmt-news_discussions-2019-eng
+# mono_train: &mono_bho
+# NOTE: did not found any monolingual data for bho in mtdata and OPUS
 
-######### MAS-ENG ###########
-# TODO: could not find parallel data found for mas-eng in mtdata and OPUS
-# - id: wmt25-mas-eng
-#   langs: mas-eng
-#   train:
+######### ENG-MAS ###########
+# TODO: did not find parallel data found for mas-eng in mtdata and OPUS
+# - id: wmt25-eng-mas
+#  langs: eng-mas
+#  train:
+#  mono_train: &mono_mas
 
 ######### ENG-ARA ###########
 - id: wmt25-eng-ara
@@ -181,19 +175,18 @@
     - OPUS-eubookshop-v2-ara-eng
     - OPUS-gnome-v1-ara-eng
     - OPUS-globalvoices-v2018q4-ara-eng
-    - OPUS-hplt-v1.1-ara-eng
+    - OPUS-hplt-v2-ara-eng
     - OPUS-kde4-v2-ara-eng
     - OPUS-linguatools_wikititles-v2014-ara-eng
     - OPUS-multiccaligned-v1-ara-eng
-    - OPUS-multihplt-v1.1-ara-eng
+    - OPUS-multihplt-v2-ara-eng
     - OPUS-multiun-v1-ara-eng
     - OPUS-nllb-v1-ara-eng
-    - OPUS-opensubtitles-v2018-ara-eng
+    - OPUS-opensubtitles-v2024-ara-eng
     - OPUS-qed-v2.0a-ara-eng
     - OPUS-ted2020-v1-ara-eng
     - OPUS-tatoeba-v20230412-ara-eng
     - OPUS-unpc-v1.0-ara-eng
-    - OPUS-unpc-v20090831-ara-eng
     - OPUS-ubuntu-v14.10-ara-eng
     - OPUS-wikimatrix-v1-ara-eng
     - OPUS-wikipedia-v1.0-ara-eng
@@ -212,30 +205,151 @@
 ######### ENG-ZHO ###########
 - id: wmt25-eng-zho
   langs: eng-zho
-  train:  # TODO: add all public data
-    - ParaCrawl-paracrawl-1_bonus-eng-zho
+  train:
     - Statmt-news_commentary-18.1-eng-zho
     - Statmt-wikititles-3-zho-eng
-    - OPUS-unpc-v1.0-eng-zho
+    - Statmt-ccaligned-1-eng-zho_CN
+    - ParaCrawl-paracrawl-1_bonus-eng-zho
     - Facebook-wikimatrix-1-eng-zho
-    - Statmt-backtrans_enzh-wmt20-eng-zho   # English translated to Chinese. Double check if you want this
+    - Neulab-tedtalks_train-1-eng-zho
+    - ELRC-wikipedia_health-1-eng-zho
+    - ELRC-hrw_dataset_v1-1-eng-zho
+    - LinguaTools-wikititles-2014-eng-zho
+    - OPUS-ccmatrix-v1-eng-zho
+    - OPUS-elrc_3056_wikipedia_health-v1-eng-zho
+    - OPUS-elrc_wikipedia_health-v1-eng-zho
+    - OPUS-elrc_2922-v1-eng-zho
+    - OPUS-eubookshop-v2-eng-zho
+    - OPUS-gnome-v1-eng-zho_CN
+    - OPUS-kde4-v2-eng-zho_CN
+    - OPUS-linguatools_wikititles-v2014-eng-zho
+    - OPUS-mdn_web_docs-v20230925-eng-zho_CN
+    - OPUS-multiccaligned-v1-eng-zho_CN
+    - OPUS-multiun-v1-eng-zho
+    - OPUS-nllb-v1-eng-zho
+    - OPUS-neulab_tedtalks-v1-eng-zho
+    - OPUS-neulab_tedtalks-v1-eng-zho_CN
+    - OPUS-openoffice-v3-eng_GB-zho_CN
+    - OPUS-opensubtitles-v2024-eng-zho_CN
+    - OPUS-php-v1-eng-zho
+    - OPUS-qed-v2.0a-eng-zho
+    - OPUS-spc-v1-eng-zho
+    - OPUS-ted2020-v1-eng-zho
+    - OPUS-ted2020-v1-eng-zho_CN
+    - OPUS-tanzil-v1-eng-zho
+    - OPUS-unpc-v1.0-eng-zho
+    - OPUS-ubuntu-v14.10-eng-zho
+    - OPUS-xlent-v1.2-eng-zho
+    - OPUS-bible_uedin-v1-eng-zho
+    - OPUS-infopankki-v1-eng-zho
+    - OPUS-tico_19-v20201028-eng-zho
+    - OPUS-tldr_pages-v20230829-eng-zho
+    - OPUS-wikimedia-v20230407-eng-zho
   mono_train: *mono_zho
 
 ######### ENG-CES ###########
 - id: wmt25-eng-ces
   langs: eng-ces
-  train: # TODO: add all public data
-    - Statmt-europarl-10-ces-eng
-    - ParaCrawl-paracrawl-9-eng-ces
+  train:
     - Statmt-commoncrawl_wmt13-1-ces-eng
     - Statmt-news_commentary-18.1-ces-eng
     - Statmt-wikititles-3-ces-eng
-    - Facebook-wikimatrix-1-ces-eng
+    - Statmt-europarl-10-ces-eng
+    - Statmt-ccaligned-1-ces_CZ-eng
+    - ParaCrawl-paracrawl-9-eng-ces
     - Tilde-eesc-2017-ces-eng
     - Tilde-ema-2016-ces-eng
     - Tilde-ecb-2017-ces-eng
     - Tilde-rapid-2019-ces-eng
-    # TODO: manually download bracktranslated news and CzEng2.0
+    - Facebook-wikimatrix-1-ces-eng
+    - Neulab-tedtalks_train-1-eng-ces
+    - ELRC-information_portal_czech_president_czech_castle-1-ces-eng
+    - ELRC-electronic_exchange_social_security_information-1-ces-eng
+    - ELRC-euipo_2017-1-ces-eng
+    - ELRC-czech_supreme_audit_office_2018_reports-1-ces-eng
+    - ELRC-czech_supreme_audit_office_2008_2017_reports-1-ces-eng
+    - ELRC-czech_supreme_audit_office_2003_2017_press_releases-1-ces-eng
+    - ELRC-czech_supreme_audit_office_2018_press_releases-1-ces-eng
+    - ELRC-emea-1-ces-eng
+    - ELRC-vaccination-1-ces-eng
+    - ELRC-eu_publications_medical_v2-1-ces-eng
+    - ELRC-wikipedia_health-1-ces-eng
+    - ELRC-antibiotic-1-ces-eng
+    - ELRC-europarl_covid-1-ces-eng
+    - ELRC-ec_europa_covid-1-ces-eng
+    - ELRC-eur_lex_covid-1-ces-eng
+    - ELRC-presscorner_covid-1-ces-eng
+    - ELRC-scipar-1-ces-eng
+    - ELRC-web_acquired_data_related_to_scientific_research-1-eng-ces
+    - ELRC-hrw_dataset_v1-1-eng-ces
+    - ELRC-cef_data_marketplace-1-eng-ces
+    - EU-ecdc-1-eng-ces
+    - EU-eac_forms-1-ces-eng
+    - EU-eac_reference-1-ces-eng
+    - EU-dcep-1-ces-eng
+    - LinguaTools-wikititles-2014-ces-eng
+    - OPUS-ccaligned-v1-ces-eng
+    - OPUS-ccmatrix-v1-ces-eng
+    - OPUS-dgt-v2019-ces-eng
+    - OPUS-dgt-v4-ces-eng
+    - OPUS-ecb-v1-ces-eng
+    - OPUS-ecdc-v20160316-ces-eng
+    - OPUS-elitr_eca-v1-ces-eng
+    - OPUS-elrc_2012_euipo_2017-v1-ces-eng
+    - OPUS-elrc_2404_czech_supreme_audit-v1-ces-eng
+    - OPUS-elrc_2405_czech_supreme_audit-v1-ces-eng
+    - OPUS-elrc_2406_czech_supreme_audit-v1-ces-eng
+    - OPUS-elrc_2407_czech_supreme_audit-v1-ces-eng
+    - OPUS-elrc_2713_emea-v1-ces-eng
+    - OPUS-elrc_2749_vaccination-v1-ces-eng
+    - OPUS-elrc_2874_eu_publications_medi-v1-ces-eng
+    - OPUS-elrc_3062_wikipedia_health-v1-ces-eng
+    - OPUS-elrc_3201_antibiotic-v1-ces-eng
+    - OPUS-elrc_3292_europarl_covid-v1-ces-eng
+    - OPUS-elrc_3463_ec_europa_covid-v1-ces-eng
+    - OPUS-elrc_3564_eur_lex_covid-v1-ces-eng
+    - OPUS-elrc_3605_presscorner_covid-v1-ces-eng
+    - OPUS-elrc_40_information_portal_c-v1-ces-eng
+    - OPUS-elrc_427_electronic_exchange_-v1-ces-eng
+    - OPUS-elrc_5067_scipar-v1-ces-eng
+    - OPUS-elrc_ec_europa-v1-ces-eng
+    - OPUS-elrc_emea-v1-ces-eng
+    - OPUS-elrc_euipo_2017-v1-ces-eng
+    - OPUS-elrc_europarl_covid-v1-ces-eng
+    - OPUS-elrc_eur_lex-v1-ces-eng
+    - OPUS-elrc_eu_publications-v1-ces-eng
+    - OPUS-elrc_information_portal-v1-ces-eng
+    - OPUS-elrc_antibiotic-v1-ces-eng
+    - OPUS-elrc_presscorner_covid-v1-ces-eng
+    - OPUS-elrc_vaccination-v1-ces-eng
+    - OPUS-elrc_wikipedia_health-v1-ces-eng
+    - OPUS-elrc_2682-v1-ces-eng
+    - OPUS-elrc_2922-v1-ces-eng
+    - OPUS-elrc_2923-v1-ces-eng
+    - OPUS-elrc_3382-v1-ces-eng
+    - OPUS-emea-v3-ces-eng
+    - OPUS-eubookshop-v2-ces-eng
+    - OPUS-euconst-v1-ces-eng
+    - OPUS-gnome-v1-ces-eng
+    - OPUS-globalvoices-v2018q4-ces-eng
+    - OPUS-jrc_acquis-v3.0-ces-eng
+    - OPUS-kde4-v2-ces-eng
+    - OPUS-multiccaligned-v1-ces-eng
+    - OPUS-multiparacrawl-v7.1-ces-eng
+    - OPUS-nllb-v1-ces-eng
+    - OPUS-neulab_tedtalks-v1-ces-eng
+    - OPUS-opensubtitles-v2024-ces-eng
+    - OPUS-php-v1-ces-eng
+    - OPUS-qed-v2.0a-ces-eng
+    - OPUS-ted2020-v1-ces-eng
+    - OPUS-tanzil-v1-ces-eng
+    - OPUS-tatoeba-v20230412-ces-eng
+    - OPUS-tildemodel-v2018-ces-eng
+    - OPUS-ubuntu-v14.10-ces-eng
+    - OPUS-wikipedia-v1.0-ces-eng
+    - OPUS-xlent-v1.2-ces-eng
+    - OPUS-bible_uedin-v1-ces-eng
+    - OPUS-wikimedia-v20230407-ces-eng
   mono_train:
     - Statmt-news_crawl-2023-ces
     - Statmt-europarl-10-ces
@@ -358,13 +472,12 @@
   - OPUS-euconst-v1-eng-est
   - OPUS-europarl-v8-eng-est
   - OPUS-gnome-v1-eng-est
-  - OPUS-hplt-v1-eng-est
-  - OPUS-hplt-v1.1-eng-est
+  - OPUS-hplt-v2-eng-est
   - OPUS-jrc_acquis-v3.0-eng-est
   - OPUS-kde4-v2-eng-est
   - OPUS-kdedoc-v1-eng_GB-est
   - OPUS-multiccaligned-v1-eng-est
-  - OPUS-multihplt-v1.1-eng-est
+  - OPUS-multihplt-v2-eng-est
   - OPUS-multiparacrawl-v7.1-eng-est
   - OPUS-nllb-v1-eng-est
   - OPUS-neulab_tedtalks-v1-eng-est
@@ -375,8 +488,6 @@
   - OPUS-tatoeba-v20230412-eng-est
   - OPUS-tildemodel-v2018-eng-est
   - OPUS-ubuntu-v14.10-eng-est
-  - OPUS-wmt_news-v2019-eng-est
-  - OPUS-wikimatrix-v1-eng-est
   - OPUS-xlent-v1.2-eng-est
   - OPUS-bible_uedin-v1-eng-est
   - OPUS-infopankki-v1-eng-est
@@ -431,9 +542,11 @@
     - OPUS-elrc_www.norden.org-v1-eng-isl
     - OPUS-elrc_www.nordisketax.net-v1-eng-isl
     - OPUS-eubookshop-v2-eng-isl
+    - OPUS-hplt-v2-eng-isl
     - OPUS-multiccaligned-v1-eng-isl
+    - OPUS-multihplt-v2-eng-isl
     - OPUS-multiparacrawl-v7.1-eng-isl
-    - OPUS-opensubtitles-v2018-eng-isl
+    - OPUS-opensubtitles-v2024-eng-isl
     - OPUS-ted2020-v1-eng-isl
     - OPUS-tatoeba-v20220303-eng-isl
     - OPUS-ubuntu-v14.10-eng-isl
@@ -450,16 +563,44 @@
     - Leipzig-wikipedia-2021_100k-isl
 
 ######### ENG-JPN ###########
-- id: wmt24-eng-jpn
+- id: wmt25-eng-jpn
   langs: eng-jpn
-  train: # TODO: add all public data
+  train:
     - Statmt-news_commentary-18.1-eng-jpn
-    - KECL-paracrawl-3-eng-jpn
     - Statmt-wikititles-3-jpn-eng
-    - Facebook-wikimatrix-1-eng-jpn
     - Statmt-ted-wmt20-eng-jpn
-    - StanfordNLP-jesc_train-1-eng-jpn
+    - Statmt-ccaligned-1-eng-jpn
+    - KECL-paracrawl-3-eng-jpn
+    - Facebook-wikimatrix-1-eng-jpn
     - Phontron-kftt_train-1-eng-jpn
+    - StanfordNLP-jesc_train-1-eng-jpn
+    - Neulab-tedtalks_train-1-eng-jpn
+    - LinguaTools-wikititles-2014-eng-jpn
+    - OPUS-alt-v2019-eng-jpn
+    - OPUS-ccmatrix-v1-eng-jpn
+    - OPUS-eubookshop-v2-eng-jpn
+    - OPUS-gnome-v1-eng-jpn
+    - OPUS-globalvoices-v2018q4-eng-jpn
+    - OPUS-hplt-v2-eng-jpn
+    - OPUS-kde4-v2-eng-jpn
+    - OPUS-mdn_web_docs-v20230925-eng-jpn
+    - OPUS-multiccaligned-v1-eng-jpn
+    - OPUS-multihplt-v2-eng-jpn
+    - OPUS-nllb-v1-eng-jpn
+    - OPUS-neulab_tedtalks-v1-eng-jpn
+    - OPUS-openoffice-v3-eng_GB-jpn
+    - OPUS-opensubtitles-v2024-eng-jpn
+    - OPUS-php-v1-eng-jpn
+    - OPUS-qed-v2.0a-eng-jpn
+    - OPUS-ted2020-v1-eng-jpn
+    - OPUS-tanzil-v1-eng-jpn
+    - OPUS-tatoeba-v20230412-eng-jpn
+    - OPUS-ubuntu-v14.10-eng-jpn
+    - OPUS-wikimatrix-v1-eng-jpn
+    - OPUS-xlent-v1.2-eng-jpn
+    - OPUS-bible_uedin-v1-eng-jpn
+    - OPUS-tldr_pages-v20230829-eng-jpn
+    - OPUS-wikimedia-v20230407-eng-jpn
   mono_train: &mono_jpn
     - Statmt-news_crawl-2023-jpn
     - Statmt-news_commentary-18.1-jpn
@@ -490,13 +631,15 @@
     - OPUS-elrc_2922-v1-eng-kor
     - OPUS-gnome-v1-eng-kor
     - OPUS-globalvoices-v2018q4-eng-kor
+    - OPUS-hplt-v2-eng-kor
+    - OPUS-multihplt-v2-eng-kor
     - OPUS-kde4-v2-eng-kor
     - OPUS-linguatools_wikititles-v2014-eng-kor
     - OPUS-mdn_web_docs-v20230925-eng-kor
     - OPUS-multiccaligned-v1-eng-kor
     - OPUS-nllb-v1-eng-kor
     - OPUS-neulab_tedtalks-v1-eng-kor
-    - OPUS-opensubtitles-v2018-eng-kor
+    - OPUS-opensubtitles-v2024-eng-kor
     - OPUS-php-v1-eng-kor
     - OPUS-paracrawl-v9-eng-kor
     - OPUS-qed-v2.0a-eng-kor
@@ -518,18 +661,60 @@
 ######### ENG-RUS ###########
 - id: wmt25-eng-rus
   langs: eng-rus
-  train: # TODO: add all public data
-    - ParaCrawl-paracrawl-1_bonus-eng-rus
-    - Statmt-commoncrawl_wmt13-1-rus-eng
+  train:
     - Statmt-news_commentary-18.1-eng-rus
-    - Statmt-yandex-wmt22-eng-rus
     - Statmt-wikititles-3-rus-eng
-    - OPUS-unpc-v1.0-eng-rus
-    - Facebook-wikimatrix-1-eng-rus
+    - Statmt-ccaligned-1-eng-rus_RU
+    - Statmt-yandex-wmt22-eng-rus
+    - ParaCrawl-paracrawl-1_bonus-eng-rus
     - Tilde-airbaltic-1-eng-rus
     - Tilde-czechtourism-1-eng-rus
     - Tilde-worldbank-1-eng-rus
-    - Statmt-backtrans_ruen-wmt20-rus-eng   # russian translated to english
+    - Facebook-wikimatrix-1-eng-rus
+    - Neulab-tedtalks_train-1-eng-rus
+    - ELRC-wikipedia_health-1-eng-rus
+    - ELRC-swps_university_social_sciences_humanities-1-eng-rus
+    - ELRC-scipar-1-eng-rus
+    - ELRC-web_acquired_data_related_to_scientific_research-1-eng-rus
+    - ELRC-hrw_dataset_v1-1-eng-rus
+    - LinguaTools-wikititles-2014-eng-rus
+    - OPUS-books-v1-eng-rus
+    - OPUS-ccaligned-v1-eng-rus
+    - OPUS-ccmatrix-v1-eng-rus
+    - OPUS-elrc_3075_wikipedia_health-v1-eng-rus
+    - OPUS-elrc_3855_swps_university_soci-v1-eng-rus
+    - OPUS-elrc_5067_scipar-v1-eng-rus
+    - OPUS-elrc_5183_scipar_ukraine-v1-eng-rus
+    - OPUS-elrc_wikipedia_health-v1-eng-rus
+    - OPUS-elrc_2922-v1-eng-rus
+    - OPUS-eubookshop-v2-eng-rus
+    - OPUS-gnome-v1-eng-rus
+    - OPUS-globalvoices-v2018q4-eng-rus
+    - OPUS-kde4-v2-eng-rus
+    - OPUS-kdedoc-v1-eng_GB-rus
+    - OPUS-mdn_web_docs-v20230925-eng-rus
+    - OPUS-multiccaligned-v1-eng-rus
+    - OPUS-multiparacrawl-v7.1-eng-rus
+    - OPUS-multiun-v1-eng-rus
+    - OPUS-nllb-v1-eng-rus
+    - OPUS-openoffice-v3-eng_GB-rus
+    - OPUS-opensubtitles-v2024-eng-rus
+    - OPUS-php-v1-eng-rus
+    - OPUS-qed-v2.0a-eng-rus
+    - OPUS-ted2020-v1-eng-rus
+    - OPUS-tanzil-v1-eng-rus
+    - OPUS-tatoeba-v20230412-eng-rus
+    - OPUS-unpc-v1.0-eng-rus
+    - OPUS-ubuntu-v14.10-eng-rus
+    - OPUS-wikipedia-v1.0-eng-rus
+    - OPUS-xlent-v1.2-eng-rus
+    - OPUS-ada83-v1-eng-rus
+    - OPUS-bible_uedin-v1-eng-rus
+    - OPUS-infopankki-v1-eng-rus
+    - OPUS-tico_19-v20201028-eng-rus
+    - OPUS-tldr_pages-v20230829-eng-rus
+    - OPUS-wikimedia-v20230407-eng-rus
+
   mono_train: &mono_rus
     - Statmt-news_crawl-2023-rus
     - Statmt-news_commentary-18.1-rus
@@ -538,8 +723,6 @@
     - Leipzig-newscrawl_public-2018_1m-rus
     - Leipzig-web-2017_1m-rus_GE
     - Leipzig-wikipedia-2021_1m-rus
-
-
 ######### ENG-SRP ###########
 - id : wmt25-eng-srp
   langs: eng-srp
@@ -560,14 +743,14 @@
     - OPUS-gnome-v1-eng-srp
     - OPUS-globalvoices-v2018q4-eng-srp
     - OPUS-gourmet-v2-eng-srp
-    - OPUS-hplt-v1.1-eng-srp
+    - OPUS-hplt-v2-eng-srp
     - OPUS-kde4-v2-eng-srp
     - OPUS-kdedoc-v1-eng_GB-srp
     - OPUS-multiccaligned-v1-eng-srp
-    - OPUS-multihplt-v1.1-eng-srp
+    - OPUS-multihplt-v2-eng-srp
     - OPUS-nllb-v1-eng-srp
     - OPUS-neulab_tedtalks-v1-eng-srp
-    - OPUS-opensubtitles-v2018-eng-srp
+    - OPUS-opensubtitles-v2024-eng-srp
     - OPUS-qed-v2.0a-eng-srp
     - OPUS-setimes-v2-eng-srp
     - OPUS-tatoeba-v20230412-eng-srp
@@ -589,11 +772,57 @@
 ######### ENG-UKR ###########
 - id: wmt25-eng-ukr
   langs: eng-ukr
-  train: &para_eng_ukr   #TODO: add all public data
-      - ParaCrawl-paracrawl-1_bonus-eng-ukr
-      - Tilde-worldbank-1-eng-ukr
-      - Facebook-wikimatrix-1-eng-ukr
-      - ELRC-acts_ukrainian-1-eng-ukr
-      - Statmt-ccaligned-1-eng-ukr_UA
-
+  train: &para_eng_ukr
+    - Statmt-ccaligned-1-eng-ukr_UA
+    - ParaCrawl-paracrawl-1_bonus-eng-ukr
+    - Tilde-worldbank-1-eng-ukr
+    - Facebook-wikimatrix-1-eng-ukr
+    - Neulab-tedtalks_train-1-eng-ukr
+    - ELRC-wikipedia_health-1-eng-ukr
+    - ELRC-french_polish_ukrainian-1-eng-ukr
+    - ELRC-acts_ukrainian-1-eng-ukr
+    - ELRC-official_parliament_ukraine_ukrainian_laws_en-1-eng-ukr
+    - ELRC-official_parliament_ukraine_abstracts_uk_laws-1-eng-ukr
+    - ELRC-official_parliament_ukraine_primary_legislation-1-eng-ukr
+    - ELRC-scipar_ukraine-1-eng-ukr
+    - ELRC-a_lexicon_named_entities_extracted_wikipedia-1-eng-ukr
+    - ELRC-ukrainian_legal_mt_test_set-1-eng-ukr
+    - ELRC-web_acquired_data_related_to_scientific_research-1-eng-ukr
+    - ELRC-hrw_dataset_v1-1-eng-ukr
+    - OPUS-ccaligned-v1-eng-ukr
+    - OPUS-ccmatrix-v1-eng-ukr
+    - OPUS-elrc_3043_wikipedia_health-v1-eng-ukr
+    - OPUS-elrc_5174_french_polish_ukrain-v1-eng-ukr
+    - OPUS-elrc_5179_acts_ukrainian-v1-eng-ukr
+    - OPUS-elrc_5180_official_parliament_-v1-eng-ukr
+    - OPUS-elrc_5181_official_parliament_-v1-eng-ukr
+    - OPUS-elrc_5182_official_parliament_-v1-eng-ukr
+    - OPUS-elrc_5183_scipar_ukraine-v1-eng-ukr
+    - OPUS-elrc_5214_a_lexicon_named-v1-eng-ukr
+    - OPUS-elrc_5217_ukrainian_legal_mt-v1-eng-ukr
+    - OPUS-elrc_wikipedia_health-v1-eng-ukr
+    - OPUS-elrc_2922-v1-eng-ukr
+    - OPUS-eubookshop-v2-eng-ukr
+    - OPUS-gnome-v1-eng-ukr
+    - OPUS-hplt-v2-eng-ukr
+    - OPUS-kde4-v2-eng-ukr
+    - OPUS-kdedoc-v1-eng_GB-ukr
+    - OPUS-macocu-v2-eng-ukr
+    - OPUS-multiccaligned-v1-eng-ukr
+    - OPUS-multihplt-v2-eng-ukr
+    - OPUS-multimacocu-v2-eng-ukr
+    - OPUS-nllb-v1-eng-ukr
+    - OPUS-neulab_tedtalks-v1-eng-ukr
+    - OPUS-opensubtitles-v2024-eng-ukr
+    - OPUS-paracrawl_bonus-v9-eng-ukr
+    - OPUS-qed-v2.0a-eng-ukr
+    - OPUS-summa-v1-eng-ukr
+    - OPUS-ted2020-v1-eng-ukr
+    - OPUS-tatoeba-v20230412-eng-ukr
+    - OPUS-ubuntu-v14.10-eng-ukr
+    - OPUS-wikimatrix-v1-eng-ukr
+    - OPUS-xlent-v1.2-eng-ukr
+    - OPUS-bible_uedin-v1-eng-ukr
+    - OPUS-tldr_pages-v20230829-eng-ukr
+    - OPUS-wikimedia-v20230407-eng-ukr
   mono_train: *mono_ukr

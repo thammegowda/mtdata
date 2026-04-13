@@ -4,25 +4,36 @@
 # Created: 4/4/20
 
 
-__version__ = '0.4.3'
+__version__ = '0.5.0'
 __description__ = 'mtdata is a tool to download datasets for machine translation'
 __author__ = 'Thamme Gowda'
 
 import logging as log
 from pathlib import Path
 import os
-import enlighten
 from ruamel.yaml import YAML
 
 yaml = YAML()
 debug_mode = False
-_log_format = '%(asctime)s %(module)s.%(funcName)s:%(lineno)s %(levelname)s:: %(message)s'
-log.basicConfig(level=log.INFO, datefmt='%Y-%m-%d %H:%M:%S', format=_log_format)
+#_log_format = '%(module)s.%(funcName)s:%(lineno)s %(message)s'
+from mtdata.pbar import get_log_handler  # noqa: E402
+log.basicConfig(level=log.INFO, format='%(message)s', datefmt='%Y%m%d %H:%M:%S',
+                handlers=[get_log_handler()])
+
+_THIRD_PARTY_LOGGERS = ('httpx', 'datasets', 'huggingface_hub', 'fsspec', 'urllib3')
+
+def set_third_party_log_level(level=log.WARNING):
+    for name in _THIRD_PARTY_LOGGERS:
+        log.getLogger(name).setLevel(level)
+
+set_third_party_log_level(log.WARNING)
 cache_dir = Path(os.environ.get('MTDATA', '~/.mtdata')).expanduser()
 recipes_dir = Path(os.getenv('MTDATA_RECIPES', '.')).resolve()
 cached_index_file = cache_dir / f'mtdata.index.{__version__}.pkl'
 resource_dir:Path = Path(__file__).parent / 'resource'
-pbar_man = enlighten.get_manager()
+
+from mtdata.pbar import pbar_man  # noqa: E402
+
 
 class MTDataException(Exception):
     pass

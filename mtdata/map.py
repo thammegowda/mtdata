@@ -21,9 +21,24 @@ import sys
 from mtdata import log
 from mtdata.utils import IO
 
+_MAX_QSIZE = 16384 if sys.platform == 'darwin' else 1024 * 1024
 
-DELIM = '\t'
-SENTINEL = None
+
+#DELIM = '\t'
+DELIM = None
+
+
+class _Sentinel:
+    """Singleton sentinel that preserves identity across pickling."""
+    _instance = None
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    def __reduce__(self):
+        return (self.__class__, ())
+
+SENTINEL = _Sentinel()
 
 
 def read_paths(paths: Iterator[List[Path]]) -> Iterator[Union[dict,list]]:
@@ -49,11 +64,11 @@ def read_paths(paths: Iterator[List[Path]]) -> Iterator[Union[dict,list]]:
             for rec in zip_longest(*streams):
                 if len(inps) > 1 and any(x is None for x in rec):
                     raise ValueError(f"Unequal number of lines detected in {inps} @ count: {counter}")
-                rec = '\t'.join(x.strip().replace('\t', ' ') for x in rec)
+                rec = '\t'.join(x.strip() for x in rec)
                 yield rec
                 counter += 1
             n_data += counter
-            log.info(f"Producer: end of {inps}; count: {counter}")
+            log.info(f"Producer: End of {','.join(str(x) for x in inps)}; count: {counter}")
         except Exception as e:
             log.exception(f"Producer: error in {inps}: {e}")
     log.info(f"Producer: finishing... n_ctrls: {n_ctrls};  n_data: {n_data:,}")
@@ -61,7 +76,7 @@ def read_paths(paths: Iterator[List[Path]]) -> Iterator[Union[dict,list]]:
 
 class SubprocMapper:
 
-    def __init__(self, cmdline: str, max_qsize=1024*1024, shell=True):
+    def __init__(self, cmdline: str, max_qsize=_MAX_QSIZE, shell=True):
         self.cmdline = cmdline
         self._subproc_args = dict(shell=shell)
         self.ctrl_queue = None
@@ -75,7 +90,7 @@ class SubprocMapper:
         assert not self._started, f'Already started'
         self.ctrl_queue = mp.Queue(maxsize=self.max_qsize)
         self.data_queue = mp.Queue(maxsize=self.max_qsize)
-        log.info(f"RUN:\n\t{self.cmdline}")
+        log.info(f"RUN: {self.cmdline}")
         self.proc = sp.Popen(self.cmdline, stdin=sp.PIPE, stdout=sp.PIPE, text=True, **self._subproc_args)
         self._stop_event.clear()
 
@@ -130,7 +145,7 @@ class SubprocMapper:
             while not self._stop_event.is_set():
                 if ctrl_msg is None and not self.ctrl_queue.empty():
                     ctrl_msg = self.ctrl_queue.get()
-                if ctrl_msg is not None:
+                if isinstance(ctrl_msg, dict):
                     if line_count == ctrl_msg['last_count']:
                         yield ctrl_msg
                         n_ctrls += 1
@@ -138,15 +153,19 @@ class SubprocMapper:
                         ctrl_msg = None
                         continue
                     else:
-                        # line_count should not go beyond file
                         assert line_count < ctrl_msg['last_count']
 
                 rec = self.data_queue.get()
-                if rec is SENTINEL:  # end of queue
+                if rec is SENTINEL:
                     break
                 yield rec
                 line_count += 1
                 n_data += 1
+            # data done; ctrl SENTINEL is guaranteed to have arrived
+            # (stdin_writer puts it before subprocess closes stdout)
+            if ctrl_msg is not SENTINEL:
+                ctrl_msg = self.ctrl_queue.get()
+            assert ctrl_msg is SENTINEL, f'Expected ctrl SENTINEL, got {ctrl_msg}'
         except Exception as e:
             log.error(f"Iterator encountered an error: {e}")
             self._stop_event.set()
@@ -163,6 +182,7 @@ class SubprocMapper:
             yield from self.iterator()
             writer_t.join(timeout=10)
             reader_t.join(timeout=10)
+            # both SENTINELs consumed by iterator; queues must be empty
             assert self.ctrl_queue.empty(), 'ctrl_queue is not empty'
             assert self.data_queue.empty(), 'data_queue is not empty'
         except Exception as e:
@@ -188,7 +208,11 @@ class SubprocMapper:
 
 def read_input_paths(input, delim=DELIM):
     for line in input:
-        parts = line.rstrip("\n").split(delim)
+        parts = line.rstrip("\n")
+        if delim:
+            parts = parts.split(delim)
+        else:
+            parts = parts.split() # white spaces
         parts = [Path(p) for p in parts]
         yield parts
 
@@ -219,14 +243,29 @@ def main():
         stream = trim_stream(stream, skip=n_skip, limit=n_limit)
 
     mapper = SubprocMapper(cmdline=args['cmdline'])
+    out = None
     try:
         out_stream = mapper(stream)
         for rec in out_stream:
-            print(rec)
+            if isinstance(rec, dict):
+                if out is not None:
+                    log.info(f"[[closing]] {out.name}")
+                    out.close()
+                log.info(f"[[opening]] {rec['output']}")
+                out_path = Path(rec['output'])
+                if args['make_parents']:
+                    out_path.parent.mkdir(parents=True, exist_ok=True)
+                out = out_path.open('w', encoding='utf-8', errors='replace')
+            else:
+                assert out is not None, f"Output file is not opened yet"
+                out.write(rec + '\n')
     except Exception as e:
         mapper.close()
         raise
-
+    finally:
+        if out is not None:
+            log.info(f"((closing)) {out.name}")
+            out.close()
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -234,11 +273,14 @@ def parse_args():
         help="Mapper command that maps line-by-line, maintains 1:1 mapping and the input order. For example: 'cat'")
     parser.add_argument('-i', '--input', type=argparse.FileType('r'), default=sys.stdin,
         help="Listing file containing file paths. Atleast two paths per line is expected first one is input and last one is output")
-    parser.add_argument('-d', '--delim', type=str, default=DELIM, help="delimiter for paths in input")
+    parser.add_argument('-d', '--delim', type=str, default=DELIM, help="delimiter for paths in input. default=None => split by all whitespaces (space, tab etc.)")
     parser.add_argument('-l', '--limit', type=int, default=0,
                         help="Limit data stream to these many lines. Score: for debugging and testing")
     parser.add_argument('-s', '--skip', type=int, default=0,
                         help="Skip the first n records. Scope: for debugging and testing")
+    parser.add_argument('-p', '--parents',  action='store_true', dest='make_parents',
+                        help="Create parent directories for output files if they do not exist")
+    # return the parsed arguments
     return parser.parse_args()
 
 if __name__ == '__main__':

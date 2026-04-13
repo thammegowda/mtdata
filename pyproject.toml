@@ -10,7 +10,7 @@ readme = "README.md"
 #license = {text = "Apache-2.0"}
 #license-files = [ "LICENSE" ]  # twine complaints about this;
 license-files = [] #TODO: revisit this after twine is fixed
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "Thamme Gowda", email = "tgowdan@gmail.com" }
 ]
@@ -32,12 +32,11 @@ keywords = [
     "computational linguistics"
 ]
 dependencies = [
-    "requests>=2.32.0",
-    "enlighten==1.10.1",
-    "portalocker==2.3.0",
-    "pybtex==0.24.0",
-    "setuptools>=80.9.0; python_version >= '3.12'",  # Needed until pybtex updates
-    "ruamel.yaml >= 0.17.10"
+    "requests~=2.32",
+    "rich~=14.0",
+    "portalocker~=3.2",
+    "pybtex~=0.25",
+    "ruamel.yaml~=0.18"
 ]
 
 [project.urls]
@@ -52,15 +51,15 @@ exclude = ["tests*", "tmp*", "build*", "dist*", "crawler*", "*.egg-info*"]
 
 
 [project.optional-dependencies]
-hf = ["datasets>=3.1.0"]
+hf = ["datasets>=4.0.0"]
 test = [ "pytest", "pytest-cov[all]", "black", "isort", "mypy"]
-# Note: hf datasets>=3.2 onwards doesnot support python 3.8
 
 
 [project.scripts]
 mtdata = "mtdata.__main__:main"
 mtdata-iso = "mtdata.iso.__main__:main"
 mtdata-bcp47 = "mtdata.iso.bcp47:main"
+mtdata-map = "mtdata.map:main"
 
 
 [tool.setuptools.dynamic]

@@ -144,3 +144,23 @@ def load_all(index: Index):
              l2_ext = l2.replace('_', "-")
              index += Entry(did=f"Microsoft-ntrex-128-{l1}-{l2}", url=_url, filename="NTREX-52b9c57c.tar.gz",
                        in_ext='txt', in_paths=[f"*/NTREX-128/newstest2019-ref.{l1_ext}.txt", f"*/NTREX-128/newstest2019-ref.{l2_ext}.txt"])
+
+    ### English - Bhojpuri ###
+    url="https://github.com/shashwatup9k/BHLTR/archive/2d2550033222.zip"
+    filename = url.split('/')[-1]  # this will force to share the file across the entries
+    cite = ("ojha2019english",)
+    # Parallel corpora
+    for split, splitname in [ # shortname, fullname, suffix
+            ("train", "training"),
+            ("dev", "development"),
+            ("test", "test.*")]:
+        f1 = f"*/parallel-corpora/eng--bho.{splitname}.eng"
+        f2 = f"*/parallel-corpora/eng--bho.{splitname}.bho"
+        index += Entry(did=DatasetId(group='BHLTR', name=split, version='1', langs=('eng', 'bho')),
+                    url=url, filename=filename, ext='zip', in_ext='txt', in_paths=[f1, f2], cite=cite)
+    # monolingual corpora
+    for version, f1 in [
+            ("1", "*/mono-bho-corpus/monolingual.bho"),
+            ("2", "*/mono-bho-corpus/monolingual-v0.2.bho")]:
+        index += Entry(did=DatasetId(group='BHLTR', name=f'mono', version=version, langs=('bho',)),
+                    url=url, filename=filename, ext='zip', in_ext='txt', in_paths=[f1], cite=cite)

@@ -384,7 +384,7 @@ def load_mono(index: Index):
 
     wmt22_cite = ('kocmi-etal-2022-findings',)
     # 1. News Crawl
-    """
+    r"""
     base=https://data.statmt.org/news-crawl
     langs=$(curl $base/ | grep -o 'href="[a-z][a-z]\+/"' | cut -f2 -d \")
     for i in $langs; do

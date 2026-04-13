@@ -92,7 +92,7 @@ class Recipe:
                 try:
                     r = cls.parse(**r)
                 except:
-                    log.error(f"Error while parsing recipe: {path}\n{r.get('id') or r}")
+                    log.error(f"Error while parsing recipe: {path} | recipe={r.get('id') or r}")
                     raise
                 assert r.id not in recipes, f'{r} is a duplicate'
                 recipes[r.id] = r

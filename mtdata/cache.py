@@ -146,7 +146,7 @@ class Cache:
             try:
                 self.download(url, local, entry=entry)
             except:
-                log.error(f'Error downloading {entry and entry.did}\nURL: {url}\nPath:{local}')
+                log.error(f'Error downloading {entry and entry.did} | url={url} | path={local}')
                 raise
         return local
 
@@ -162,6 +162,11 @@ class Cache:
         config = entry.meta.get("config", None)
         split = entry.meta.get("split", None)
         cache_dir = self.root / 'huggingface' / 'datasets'
+
+        if isinstance(config, list):
+            # Cross-config alignment: load two configs, join by a shared field
+            return self._get_hf_cross_config(entry)
+
         args = dict(
             name=config,
             split=split,
@@ -171,7 +176,47 @@ class Cache:
         )
         log.debug(f"Loading dataset {hf_id} with args: {args}")
         ds = load_dataset(hf_id, **args)
+        if split is None and hasattr(ds, 'keys'):
+            # load_dataset returns DatasetDict when split=None
+            keys = list(ds.keys())
+            assert len(keys) == 1, (f"Multiple splits found in {hf_id}: {keys}."
+                                    f" Specify 'split' in the resource file.")
+            ds = ds[keys[0]]
         return ds
+
+    def _get_hf_cross_config(self, entry):
+        """Load two HF configs and align rows by a join field, yielding combined dicts."""
+        from datasets import load_dataset
+        hf_id = entry.meta["orig_id"]
+        configs = entry.meta["config"]
+        split = entry.meta.get("split", None)
+        assert len(configs) == 2, f"Expected 2 configs for cross-config, got {configs}"
+        join_field = entry.meta.get("join_field", "id")
+        src_config, tgt_config = configs
+
+        cache_dir = self.root / 'huggingface' / 'datasets'
+        common_args = dict(cache_dir=cache_dir, streaming=False, trust_remote_code=False)
+        log.debug(f"Loading cross-config: {hf_id} [{src_config}] + [{tgt_config}]")
+        ds1 = load_dataset(hf_id, name=src_config, split=split, **common_args)
+        ds2 = load_dataset(hf_id, name=tgt_config, split=split, **common_args)
+
+        # Build lookup from second config, keyed by join field
+        tgt_lookup = {}
+        text_field = entry.meta.get("text_field", "text")
+        for row in ds2:
+            key = row[join_field]
+            tgt_lookup[key] = row[text_field]
+
+        # Yield aligned rows as dicts with config names as keys
+        class CrossConfigDataset:
+            """Iterable wrapper that yields aligned rows from two HF configs."""
+            def __iter__(self_inner):
+                for row in ds1:
+                    key = row[join_field]
+                    if key in tgt_lookup:
+                        yield {src_config: row[text_field], tgt_config: tgt_lookup[key]}
+
+        return CrossConfigDataset()
 
     @classmethod
     def match_globs(cls, names, globs, meta=''):
@@ -226,8 +271,8 @@ class Cache:
                     parts[2][:24], '...', parts[-1][-24:], # host ... filename
                     ]
             desc = ''.join(desc)
-            with pbar_man.counter(color='green', total=tot_bytes//2**10, unit='KiB', leave=False, position=2,
-                                  min_delta=Defaults.PBAR_REFRESH_INTERVAL, desc=f"{desc}"
+            with pbar_man.counter(total=tot_bytes//2**10, unit='KiB',
+                                  desc=f"{desc}"
                                   ) as pbar, open(save_at, 'wb', buffering=2**24) as out:
                 for chunk in resp.iter_content(chunk_size=buf_size):
                     out.write(chunk)

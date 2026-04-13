@@ -23,6 +23,14 @@ from mtdata.parser import Parser
 from mtdata.utils import IO
 
 DEF_COMPRESS = 'gz'
+
+
+def _worker_init(progress_queue, worker_log_level=None):
+    """Initialize worker process with a progress queue for remote updates."""
+    from mtdata import log, pbar_man
+    pbar_man._queue = progress_queue
+    if worker_log_level is not None:
+        log.getLogger().setLevel(worker_log_level)
 DATA_FIELDS = ('train', 'dev', 'test', 'mono_train', 'mono_dev', 'mono_test')
 
 
@@ -77,6 +85,7 @@ class Dataset:
         """
         if n_jobs == 1:
             return [cache.get_entry(ent) for ent in entries]
+        import multiprocessing as mp
         log.info(f"Downloading {len(entries)} datasets in parallel with {n_jobs} jobs")
         result = {}
         entries = list(entries) # make a copy
@@ -84,19 +93,25 @@ class Dataset:
         random.seed(42)
         random.shuffle(entries)
         status = dict(total=len(entries), success=0, failed=0)
-        with concurrent.futures.ProcessPoolExecutor(max_workers=n_jobs) as executor:
-            futures_to_entry = {executor.submit(cache.get_entry, entry): entry for entry in entries}
-            for future in concurrent.futures.as_completed(futures_to_entry.keys()):
-                entry:Entry = futures_to_entry[future]
-                try:
-                    paths = future.result()   # paths, ignore
-                    result[entry] = paths
-                    status['success'] += 1
-                    log.info(f"[{status['success']}/{status['total']}] Downloaded {entry.did}")
-                except Exception as exc:
-                    result[entry] = None
-                    status['failed'] += 1
-                    log.warning(f"Failed to download {entry.did}: {exc} Total failed: {status['failed']}")
+        progress_queue = mp.Queue()
+        with pbar_man.counter(desc="Downloads", total=len(entries)) as overall_pbar:
+            with pbar_man.consume_remote(progress_queue):
+                with concurrent.futures.ProcessPoolExecutor(max_workers=n_jobs,
+                        initializer=_worker_init, initargs=(progress_queue, log.WARNING)) as executor:
+                    futures_to_entry = {executor.submit(cache.get_entry, entry): entry for entry in entries}
+                    for future in concurrent.futures.as_completed(futures_to_entry.keys()):
+                        entry:Entry = futures_to_entry[future]
+                        try:
+                            paths = future.result()   # paths, ignore
+                            result[entry] = paths
+                            status['success'] += 1
+                            log.info(f"[{status['success']}/{status['total']}] Downloaded {entry.did}")
+                        except Exception as exc:
+                            result[entry] = None
+                            status['failed'] += 1
+                            log.warning(f"Failed to download {entry.did}: {exc} Total failed: {status['failed']}")
+                        finally:
+                            overall_pbar.update()
         log.info(f"Downloaded {status['success']} datasets. Failed to download {status['failed']}")
         return result
 
@@ -131,8 +146,32 @@ class Dataset:
         if dataset_ids.get('dev'):
             dev_entries = cls.resolve_entries(dataset_ids['dev'])
             dataset.add_dev_entries(dev_entries)
-        if dataset_ids.get('train'):  # this might take some time
+        # Phase 2: Process train parts and mono entries concurrently
+        # Bitext train parts and mono entries are independent — they write to different dirs
+        all_tasks = []  # list of (func, task_dict) pairs
+        train_entries = []
+        if dataset_ids.get('train'):
             train_entries = cls.resolve_entries(dataset_ids['train'])
+            for ent in train_entries:
+                all_tasks.append((dataset.add_part, dict(
+                    dir_path=dataset.train_parts_dir, entry=ent,
+                    drop_noise=dataset.drop_train_noise, compress=compress)))
+        mono_groups = []
+        for key, dirpath in [('mono_train', dataset.mono_train_parts_dir),
+                             ('mono_dev', dataset.mono_tests_dir),
+                             ('mono_test', dataset.mono_tests_dir)]:
+            if dataset_ids.get(key):
+                dirpath.mkdir(exist_ok=True)
+                entries = cls.resolve_entries(dataset_ids[key])
+                mono_groups.append((key, entries))
+                for ent in entries:
+                    all_tasks.append((dataset.add_mono_entry, dict(
+                        dirpath=dirpath, entry=ent, compress=compress)))
+        if all_tasks:
+            dataset._run_entries_multi(all_tasks, desc='Processing entries',
+                                       fail_on_error=fail_on_error)
+        # Phase 3: Merge train if requested (must happen after all train parts are written)
+        if train_entries and merge_train:
             drop_hashes = None
             if drop_tests:
                 pair_files = []
@@ -142,17 +181,8 @@ class Dataset:
                         p1, p2 = p2, p1  # swap
                     pair_files.append((p1, p2))
                 test_pair_hash, test_seg_hash = dataset.hash_all_bitexts(pair_files)
-                drop_hashes = test_pair_hash | test_seg_hash  # set union
-            dataset.add_train_entries(train_entries, merge_train=merge_train, compress=compress,
-                                      drop_hashes=drop_hashes)
-        for key, dirpath in [('mono_train', dataset.mono_train_parts_dir),
-                             ('mono_dev', dataset.mono_tests_dir),
-                             ('mono_test', dataset.mono_tests_dir)]:
-            if dataset_ids.get(key):
-                dirpath.mkdir(exist_ok=True)
-                entries = cls.resolve_entries(dataset_ids[key])
-                for entry in entries:
-                    dataset.add_mono_entry(dirpath, entry, compress=compress)
+                drop_hashes = test_pair_hash | test_seg_hash
+            dataset._merge_train(train_entries, compress=compress, drop_hashes=drop_hashes)
 
         # citations
         refs_file = out_dir / 'references.bib'
@@ -184,11 +214,8 @@ class Dataset:
                 seg_hashes.add(hash(seg2))
         return paired_hashes, seg_hashes
 
-    def add_train_entries(self, entries, merge_train=False, compress=False, drop_hashes=None):
-        self.add_parts(self.train_parts_dir, entries, drop_noise=self.drop_train_noise,
-                       compress=compress, desc='Training sets', fail_on_error=self.fail_on_error)
-        if not merge_train:
-            return
+    def _merge_train(self, entries, compress=False, drop_hashes=None):
+        """Merge already-written train parts into single train files."""
         lang1, lang2 = self.langs
         # paired_files = self.find_bitext_pairs(self.train_parts_dir, lang1, lang2)
         paired_files = {}
@@ -214,8 +241,7 @@ class Dataset:
         train_hashes = set()
 
         with IO.writer(of1) as w1, IO.writer(of2) as w2, IO.writer(of3) as w3:
-            with pbar_man.counter(color='green', total=len(paired_files), unit='it', desc="Merging", leave=False,
-                                  min_delta=Defaults.PBAR_REFRESH_INTERVAL, autorefresh=True) as pbar:
+            with pbar_man.counter(total=len(paired_files), unit='it', desc="Merging") as pbar:
                 for name, (if1, if2, if3) in paired_files.items():
                     for fields in self.read_parallel(if1, if2):
                         seg1, seg2 = fields[:2]
@@ -242,7 +268,7 @@ class Dataset:
                      counts=counts)
 
         stats_msg = json.dumps(stats, indent=2)
-        log.info('Train stats:\n' + stats_msg)
+        log.info('Train stats: ' + ' | '.join(stats_msg.splitlines()))
         IO.write_lines(self.dir / 'train.stats.json', stats_msg)
         return counts
 
@@ -250,44 +276,45 @@ class Dataset:
         flag_file = dirpath / f'.valid.{entry.did}'
         assert len(entry.did.langs) == 1, f'Monolingual entry expected, given {entry.did}'
         if flag_file.exists():
-            log.info(f"{flag_file} exits. Skipping")
+            pbar_man.emit_log(log.INFO, f"{flag_file} exists. Skipping")
             return -1, -1
         cache_path = self.cache.get_entry(entry)
         parser = Parser(cache_path, ext=entry.in_ext or None, ent=entry)
         out_path, meta_file = self.get_paths(dirpath, entry, compress=compress)
-        log.info("Writing %s to %s", entry.did, out_path)
+        pbar_man.emit_log(log.INFO, f"Writing {entry.did} to {out_path}")
         io_args = dict(encoding='utf-8', errors='ignore')
-        has_meta = None  # None -> True/False on first row ;then ensure it is consistent
-        with IO.writer(out_path, **io_args) as out, IO.writer(meta_file, **io_args) as out_meta:
+        with pbar_man.counter(unit='line', desc=f"Processing {entry.did}") as pbar, \
+                IO.writer(out_path, **io_args) as out, IO.writer(meta_file, **io_args) as out_meta:
             count, skips = 0, 0
-            for row in parser.read_segs():
-                if has_meta is None:  # first row only
+            has_meta = None
+            for row in parser.read_segs(show_pbar=False):
+                if has_meta is None:
                     has_meta = bool(isinstance(row, (list, tuple)) and len(row) > 1)
-                sentence = row
-                if isinstance(row, (list, tuple)):
-                    sentence = row[0]   # flatten list
-                assert isinstance(sentence, str), f'str sentence expected. found: {type(sentence)}; entry: {entry.did}'
-                sentence = sentence and sentence.strip()
+                sentence = row[0] if isinstance(row, (list, tuple)) else row
+                sentence = sentence.strip().replace('\t', ' ').replace('\r', ' ') if sentence else ''
                 if not sentence:
                     skips += 1
+                    pbar.update()
                     continue
-                sentence = sentence.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
-                out.write(f'{sentence}\n')
+                out.write(sentence + '\n')
                 if has_meta:
-                    assert len(row) >= 2, f'Expected 2 fields, found {len(row)}: {row}'
-                    meta = json.dumps(row[1], ensure_ascii=False, indent=None)
-                    meta = meta.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
-                    out_meta.write(f'{meta}\n')
+                    meta = json.dumps(row[1], ensure_ascii=False, indent=None).replace('\t', ' ').replace('\r', ' ')
+                    out_meta.write(meta + '\n')
                 count += 1
+                pbar.update(write_count=count)
             msg = f'Looks like an error. {count} segs are valid {skips} are invalid: {entry}'
             assert count > 0, msg
             if skips > count:
-                log.warning(msg)
-                log.info(f"{entry}: Skips : {skips:,}/{count:,} => {100 * skips / count:.4f}%")
+                pbar_man.emit_log(log.WARNING, msg)
+                pbar_man.emit_log(log.INFO, f"{entry}: Skips : {skips:,}/{count:,} => {100 * skips / count:.4f}%")
             if not has_meta and meta_file.exists():
-                meta_file.unlink()  # remove empty meta file; file may not be empty if its .gz compressed
+                meta_file.unlink()
         flag_file.touch()
         return count, skips
+
+    def add_mono_entries(self, dir_path, entries, compress=False, desc=None, fail_on_error=False):
+        tasks = [dict(dirpath=dir_path, entry=ent, compress=compress) for ent in entries]
+        self._run_entries(self.add_mono_entry, tasks, entries, desc=desc, fail_on_error=fail_on_error)
 
     @classmethod
     def find_bitext_pairs(cls, dir_path: Path, lang1: BCP47Tag, lang2: BCP47Tag):
@@ -384,8 +411,7 @@ class Dataset:
         of1, of2 = out_paths
         of1.parent.mkdir(exist_ok=True)
         of2.parent.mkdir(exist_ok=True)
-        with pbar_man.counter(color='green', total=len(in_paths), unit='it', desc="Merging", leave=False,
-                              min_delta=Defaults.PBAR_REFRESH_INTERVAL, autorefresh=True) as pbar, \
+        with pbar_man.counter(total=len(in_paths), unit='it', desc="Merging") as pbar, \
                 IO.writer(of1) as w1, IO.writer(of2) as w2:
             for if1, if2 in in_paths:
                 assert if1.exists()
@@ -395,62 +421,86 @@ class Dataset:
                     w2.write(seg2 + '\n')
                 pbar.update()
 
-    def add_part_thread(self, args):
+    def add_parts(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
+        tasks = [dict(dir_path=dir_path, entry=ent, drop_noise=drop_noise, compress=compress) for ent in entries]
+        self._run_entries(self.add_part, tasks, entries, desc=desc, fail_on_error=fail_on_error)
+
+    def _entry_worker(self, func, args):
+        """Worker wrapper: calls func(**args), logs result or error via remote queue."""
         fail_on_error = args.pop('fail_on_error', False)
         ent = args['entry']
-        assert isinstance(ent, Entry)
         try:
-            n_good, n_bad = self.add_part(**args)
-            if max(n_good, n_bad) >= 0:  # -1 for skipped record because it is valid
-                log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
+            n_good, n_bad = func(**args)
+            if max(n_good, n_bad) >= 0:
+                pbar_man.emit_log(log.INFO, f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
         except Exception as e:
-            log.error(f"Unable to add {ent.did}: {e}")
+            pbar_man.emit_log(log.ERROR, f"Unable to add {ent.did}: {e}")
             if fail_on_error:
                 raise e
             msg = str(e).replace('\n', '\t')
             with portalocker.Lock(self.errors_file, 'a', timeout=Defaults.FILE_LOCK_TIMEOUT) as fh:
-                # self.errors_file.open('a').write(f"{ent.did}\t{msg}\n")
                 fh.write(f"{ent.did}\t{msg}\n")
 
-    def add_parts(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
+    def _run_entries(self, func, tasks, entries, desc=None, fail_on_error=False):
+        """Run func for each entry, sequentially or in parallel depending on n_jobs."""
         assert isinstance(entries, list)
+        for t in tasks:
+            t['fail_on_error'] = fail_on_error
         if self.n_jobs == 1:
-            return self.add_parts_sequential(dir_path=dir_path, entries=entries, drop_noise=drop_noise,
-                                             compress=compress, desc=desc, fail_on_error=fail_on_error)
-
-        tasks = [dict(dir_path=dir_path, entry=ent, drop_noise=drop_noise, compress=compress,
-                      fail_on_error=fail_on_error) for ent in entries]
-        with concurrent.futures.ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
-            futures = [executor.submit(self.add_part_thread, task) for task in tasks]
-            with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
-                              autorefresh=True, min_delta=Defaults.PBAR_REFRESH_INTERVAL, position=3) as pbar:
-                for future in concurrent.futures.as_completed(futures):
-                    try:
-                        future.result()
-                    except Exception as e:
-                        log.error(f"Error in thread: {e}")
-                        if fail_on_error:
-                            raise e
-                    finally:
-                        pbar.update(force=True)
-
-    def add_parts_sequential(self, dir_path, entries, drop_noise=False, compress=False, desc=None, fail_on_error=False):
-        with pbar_man.counter(color='blue', leave=False, total=len(entries), unit='it', desc=desc,
-                              min_interval=Defaults.PBAR_REFRESH_INTERVAL, autorefresh=True, position=3) as pbar:
-            for ent in entries:
-                try:
-                    n_good, n_bad = self.add_part(dir_path=dir_path, entry=ent, drop_noise=drop_noise,
-                                                  compress=compress)
-                    if max(n_good, n_bad) >= 0:  # -1 for skipped record because it is valid
-                        log.info(f"{ent.did.name} : found {n_good:} segments and {n_bad:} errors")
+            with pbar_man.counter(total=len(entries), unit='it', desc=desc) as pbar:
+                for task in tasks:
+                    self._entry_worker(func, task)
                     pbar.update(force=True)
-                except Exception as e:
-                    log.exception(f"Unable to add {ent.did}: {e}")
+            return
+        import multiprocessing as mp
+        progress_queue = mp.Queue()
+        with pbar_man.counter(total=len(entries), unit='it', desc=desc) as pbar:
+            with pbar_man.consume_remote(progress_queue):
+                with concurrent.futures.ProcessPoolExecutor(
+                        max_workers=self.n_jobs,
+                        initializer=_worker_init,
+                        initargs=(progress_queue, log.WARNING)) as executor:
+                    futures = [executor.submit(self._entry_worker, func, task) for task in tasks]
+                    for future in concurrent.futures.as_completed(futures):
+                        try:
+                            future.result()
+                        except Exception as e:
+                            pbar_man.emit_log(log.ERROR, f"Error in worker: {e}")
+                            if fail_on_error:
+                                raise e
+                        finally:
+                            pbar.update(force=True)
 
-                    if fail_on_error:
-                        raise e
-                    msg = str(e).replace('\n', '\t')
-                    self.errors_file.open('a').write(f"{ent.did}\t{msg}\n")
+    def _run_entries_multi(self, func_task_pairs, desc=None, fail_on_error=False):
+        """Run heterogeneous (func, task_dict) pairs through a single worker pool."""
+        for _, t in func_task_pairs:
+            t['fail_on_error'] = fail_on_error
+        total = len(func_task_pairs)
+        if self.n_jobs == 1:
+            with pbar_man.counter(total=total, unit='it', desc=desc) as pbar:
+                for func, task in func_task_pairs:
+                    self._entry_worker(func, task)
+                    pbar.update(force=True)
+            return
+        import multiprocessing as mp
+        progress_queue = mp.Queue()
+        with pbar_man.counter(total=total, unit='it', desc=desc) as pbar:
+            with pbar_man.consume_remote(progress_queue):
+                with concurrent.futures.ProcessPoolExecutor(
+                        max_workers=self.n_jobs,
+                        initializer=_worker_init,
+                        initargs=(progress_queue, log.WARNING)) as executor:
+                    futures = [executor.submit(self._entry_worker, func, task)
+                               for func, task in func_task_pairs]
+                    for future in concurrent.futures.as_completed(futures):
+                        try:
+                            future.result()
+                        except Exception as e:
+                            pbar_man.emit_log(log.ERROR, f"Error in worker: {e}")
+                            if fail_on_error:
+                                raise e
+                        finally:
+                            pbar.update(force=True)
 
     @classmethod
     def get_paths(cls, dir_path: Path, entry: Entry, compress=False) -> Union[Tuple[Path, Path], Tuple[Path, Path, Path]]:
@@ -475,48 +525,46 @@ class Dataset:
     def add_part(self, dir_path: Path, entry: Entry, drop_noise=False, compress=False):
         flag_file = dir_path / f'.valid.{entry.did}'
         if flag_file.exists():
-            log.info(f"{flag_file} exits. Skipping")
+            pbar_man.emit_log(log.INFO, f"{flag_file} exists. Skipping")
             return -1, -1
         path = self.cache.get_entry(entry)
-        # swap = entry.is_swap(self.langs)
         parser = Parser(path, ext=entry.in_ext or None, ent=entry)
-        # langs = '_'.join(str(lang) for lang in self.langs)
-        # Check that files are written in correct order
         l1, l2, meta_file = self.get_paths(dir_path, entry, compress=compress)
         io_args = dict(encoding='utf-8', errors='ignore')
-        has_meta = None
-        with IO.writer(l1, **io_args) as f1, IO.writer(l2, **io_args) as f2, IO.writer(meta_file, **io_args) as f3:
+        with pbar_man.counter(unit='line', desc=f"Processing {entry.did}") as pbar, \
+                IO.writer(l1, **io_args) as f1, IO.writer(l2, **io_args) as f2, IO.writer(meta_file, **io_args) as f3:
             count, skips, noise = 0, 0, 0
-            for rec in parser.read_segs():
+            has_meta = None
+            for rec in parser.read_segs(show_pbar=False):
                 if has_meta is None:
                     has_meta = bool(len(rec) > 2)
                 if len(rec) < 2:
                     skips += 1
+                    pbar.update()
                     continue
                 if drop_noise and entry.is_noisy(seg1=rec[0], seg2=rec[1]):
                     skips += 1
                     noise += 1
+                    pbar.update()
                     continue
-                sent1, sent2 = [s.strip() for s in rec[:2]]
+                sent1, sent2 = rec[0].strip(), rec[1].strip()
                 if not sent1 or not sent2:
                     skips += 1
+                    pbar.update()
                     continue
-                sent1 = sent1.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
-                sent2 = sent2.replace('\n', ' ').replace('\t', ' ').replace('\r', ' ')
-                f1.write(f'{sent1}\n')
-                f2.write(f'{sent2}\n')
+                f1.write(sent1.replace('\t', ' ').replace('\r', ' ') + '\n')
+                f2.write(sent2.replace('\t', ' ').replace('\r', ' ') + '\n')
                 if has_meta:
-                    assert len(rec) >= 3, f'Expected 3 fields, found {len(rec)}: {rec}'
-                    meta = json.dumps(rec[2], ensure_ascii=False, indent=None)
-                    f3.write(f'{meta}\n')
+                    f3.write(json.dumps(rec[2], ensure_ascii=False, indent=None) + '\n')
                 count += 1
+                pbar.update(write_count=count)
             msg = f'Looks like an error. {count} segs are valid {skips} are invalid: {entry}'
             assert count > 0, msg
             if skips > count:
-                log.warning(msg)
+                pbar_man.emit_log(log.WARNING, msg)
             if noise > 0:
-                log.info(f"{entry}: Noise : {noise:,}/{count:,} => {100 * noise / count:.4f}%")
-            log.info(f"wrote {count} lines to {l1} == {l2}")
+                pbar_man.emit_log(log.INFO, f"{entry}: Noise : {noise:,}/{count:,} => {100 * noise / count:.4f}%")
+            pbar_man.emit_log(log.INFO, f"wrote {count} lines to {l1} == {l2}")
         if not has_meta and meta_file.exists():
             meta_file.unlink()
         flag_file.touch()
