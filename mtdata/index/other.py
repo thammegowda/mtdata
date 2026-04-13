@@ -183,3 +183,41 @@ def load_all(index: Index):
         index += Entry(did=DatasetId(group='Motorola', name='lang_revitalization', version=version,
                                      langs=(src, tgt)),
                        url=url, filename=fname, ext='xlsx', in_ext='xlsx')
+
+    ### scb-mt-en-th-2020: Thai-English parallel corpus ###
+    _scb_url = "https://github.com/vistec-AI/dataset-releases/releases/download/scb-mt-en-th-2020_v1.0/scb-mt-en-th-2020.zip"
+    _scb_filename = "scb-mt-en-th-2020.zip"
+    _scb_cite = ("lowphansirikul2021scb",)
+    _scb_subsets = [
+        "task_master_1", "generated_reviews_translator", "nus_sms",
+        "msr_paraphrase", "mozilla_common_voice", "generated_reviews_crowd",
+        "generated_reviews_yn", "assorted_government", "thai_websites",
+        "paracrawl", "wikipedia", "apdf",
+    ]
+    for subset in _scb_subsets:
+        in_path = f"scb-mt-en-th-2020/{subset}.csv"
+        index += Entry(did=DatasetId(group='VistecAI', name=f'scb_mt_{subset}', version='1',
+                                     langs=('eng', 'tha')),
+                       url=_scb_url, filename=_scb_filename, ext='zip', in_ext='csvwithheader',
+                       in_paths=[in_path], cite=_scb_cite)
+
+    ### TALPCo: TUFS Asian Language Parallel Corpus ###
+    _talpco_base = "https://raw.githubusercontent.com/matbahasa/TALPCo/master"
+    _talpco_cite = ("nomoto2018talpco",)
+    _talpco_langs = [
+        ("eng", "eng"),
+        ("kor", "kor"),
+        ("mya", "myn"),  # Burmese; file uses myn
+        ("zsm", "zsm"),  # Malay
+        ("ind", "ind"),  # Indonesian
+        ("jav", "jav"),  # Javanese
+        ("tha", "tha"),
+        ("vie", "vie"),
+    ]
+    for iso, file_code in _talpco_langs:
+        src_url = f"{_talpco_base}/jpn/data_jpn.txt"
+        tgt_url = f"{_talpco_base}/{file_code}/data_{file_code}.txt"
+        index += Entry(did=DatasetId(group='TALPCo', name='talpco', version='1',
+                                     langs=('jpn', iso)),
+                       url=[src_url, tgt_url], ext='txt', in_ext='tsv', cols=(1,),
+                       cite=_talpco_cite)

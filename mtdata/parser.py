@@ -98,8 +98,8 @@ class Parser:
 
         if len(readers) == 1:
             data = readers[0]
-        elif self.ext == 'tmx' or self.ext == 'tsv':
-            data = (rec for reader in readers for rec in reader)  # flatten all readers
+        elif self.ext == 'tmx' or (self.ext == 'tsv' and len(self.paths) == 1):
+            data = (rec for reader in readers for rec in reader)  # flatten readers from single source
         elif len(readers) == 2:
             def _zip_n_check():
                 for row in zip_longest(*readers):
@@ -144,6 +144,8 @@ class Parser:
                 out_row = row
                 if cols:
                     out_row = [row[idx] for idx in cols]
+                    if len(cols) == 1:
+                        out_row = out_row[0]  # unwrap single-column to scalar
                 if meta_fields:
                     metadata = {}
                     for key, idx in meta_fields.items():
