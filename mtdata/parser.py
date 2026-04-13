@@ -3,6 +3,7 @@
 # Author: Thamme Gowda [tg (at) isi (dot) edu] 
 # Created: 4/4/20
 
+import csv
 from typing import Optional, Union, Tuple, List
 from dataclasses import dataclass
 from pathlib import Path
@@ -77,7 +78,7 @@ class Parser:
                         cols = self.ent.cols
                     readers.append(self.read_tsv(p, cols=cols, meta_fields=meta_fields))
                 elif 'csvwithheader' in self.ext:
-                    readers.append(self.read_tsv(p, delim=',', skipheader=True, meta_fields=meta_fields))
+                    readers.append(self.read_csv(p, meta_fields=meta_fields))
                 elif 'raw' in self.ext or 'txt' in self.ext:
                     readers.append(self.read_plain(p))
                 elif 'tmx' in self.ext:
@@ -91,13 +92,15 @@ class Parser:
                     readers.append(read_wmt21_xml(p))
                 elif HF_EXT in self.ext:
                     readers.append(self.read_hfds(p))
+                elif 'xlsx' in self.ext:
+                    readers.append(self.read_xlsx(p))
                 else:
                     raise Exception(f'Not supported {self.ext} : {p}')
 
         if len(readers) == 1:
             data = readers[0]
-        elif self.ext == 'tmx' or self.ext == 'tsv':
-            data = (rec for reader in readers for rec in reader)  # flatten all readers
+        elif self.ext == 'tmx' or (self.ext == 'tsv' and len(self.paths) == 1):
+            data = (rec for reader in readers for rec in reader)  # flatten readers from single source
         elif len(readers) == 2:
             def _zip_n_check():
                 for row in zip_longest(*readers):
@@ -120,7 +123,7 @@ class Parser:
         try:
             with IO.reader(path) as stream:
                 for line in stream:
-                    yield line.strip()
+                    yield line.rstrip('\r\n')
         except:
             log.warning(f'Error reading file {path}')
             raise
@@ -138,10 +141,12 @@ class Parser:
             if skipheader:
                 line = stream.readline()
             for line in stream:
-                row = [x.strip() for x in line.rstrip('\n').split(delim)]
+                row = [x.strip() for x in line.rstrip('\r\n').split(delim)]
                 out_row = row
                 if cols:
                     out_row = [row[idx] for idx in cols]
+                    if len(cols) == 1:
+                        out_row = out_row[0]  # unwrap single-column to scalar
                 if meta_fields:
                     metadata = {}
                     for key, idx in meta_fields.items():
@@ -151,6 +156,51 @@ class Parser:
                     if metadata:
                         out_row.append(metadata)
                 yield out_row
+
+    def read_csv(self, path, cols=None, meta_fields=None):
+        """Read data from a CSV file with header using Python's csv module.
+        Handles quoted fields with embedded commas/newlines correctly.
+        :param path: path to CSV file
+        :param cols: column indices to extract; default is (0, 1)
+        """
+        if cols is None:
+            cols = self.ent.cols if (self.ent and self.ent.cols) else (0, 1)
+        with IO.reader(path) as stream:
+            reader = csv.reader(stream)
+            header = next(reader, None)  # skip header
+            for row in reader:
+                if not row or len(row) <= max(cols):
+                    continue
+                out_row = [row[c].strip() for c in cols]
+                if meta_fields:
+                    metadata = {}
+                    for key, idx in meta_fields.items():
+                        if key in ("source", "target") or idx >= len(row) or row[idx] in ("", None):
+                            continue
+                        metadata[key] = row[idx]
+                    if metadata:
+                        out_row.append(metadata)
+                yield out_row
+
+    def read_xlsx(self, path, cols=None):
+        """Read data from an Excel .xlsx file.
+        :param path: path to .xlsx file
+        :param cols: column indices to extract; default uses ent.cols or (0, 1)
+        """
+        try:
+            from openpyxl import load_workbook
+        except ImportError as e:
+            raise ImportError("openpyxl is required to read .xlsx files. Run: pip install openpyxl") from e
+        if cols is None:
+            cols = self.ent.cols if (self.ent and self.ent.cols) else (0, 1)
+        wb = load_workbook(path, read_only=True, data_only=True)
+        ws = wb.active
+        for row in ws.iter_rows(min_row=2, values_only=True):  # skip header
+            out = [str(row[c]).strip() if row[c] is not None else '' for c in cols]
+            if all(v == '' for v in out):
+                continue
+            yield out
+        wb.close()
 
     @staticmethod
     def _nested_get(row, field):
@@ -176,11 +226,24 @@ class Parser:
         # in the current version, I am going to retain all fields to see what all fields exist,
         # and map the subset of fields as per the dict; so, created rev_map.get(orig,orig)
         for row in ds:
-            out_row = [self._nested_get(row, src_field)]
-            if tgt_field is not None:
-                out_row.append(self._nested_get(row, tgt_field))
-            # remap meta fields if necessary
+            src_val = self._nested_get(row, src_field)
+            tgt_val = self._nested_get(row, tgt_field) if tgt_field else None
             top_keys = {f.split('.')[0] for f in [src_field] + ([tgt_field] if tgt_field else [])}
             metadata = {rev_map.get(k, k): v for k, v in row.items() if k not in top_keys}
-            out_row.append(metadata)
-            yield out_row
+
+            src_is_list = isinstance(src_val, list)
+            tgt_is_list = isinstance(tgt_val, list)
+            if src_is_list and tgt_is_list:
+                # Both lists (e.g. SmolDoc srcs/trgs): zip and yield each pair
+                for s, t in zip(src_val, tgt_val):
+                    yield [s, t, metadata]
+            elif not src_is_list and tgt_is_list:
+                # Source is scalar, target is list (e.g. GATITOS src/trgs): expand
+                for t in tgt_val:
+                    yield [src_val, t, metadata]
+            else:
+                out_row = [src_val]
+                if tgt_val is not None:
+                    out_row.append(tgt_val)
+                out_row.append(metadata)
+                yield out_row

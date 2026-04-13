@@ -20,9 +20,9 @@ from mtdata.utils import IO, format_byte_size
 DEF_N_JOBS = 1
 
 
-def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=None, id_only=False):
+def list_data(langs, names, not_names=None, full=False, groups=None, not_groups=None, id_only=False, strict=False):
     from mtdata.index import get_entries
-    entries = get_entries(langs, names, not_names, groups=groups, not_groups=not_groups, fuzzy_match=True)
+    entries = get_entries(langs, names, not_names, groups=groups, not_groups=not_groups, fuzzy_match=True, strict=strict)
     for i, ent in enumerate(entries):
         if id_only:
             print(ent.did)
@@ -82,7 +82,7 @@ def echo_data(did:DatasetId, delim='\t'):
             for col in row:
                 if isinstance(col, Mapping):
                     col = json.dumps(col, indent=None, ensure_ascii=False)
-                col = col.replace(delim, ' ').replace('\n', ' ')
+                col = col.replace(delim, ' ').replace('\n', ' ').replace('\r', ' ')
                 rec.append(col)
             rec = delim.join(rec)
         else:
@@ -281,6 +281,8 @@ def parse_args():
     list_p.add_argument('-nn', '--not-names', metavar='NAME', nargs='*', help='Exclude these names')
     list_p.add_argument('-g', '--groups', metavar='GROUP', nargs='*', help='Only select datasets from these groups')
     list_p.add_argument('-ng', '--not-groups', metavar='GROUP', nargs='*', help='Exclude these groups')
+    list_p.add_argument('-s', '--strict', action='store_true', default=False,
+                        help='Strict langpair ordering: eng-deu and deu-eng are treated differently')
     list_p.add_argument('-f', '--full', action='store_true', help='Show Full Citation')
     list_p.add_argument('-o', '--out', type=Path, help='This arg is ignored. Only used in "get" subcommand,'
                                                        ' but added here for convenience of switching b/w get and list')
@@ -386,7 +388,8 @@ def main():
             index_datasets()
         elif args.task == 'list':
             list_data(args.langs, args.names, not_names=args.not_names, full=args.full,
-                    groups=args.groups, not_groups=args.not_groups, id_only=args.id)
+                    groups=args.groups, not_groups=args.not_groups, id_only=args.id,
+                    strict=args.strict)
         elif args.task == 'get':
             get_data(**vars(args))
         elif args.task == 'echo':

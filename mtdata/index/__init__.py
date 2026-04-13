@@ -202,9 +202,13 @@ def is_compatible(lang1: Union[str, BCP47Tag], lang2: Union[str, BCP47Tag]):
     return lang1.is_compatible(lang2)
 
 
-def bitext_lang_match(pair1, pair2, fuzzy_match=False) -> bool:
-    x1, y1 = sorted(pair1)
-    x2, y2 = sorted(pair2)
+def bitext_lang_match(pair1, pair2, fuzzy_match=False, strict=False) -> bool:
+    if strict:
+        x1, y1 = pair1
+        x2, y2 = pair2
+    else:
+        x1, y1 = sorted(pair1)
+        x2, y2 = sorted(pair2)
     if fuzzy_match:
         return is_compatible(x1, x2) and is_compatible(y1, y2)
     else:
@@ -212,7 +216,7 @@ def bitext_lang_match(pair1, pair2, fuzzy_match=False) -> bool:
 
 
 def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False, 
-                groups=None, not_groups=None) -> List[Entry]:
+                groups=None, not_groups=None, strict=False) -> List[Entry]:
     """
     :param langs: language pairs  to select eg ('en', 'de')
     :param names:  names to select
@@ -236,7 +240,7 @@ def get_entries(langs=None, names=None, not_names=None, fuzzy_match=False,
     if langs:
         if len(langs) == 2:
             select = [e for e in select if 2 == len(e.did.langs)\
-                and bitext_lang_match(langs, e.did.langs, fuzzy_match=fuzzy_match)]
+                and bitext_lang_match(langs, e.did.langs, fuzzy_match=fuzzy_match, strict=strict)]
         else: # monolingual
             assert len(langs) == 1
             lang: BCP47Tag = langs[0]

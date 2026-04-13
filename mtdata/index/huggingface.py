@@ -98,6 +98,9 @@ def _load_hf_dataset(index, data):
             else:
                 meta = dict(orig_id=hf_id, config=config_name, split=split, fields=fields)
 
+            if 'data_files' in config:
+                meta['data_files'] = config['data_files']
+
             data_id = DatasetId(group=group, name=name, version='1', langs=langs)
             if data_id in index:
                 log.warning(f"Duplicate dataset id: {data_id}")

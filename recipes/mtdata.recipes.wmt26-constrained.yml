@@ -592,6 +592,7 @@
     - OPUS-openoffice-v2-eng-jpn
     - OPUS-opus100_train-1-eng-jpn
     - OPUS-tldr_pages-v20251124-eng-jpn
+    - TALPCo-talpco-1-jpn-eng
   mono_train:
     - Statmt-news_crawl-2023-jpn
     - Statmt-news_commentary-18.1-jpn
@@ -1078,6 +1079,7 @@
     - OPUS-wikimedia-v20230407-eng-lld
     - OPUS-translatewiki-v20250101-eng-lld
     - OPUS-translatewiki-v20250101-eng_CA-lld
+    - Motorola-lang_revitalization-20240604-eng-lld
   mono_train:
     - Sfrontull-la_usc_valbadia_loresmt24-1-lld
     - Sfrontull-south_tyrol_weather_lld-1-lld
@@ -1086,9 +1088,12 @@
 - id: wmt26-eng-lij_Latn
   langs: eng-lij_Latn
   train:
-    - AllenAi-nllb-1-eng-lij_Latn
+    #- AllenAi-nllb-1-eng-lij_Latn  # we heard its noisy -- use it at your own risk
     - Conseggioligure-zenamt_eng_train-1-eng-lij_Latn
     - Openlanguagedata-oldi_seed-1-eng-lij_Latn
+    - Google-smol_sent-1-eng-lij_Latn
+    - Google-smol_doc-1-eng-lij_Latn
+    - OPUS-tatoeba-v20230412-eng-lij
   mono_train:
     - Conseggioligure-linc-1-lij_Latn
 
